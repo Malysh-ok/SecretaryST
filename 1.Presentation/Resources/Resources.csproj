@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0-windows</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+        <RootNamespace>Presentation.Resources</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Images\" />
+      <Folder Include="Languages\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Page Update="Styles\DefaultStyles.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Fluent.Ribbon" Version="10.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\5.Common\WpfModule\Ui\Ui.csproj" />
+    </ItemGroup>
+
+</Project>

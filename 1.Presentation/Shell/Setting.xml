@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <appSettings>
+        <add key="Lang" value="en-EN" />
+        <add key="Version" value="1.0.0.0" />
+    </appSettings>
+</configuration>

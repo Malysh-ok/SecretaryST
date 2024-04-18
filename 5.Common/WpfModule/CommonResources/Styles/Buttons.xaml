@@ -1,0 +1,210 @@
+<!-- ШАБЛОНЫ И СТИЛИ КНОПОК -->
+
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib"
+                    xmlns:markup="clr-namespace:Common.WpfModule.Ui.Markup;assembly=Ui">
+    
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/CommonResources;component/Styles/DefaultColorsAndBrushes.xaml" />
+        <ResourceDictionary Source="/CommonResources;component/Styles/DefaultControl.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+    
+    <!-- Расширяем разметку для цвета -->
+    <markup:Color x:Key="Colors" />
+    
+    <!-- Кисть границы нажатой кнопки -->
+    <SolidColorBrush x:Key="PressedBorderBrush" 
+            Color="{markup:Color BaseColor=
+                {StaticResource HighlightColor}, DeltaBrightness=-0.2, DeltaSaturation=-0.2}" />
+    
+    <!-- _______________ БАЗОВАЯ КНОПКА _______________ -->
+    
+    <!-- Кисть фона кнопки, при наведении мыши -->
+    <SolidColorBrush x:Key="BaseButtonMouseOverBackgroundBrush"
+            Color="{markup:Color BaseColor=
+                {StaticResource HighlightColor}, DeltaBrightness=0.5, DeltaSaturation=-0.4}" />
+    
+    <!-- Кисть фона нажатой кнопки -->
+    <SolidColorBrush x:Key="BaseButtonPressedBackgroundBrush"
+            Color="{markup:Color BaseColor=
+                {StaticResource HighlightColor}, DeltaBrightness=0.2, DeltaSaturation=-0.4}" />
+
+    <!-- Шаблон -->
+    <ControlTemplate x:Key="BaseButtonTemplate" 
+                     TargetType="{x:Type Button}">
+        <Grid>
+            <Border x:Name="MainBorder" 
+                    BorderBrush="{TemplateBinding Control.BorderBrush}"
+                    BorderThickness="{TemplateBinding Control.BorderThickness}"
+                    Background ="{TemplateBinding Control.Background}" 
+                    Opacity="1" />
+            <Border x:Name="MouseOverBorder" 
+                    BorderBrush="{StaticResource HighlightBrush}"
+                    BorderThickness="{TemplateBinding Control.BorderThickness}"
+                    Background ="{StaticResource BaseButtonMouseOverBackgroundBrush}"
+                    Opacity="0" />
+            <Border x:Name="PressedBorder" 
+                    BorderBrush="{StaticResource PressedBorderBrush}"
+                    BorderThickness="{TemplateBinding Control.BorderThickness}"
+                    Background ="{StaticResource BaseButtonPressedBackgroundBrush}"
+                    Opacity="0" />
+            <ContentPresenter 
+                    TextElement.Foreground = "{TemplateBinding Control.Foreground}"
+                    TextElement.FontSize = "{TemplateBinding Control.FontSize}"
+                    HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
+                    VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
+                    Margin="{TemplateBinding Control.Padding}"/>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" Value="true">
+                <Setter TargetName="MouseOverBorder" 
+                        Property="Opacity" 
+                        Value="1" />
+            </Trigger>
+            <Trigger Property="ButtonBase.IsPressed" Value="true">
+                <Setter TargetName="PressedBorder" 
+                        Property="Opacity" 
+                        Value="1" />
+            </Trigger>
+        </ControlTemplate.Triggers>    
+    </ControlTemplate>
+    
+    <!-- Стиль -->
+    <Style x:Key="BaseButton" 
+           TargetType="{x:Type Button}"
+           BasedOn="{StaticResource DefaultControl}">
+        <Setter Property="Template" Value="{StaticResource BaseButtonTemplate}" />
+        <!-- <Setter Property="FontSize" Value="12"/> -->
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Height" Value="25"/>
+        <Setter Property="Width" Value="25"/>
+        <Setter Property="Padding" Value="0,0"/>
+        <Setter Property="Margin" Value="5,5"/>
+        <Setter Property="Foreground" Value="{StaticResource DefaultForegroundBrush}" />
+        <Setter Property="Background" Value="{StaticResource DefaultBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource DefaultBorderBrush}" />
+    </Style>
+    
+    
+    <!-- _______________ КНОПКА В ВИДЕ ГИПЕРССЫЛКИ _______________ -->
+    
+    <!-- Шаблон -->
+    <ControlTemplate x:Key="HyperlinkedButtonTemplate" 
+                     TargetType="{x:Type Button}">
+        <TextBlock x:Name="InnerText" 
+                Foreground="{StaticResource HyperlinkBrush}"
+                HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
+                VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
+                Padding="{TemplateBinding Control.Padding}"
+                Cursor="Hand">
+            <ContentPresenter />
+        </TextBlock>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Button.IsMouseOver" Value="true">
+                <Setter TargetName="InnerText" Property="TextDecorations" 
+                        Value="Underline" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+    
+    <!-- Стиль -->
+    <Style x:Key="HyperlinkedButton" 
+           TargetType="{x:Type Button}"
+           BasedOn="{StaticResource BaseButton}">
+        <Setter Property="Template" 
+                Value="{StaticResource HyperlinkedButtonTemplate}" />
+    </Style>
+    
+    
+    <!-- _______________ ВЕБ-КНОПКА _______________ -->
+
+    <!-- Кисть фона кнопки -->
+    <LinearGradientBrush x:Key="WebButtonBackgroundBrush"
+            StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{markup:Color BaseColor=
+                {StaticResource DefaultBackgroundColor}, DeltaBrightness=-0.05}" Offset="0" />
+        <GradientStop Color="{markup:Color BaseColor= 
+                {StaticResource DefaultBackgroundColor}, DeltaBrightness=0.6}" Offset="0.2" />
+        <GradientStop Color="{markup:Color BaseColor= 
+                {StaticResource DefaultBackgroundColor}, DeltaBrightness=0.8}" Offset="0.45" />
+        <GradientStop Color="{markup:Color BaseColor= 
+                {StaticResource DefaultBackgroundColor}, DeltaBrightness=-0.1}" Offset="1" />
+    </LinearGradientBrush>
+    
+    <!-- Кисть фона кнопки, при наведении мыши -->
+    <LinearGradientBrush x:Key="WebButtonMouseOverBackgroundBrush"
+            StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{markup:Color BaseColor=
+                {StaticResource HighlightColor}, DeltaBrightness=0.15, DeltaSaturation=-0.5}" Offset="0" />
+        <GradientStop Color="{markup:Color BaseColor= 
+                {StaticResource HighlightColor}, DeltaBrightness=0.65, DeltaSaturation=-0.6}" Offset="0.2" />
+        <GradientStop Color="{markup:Color BaseColor=
+                {StaticResource HighlightColor}, DeltaBrightness=0.65, DeltaSaturation=-0.6}" Offset="0.45" />
+        <GradientStop Color="{markup:Color BaseColor=
+                {StaticResource HighlightColor}, DeltaBrightness=0.15, DeltaSaturation=-0.4}" Offset="1" />
+    </LinearGradientBrush>
+    
+    <!-- Кисть фона нажатой кнопки -->
+    <LinearGradientBrush x:Key="WebButtonPressedBackgroundBrush"
+            StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{markup:Color BaseColor=
+                {StaticResource HighlightColor}, DeltaBrightness=0.05, DeltaSaturation=-0.5}" Offset="0" />
+        <GradientStop Color="{markup:Color BaseColor= 
+                {StaticResource HighlightColor}, DeltaBrightness=0.45, DeltaSaturation=-0.5}" Offset="0.2" />
+        <GradientStop Color="{markup:Color BaseColor=
+                {StaticResource HighlightColor}, DeltaBrightness=0.45, DeltaSaturation=-0.5}" Offset="0.45" />
+        <GradientStop Color="{markup:Color BaseColor=
+                {StaticResource HighlightColor}, DeltaBrightness=0.05, DeltaSaturation=-0.4}" Offset="1" />
+    </LinearGradientBrush>
+
+    <!-- Шаблон -->
+    <ControlTemplate x:Key="WebButtonTemplate" 
+                     TargetType="{x:Type Button}">
+        <Grid>
+            <Border x:Name="MainBorder" 
+                    BorderBrush="{TemplateBinding Control.BorderBrush}"
+                    BorderThickness="{TemplateBinding Control.BorderThickness}"
+                    Background ="{StaticResource WebButtonBackgroundBrush}" 
+                    Opacity="1" />
+            <Border x:Name="MouseOverBorder" 
+                    BorderBrush="{StaticResource HighlightBrush}"
+                    BorderThickness="{TemplateBinding Control.BorderThickness}"
+                    Background ="{StaticResource WebButtonMouseOverBackgroundBrush}"
+                    Opacity="0" />
+            <Border x:Name="PressedBorder" 
+                    BorderBrush="{StaticResource PressedBorderBrush}"
+                    BorderThickness="{TemplateBinding Control.BorderThickness}"
+                    Background ="{StaticResource WebButtonPressedBackgroundBrush}"
+                    Opacity="0" />
+            <ContentPresenter 
+                    TextElement.Foreground = "{TemplateBinding Control.Foreground}"
+                    HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
+                    VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
+                    Margin="{TemplateBinding Control.Padding}"/>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="UIElement.IsMouseOver" 
+                     Value="true">
+                <Setter TargetName="MouseOverBorder" 
+                        Property="Opacity" 
+                        Value="1" />
+            </Trigger>
+            <Trigger Property="ButtonBase.IsPressed" 
+                     Value="true">
+                <Setter TargetName="PressedBorder" 
+                        Property="Opacity" 
+                        Value="1" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+    
+    <!-- Стиль -->
+    <Style x:Key="WebButton" 
+           TargetType="{x:Type Button}"
+           BasedOn="{StaticResource BaseButton}">
+        <Setter Property="Template" Value="{StaticResource WebButtonTemplate}" />
+    </Style>
+
+</ResourceDictionary>

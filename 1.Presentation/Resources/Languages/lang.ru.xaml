@@ -1,0 +1,31 @@
+<!-- ReSharper disable InconsistentNaming -->
+
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:v="clr-namespace:System;assembly=mscorlib">
+    
+    <!-- Общие элементы -->
+    <!-- Общие элементы - Кнопки -->
+    <v:String x:Key="BtnOk">OK</v:String>
+    <v:String x:Key="BtnCancel">Отмена</v:String>
+    <v:String x:Key="BtnApply">Применить</v:String>
+    <v:String x:Key="BtnExit">Выход</v:String>
+
+    <!-- Главное представление -->
+    <v:String x:Key="MainView">SecretaryST</v:String>
+    <!-- Главное представление - Лента -->
+    <v:String x:Key="MainView_Ribbon">Лента</v:String>
+    <v:String x:Key="MainView_Ribbon_File">Файл</v:String>
+    <v:String x:Key="MainView_Ribbon_File_Open">Открыть</v:String>
+    <v:String x:Key="MainView_Ribbon_File_Save">Сохранить</v:String>
+    <v:String x:Key="MainView_Ribbon_File_Print">Печать</v:String>
+    <v:String x:Key="MainView_Ribbon_File_Exit">Выход</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting">Настройки</v:String>
+    <v:String x:Key="MainView_Ribbon_Database">База данных</v:String>
+    <v:String x:Key="MainView_Ribbon_Protocols">Протоколы</v:String>
+    
+    <!-- Представление дополнительных настроек -->
+    <v:String x:Key="OtherSettingView">SecretaryST - Дополнительные настройки</v:String>
+    <v:String x:Key="OtherSettingView_Exit">Выход</v:String>
+
+</ResourceDictionary>

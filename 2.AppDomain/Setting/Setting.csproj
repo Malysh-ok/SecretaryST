@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AppDomain.Setting 
+/Setting</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\5.Common\BaseComponents\BaseComponents.csproj" />
+      <ProjectReference Include="..\..\5.Common\BaseExtensions\BaseExtensions.csproj" />
+      <ProjectReference Include="..\AppExceptions\AppExceptions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="System.Configuration.ConfigurationManager">
+        <HintPath>C:\Program Files\dotnet\shared\Microsoft.WindowsDesktop.App\7.0.4\System.Configuration.ConfigurationManager.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Interfaces\" />
+    </ItemGroup>
+
+</Project>

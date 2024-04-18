@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net7.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+        <RootNamespace>Presentation.Shell</RootNamespace>
+        <Company>@ Malysh S. V.</Company>
+        <AssemblyName>SecretaryST</AssemblyName>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <FileVersion>2.0.0.0</FileVersion>
+        <ApplicationIcon>..\Resources\Images\Человек на навеске.ico</ApplicationIcon>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\2.AppDomain\Setting\Setting.csproj" />
+      <ProjectReference Include="..\..\5.Common\BaseExtensions\BaseExtensions.csproj" />
+      <ProjectReference Include="..\..\5.Common\CommonPhrases\CommonPhrases.csproj" />
+      <ProjectReference Include="..\..\5.Common\WpfModule\CommonResources\CommonResources.csproj" />
+      <ProjectReference Include="..\..\5.Common\WpfModule\Components\Components.csproj" />
+      <ProjectReference Include="..\..\5.Common\WpfModule\Extensions\Extensions.csproj" />
+      <ProjectReference Include="..\..\5.Common\WpfModule\Ui\Ui.csproj" />
+      <ProjectReference Include="..\Resources\Resources.csproj" />
+      <ProjectReference Include="..\ViewModels\ViewModels.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Page Update="Views\MainView.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Fluent.Ribbon" Version="10.0.4" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Setting.xml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

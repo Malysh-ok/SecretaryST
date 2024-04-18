@@ -1,0 +1,39 @@
+﻿<Window x:Class="Presentation.Shell.Views.OtherSettingView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:viewModels="clr-namespace:Presentation.ViewModels;assembly=ViewModels"
+        xmlns:markup="clr-namespace:Common.WpfModule.Ui.Markup;assembly=Ui"
+        
+        d:DataContext="{ d:DesignInstance viewModels:OtherSettingVM }"
+        mc:Ignorable="d"
+        Title="{DynamicResource OtherSettingView}"
+        WindowStartupLocation="CenterOwner"
+        Height="450"
+        Width="600">
+    
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Close"
+                        Executed="CloseView"/>
+    </Window.CommandBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Label Height="100" />
+        <Label Grid.Row="1" Background="LightGray" 
+               Content="{Binding DisplayMsg, Mode=TwoWay}" />
+        <Label Grid.Row="2" Height="100" />
+        <Button  Grid.Row="2" x:Name="BtnTmp"
+                 Content="{DynamicResource OtherSettingView_Exit}"
+                 Height="25" Width="100" 
+                 Margin="15"
+                 Style="{StaticResource WebButton}"
+                 Command="ApplicationCommands.Close"
+        />
+    </Grid>
+</Window>

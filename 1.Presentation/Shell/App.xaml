@@ -1,0 +1,32 @@
+﻿<Application x:Class="Presentation.Shell.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             Startup="OnStartup"
+             >
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Словарь локализации (указывать обязательно! -->
+                <!-- по данному ресурсу осуществляется поиск других словарей) -->
+                <ResourceDictionary  Source="/Resources;component/Languages/lang.xaml" /> 
+
+                
+                <!-- Настройка Fluent.Ribbon -->
+                <ResourceDictionary Source="pack://application:,,,/Fluent;Component/Themes/Generic.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Themes/Light.Blue.Colorful.xaml" />
+                <!-- <ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Themes/Dark.Steel.xaml" /> -->
+                
+                <!-- Векторные иконки -->
+                <ResourceDictionary  Source="/Resources;component/Controls/Icons.xaml" />
+                
+                <!-- Стили -->
+                <ResourceDictionary Source="/Resources;component/Styles/DefaultStyles.xaml" />
+                <ResourceDictionary Source="/CommonResources;component/Styles/DefaultStyles.xaml" />
+
+            </ResourceDictionary.MergedDictionaries>
+            
+            <system:String x:Key="TestString">Testing!!!</system:String>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

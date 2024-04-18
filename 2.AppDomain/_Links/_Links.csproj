@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AppDomain._Links</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="..\..\LICENSE">
+        <Link>LICENSE</Link>
+      </Content>
+      <Content Include="..\..\ReadMe.txt">
+        <Link>ReadMe.txt</Link>
+      </Content>
+      <Content Include="..\..\Первоочередное.txt">
+        <Link>Первоочередное.txt</Link>
+      </Content>
+    </ItemGroup>
+
+</Project>
