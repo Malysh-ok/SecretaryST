@@ -8,6 +8,9 @@
 //------------------------------------------------------------------------------
 
 namespace Common.Phrases {
+    using System;
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -35,7 +38,7 @@ namespace Common.Phrases {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Infrastructure.CommonPhrases.DbPhrases", typeof(DbPhrases).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Common.Phrases.DbPhrases", typeof(DbPhrases).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,38 +60,38 @@ namespace Common.Phrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid database connection string..
+        ///   Looks up a localized string similar to The database does not exist or has an incorrect format..
         /// </summary>
-        public static string ConnectionStringError {
+        public static string DbDoesNotExistError {
             get {
-                return ResourceManager.GetString("ConnectionStringError", resourceCulture);
+                return ResourceManager.GetString("DbDoesNotExistError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ddatabase context cannot be null..
+        ///   Looks up a localized string similar to It is impossible to connect to the database..
         /// </summary>
-        public static string DbContextError {
+        public static string DbСonnectiontError {
             get {
-                return ResourceManager.GetString("DbContextError", resourceCulture);
+                return ResourceManager.GetString("DbСonnectiontError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unknown Error: Unable to connect to the database..
+        ///   Looks up a localized string similar to Fatal error when working with the database..
         /// </summary>
-        public static string DbUnknownError {
+        public static string FatalDbError {
             get {
-                return ResourceManager.GetString("DbUnknownError", resourceCulture);
+                return ResourceManager.GetString("FatalDbError", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Not supported by database provider..
         /// </summary>
-        public static string NotSupportedByDbProvider {
+        public static string NotSupportedByDbProviderError {
             get {
-                return ResourceManager.GetString("NotSupportedByDbProvider", resourceCulture);
+                return ResourceManager.GetString("NotSupportedByDbProviderError", resourceCulture);
             }
         }
     }

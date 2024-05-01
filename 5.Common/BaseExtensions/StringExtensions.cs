@@ -6,6 +6,7 @@ using System.Drawing.Text;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Common.BaseExtensions.Collections;
 using Common.Phrases;
 
@@ -281,7 +282,45 @@ namespace Common.BaseExtensions
         {
             return string.IsNullOrWhiteSpace(text);
         }
+        
+        /// <summary>
+        /// Проверка строки на содержание только латинских символов.
+        /// </summary>
+        /// <param name="text">Исходная строка.</param>
+        /// <param name="isUsingAdditionalCharacters">Разрешено использования дополнительных символов
+        /// (пробельных, знаков пунктуации и т.п.).</param>
+        /// <returns>Результат проверки.</returns>
+        public static bool IsOnlyLatinChars(this string text, bool isUsingAdditionalCharacters = true)
+        {
+            if (text == null)
+                throw new ArgumentNullException(nameof(text));
 
+            var pattern = isUsingAdditionalCharacters
+                ? @"^[\p{IsBasicLatin}\p{P}\s]+$"
+                : @"^\p{IsBasicLatin}+$";
+            
+            return Regex.IsMatch(text, pattern);
+        }
+
+        /// <summary>
+        /// Проверка строки на содержание только кириллических символов.
+        /// </summary>
+        /// <param name="text">Исходная строка.</param>
+        /// <param name="isUsingAdditionalCharacters">Разрешено использования дополнительных символов
+        /// (пробельных, знаков пунктуации и т.п.).</param>
+        /// <returns>Результат проверки.</returns>
+        public static bool IsOnlyCyrillicChars(this string text, bool isUsingAdditionalCharacters = true)
+        {
+            if (text == null)
+                throw new ArgumentNullException(nameof(text));
+
+            var pattern = isUsingAdditionalCharacters
+                ? @"^[\p{IsCyrillic}\p{P}\s]+$"
+                : @"^\p{IsCyrillic}+$";
+            
+            return Regex.IsMatch(text, pattern);
+        }
+        
         /// <summary>
         /// Вычисление размера (ширины) текста в px (или в pt, если установлен флаг isResultInPt).
         /// <para> ПРИМЕЧАНИЕ: Если использовать полученный результат для Excel XML - то будет вычислено не очень точно! </para>
@@ -342,19 +381,6 @@ namespace Common.BaseExtensions
         public static string NullToEmpty(this string text)
         {
             return text ?? string.Empty;
-        }
-
-        /// <summary>
-        /// Проверка строки на содержание только латинских символов.
-        /// </summary>
-        /// <param name="text">Исходная строка.</param>
-        /// <returns>Результат проверки.</returns>
-        public static bool OnlyLatinChars(this string text)
-        {
-            if (text == null)
-                throw new ArgumentNullException(nameof(text));
-
-            return text.All(c => (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'));
         }
         
         /// <summary>

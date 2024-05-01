@@ -18,16 +18,16 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-    <data name="DbContextError" xml:space="preserve">
-        <value>Ddatabase context cannot be null.</value>
+    <data name="DbСonnectiontError" xml:space="preserve">
+        <value>It is impossible to connect to the database.</value>
     </data>
-    <data name="ConnectionStringError" xml:space="preserve">
-        <value>Invalid database connection string.</value>
+    <data name="FatalDbError" xml:space="preserve">
+        <value>Fatal error when working with the database.</value>
     </data>
-    <data name="DbUnknownError" xml:space="preserve">
-        <value>Unknown Error: Unable to connect to the database.</value>
-    </data>
-    <data name="NotSupportedByDbProvider" xml:space="preserve">
+    <data name="NotSupportedByDbProviderError" xml:space="preserve">
         <value>Not supported by database provider.</value>
+    </data>
+    <data name="DbDoesNotExistError" xml:space="preserve">
+        <value>The database does not exist or has an incorrect format.</value>
     </data>
 </root>

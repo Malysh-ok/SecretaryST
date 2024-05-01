@@ -11,16 +11,16 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-    <data name="DbContextError" xml:space="preserve">
-        <value>Контекст БД не может быть null.</value>
+    <data name="DbСonnectiontError" xml:space="preserve">
+        <value>Невозможно подключиться к БД.</value>
     </data>
-    <data name="ConnectionStringError" xml:space="preserve">
-        <value>Некорректная строка подключения к БД.</value>
+    <data name="FatalDbError" xml:space="preserve">
+        <value>Фатальная ошибка при работе с БД.</value>
     </data>
-    <data name="DbUnknownError" xml:space="preserve">
-        <value>Неизвестная ошибка: Невозможно подключиться к БД.</value>
-    </data>
-    <data name="NotSupportedByDbProvider" xml:space="preserve">
+    <data name="NotSupportedByDbProviderError" xml:space="preserve">
         <value>Не поддерживается поставщиком базы данных.</value>
+    </data>
+    <data name="DbDoesNotExistError" xml:space="preserve">
+        <value>БД не существует или имеет неправильный формат.</value>
     </data>
 </root>
