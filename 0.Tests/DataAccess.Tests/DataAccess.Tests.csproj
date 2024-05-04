@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <TargetFramework>net8.0-windows</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="coverlet.collector" Version="6.0.2"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="8.0.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0"/>
+        <PackageReference Include="NUnit" Version="4.1.0"/>
+        <PackageReference Include="NUnit.Analyzers" Version="4.2.0"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="4.5.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="NUnit.Framework"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\..\1.Presentation\Shell\Setting.xml">
+        <Link>Setting.xml</Link>
+        <!--Копируем файл после компиляции-->
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <TargetPath>Config\%(Filename)%(Extension)</TargetPath>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\1.Presentation\Shell\Shell.csproj" />
+      <ProjectReference Include="..\..\2.AppDomain\Setting\Setting.csproj" />
+      <ProjectReference Include="..\..\4.DataAccess\DbContexts\DbContexts.csproj" />
+      <ProjectReference Include="..\..\4.DataAccess\Services\Services.csproj" />
+    </ItemGroup>
+
+</Project>

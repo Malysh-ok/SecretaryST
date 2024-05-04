@@ -32,7 +32,7 @@ public class Lang : IEquatable<Lang>, ICloneable
         => CultureInfo.GetCultureInfo(Name);
 
     /// <summary>
-    /// Конструктор, ограничивающий создание объекта без параметров.
+    /// Конструктор, запрещающий создание объекта без параметров.
     /// </summary>
     // ReSharper disable once UnusedMember.Local
     private Lang()
@@ -62,10 +62,16 @@ public class Lang : IEquatable<Lang>, ICloneable
     {
         Name = cultureInfo.Name;
         ShortName = cultureInfo.TwoLetterISOLanguageName;
+        
+        var currentUiCulture = CultureInfo.CurrentUICulture;
 
         if (currentCultureInfo != null)
+        {
             CultureInfo.CurrentUICulture = currentCultureInfo;
+        }
+
         DisplayName = cultureInfo.Parent.DisplayName.ToCamelCase();
+        CultureInfo.CurrentUICulture = currentUiCulture;
     }
 
     /// <summary>

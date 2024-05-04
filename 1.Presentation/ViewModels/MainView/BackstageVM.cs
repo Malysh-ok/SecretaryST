@@ -8,7 +8,7 @@ namespace Presentation.ViewModels.MainView;
 /// ViewModel для специфичного меню "File" (для Backstage).
 /// </summary>
 // ReSharper disable once InconsistentNaming
-public class BackstageVM : ObservableRecipient
+public class BackstageVM : ObservableRecipient, IDisposable
 {
     #region [---------- НЕ публичные члены ----------]
 
@@ -23,4 +23,16 @@ public class BackstageVM : ObservableRecipient
     public BackstageVM()
     {
     }
+    
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+    }
+    
+    ~BackstageVM() => Dispose(false);
 }

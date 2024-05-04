@@ -2,8 +2,11 @@ using System.Globalization;
 using AppDomain.AppExceptions;
 using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions;
+using Common.BaseExtensions.Collections;
 using Common.Phrases;
 using DataAccess.Repositories.Exceptions;
+using ProblemDomain.Entities._Contracts;
+using ProblemDomain.Entities.CommonEntities;
 
 namespace Common.Tests;
 
@@ -113,5 +116,17 @@ public class BaseComponentsTests
     [Test]
     public void TmpTest()
     {
+        var representative = new Representative("Банько", "Яна", "Евгеньевна");
+        
+        // Делегации
+        var delegations = new List<Delegation>()
+        {
+            new(1, name: "Делегация 11111", "Якутия", representative),
+            new(2, name: "Делегация 22222", "Сахалин", representative),
+        };
+
+        var newList = delegations.DeepCopy();
+        ICopy delegation = delegations[0];
+        delegation.Copy(delegations[1]);
     }
 }

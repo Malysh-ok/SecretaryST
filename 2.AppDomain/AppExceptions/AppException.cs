@@ -1,28 +1,25 @@
-﻿namespace AppDomain.AppExceptions;
+﻿using Common.BaseComponents.Components.Exceptions;
+
+namespace AppDomain.AppExceptions;
 
 /// <summary>
-/// Исключения приложения.
+/// Класс исключения приложения.
 /// </summary>
-public class AppException : Exception
+public class AppException : BaseException
 {
-    /// <summary>
-    /// Конструктор.
-    /// </summary>
-    public AppException() : base()
+    /// <inheritdoc />
+    public AppException(string? message = null, Exception? innerException = null,
+        string? localLangName = null, string? localMessage = null)
+        : base(GetRealMessage(message, localLangName, localMessage), innerException)
     {
     }
-        
+
     /// <summary>
-    /// Конструктор.
+    /// Создает новый экземпляр исключения <see cref="AppException" /> (фабричный метод).
     /// </summary>
-    public AppException(string message) : base(message)
-    {
-    }
-        
-    /// <summary>
-    /// Конструктор.
-    /// </summary>
-    public AppException(string message, Exception innerException) : base(message, innerException)
-    {
-    }
+    /// <inheritdoc cref="BaseException.CreateException"/>
+    public new static AppException CreateException(
+        string? message = null, Exception? innerException = null,
+        string? localLangName = null, string? localMessage = null)
+        => new(message, innerException, localLangName, localMessage);
 }

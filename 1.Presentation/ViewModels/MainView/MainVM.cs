@@ -7,7 +7,7 @@ namespace Presentation.ViewModels.MainView;
 /// <summary>
 /// ViewModel для основного представления.
 /// </summary>
-public class MainVM : ObservableRecipient
+public class MainVM : ObservableRecipient, IDisposable
 {
     public BackstageVM BackstageVM { get; }
 
@@ -30,4 +30,21 @@ public class MainVM : ObservableRecipient
         BackstageVM = backstageVm;
         SettingVM = settingVm;
     }
+    
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            BackstageVM.Dispose();
+            SettingVM.Dispose();
+        }
+    }
+    
+    ~MainVM() => Dispose(false);
 }

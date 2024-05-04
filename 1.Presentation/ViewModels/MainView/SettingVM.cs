@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using AppDomain.AppExceptions;
 using AppDomain.Setting.Entities;
 using AppDomain.Setting.Services;
 using Common.BaseExtensions.Collections;
@@ -13,7 +14,7 @@ namespace Presentation.ViewModels.MainView;
 /// ViewModel для меню ленты "Настройки".
 /// </summary>
 // ReSharper disable once InconsistentNaming
-public class SettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
+public class SettingVM : ObservableRecipient, IRecipient<LocalizationMessage>, IDisposable
 {
     private readonly AppSettingService _appSetting;
     
@@ -93,4 +94,21 @@ public class SettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
         localization.Languages.ForEach(item => Languages.Add(item.Value));
         SetProperty(ref _currLang, currLang, nameof(CurrLang));     // вновь привязываем
     }
+    
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            // _appSetting.SaveConfig().ConfigureAwait(true);
+            _appSetting.SaveConfig();
+        }
+    }
+    
+    ~SettingVM() => Dispose(false);
 }

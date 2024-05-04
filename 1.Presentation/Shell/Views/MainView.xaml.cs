@@ -75,19 +75,7 @@ public partial class MainView : IViewWithResources
     {
         Application.Current.Shutdown();
     }
-
-    /// <summary>
-    /// Сохранение данных представления (окна) в настройках.
-    /// </summary>
-    private void SaveViewData()
-    {
-        _appSetting.SetConfigItem("MainViewLeft", Left.ToString(CultureInfo.InvariantCulture));
-        _appSetting.SetConfigItem("MainViewTop", Top.ToString(CultureInfo.InvariantCulture));
-        _appSetting.SetConfigItem("MainViewWidth", Width.ToString(CultureInfo.InvariantCulture));
-        _appSetting.SetConfigItem("MainViewHeight", Height.ToString(CultureInfo.InvariantCulture));
-        _appSetting.SetConfigItem("MainViewState", WindowState.ToString());
-    }
-    
+        
     /// <summary>
     /// Загрузка данных представления (окна) из настроек.
     /// </summary>
@@ -105,6 +93,18 @@ public partial class MainView : IViewWithResources
     }
 
     /// <summary>
+    /// Сохранение данных представления (окна) в настройках.
+    /// </summary>
+    private void SaveViewData()
+    {
+        _appSetting.SetConfigItem("MainViewLeft", Left.ToString(CultureInfo.InvariantCulture));
+        _appSetting.SetConfigItem("MainViewTop", Top.ToString(CultureInfo.InvariantCulture));
+        _appSetting.SetConfigItem("MainViewWidth", Width.ToString(CultureInfo.InvariantCulture));
+        _appSetting.SetConfigItem("MainViewHeight", Height.ToString(CultureInfo.InvariantCulture));
+        _appSetting.SetConfigItem("MainViewState", WindowState.ToString());
+    }
+
+    /// <summary>
     /// Обработчик события инициализации представления (окна).
     /// </summary>
     protected override void OnInitialized (EventArgs e)
@@ -117,12 +117,11 @@ public partial class MainView : IViewWithResources
     /// <summary>
     /// Обработчик события выхода из приложения.
     /// </summary>
-    protected override async void OnClosed(EventArgs e)
+    protected override void OnClosed(EventArgs e)
     {
         SaveViewData();
         
-        // _appSetting.SaveConfig().ConfigureAwait(false);
-        await _appSetting.SaveConfig();
+        ((MainVM)DataContext).Dispose();
         
         base.OnClosed(e);
     }

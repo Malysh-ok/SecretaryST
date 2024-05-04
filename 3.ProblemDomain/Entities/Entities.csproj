@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+<!--        <EnablePreviewFeatures>true</EnablePreviewFeatures>-->
+        <LangVersion>12</LangVersion>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>ProblemDomain.Entities</RootNamespace>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!--Разрешаем видимость internal-свойств/полей/методов-->
+<!--        <InternalsVisibleTo Include="Infrastructure.Repositories.Tests" />-->
+<!--        <InternalsVisibleTo Include="Infrastructure.Logging.Tests" />-->
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\5.Common\BaseComponents\BaseComponents.csproj" />
+      <ProjectReference Include="..\..\5.Common\BaseExtensions\BaseExtensions.csproj" />
+    </ItemGroup>
+
+</Project>

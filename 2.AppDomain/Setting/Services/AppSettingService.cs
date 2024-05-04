@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using Common.BaseComponents.Components.IO;
 
 namespace AppDomain.Setting.Services;
 
@@ -8,19 +9,19 @@ namespace AppDomain.Setting.Services;
 public class AppSettingService
 {
     #region [---------- НЕ публичные члены ----------]
-
+    
     /// <summary>
     /// Наименование файла конфигурации.
     /// </summary>
     private const string SettingFileName = "Setting.xml";
-    
+
     /// <summary>
     /// Конфигурация (настройки).
     /// </summary>
     private readonly Configuration _config;
     
     /// <summary>
-    /// Получаем наименование языка из настроек. 
+    /// Получаем наименование языка из настроек.
     /// </summary>
     private string GetLangConfigItem()
         => GetConfigItem("Lang") ?? string.Empty;
@@ -32,8 +33,32 @@ public class AppSettingService
         => SetConfigItem("Lang", value);
 
     #endregion
+
+
+    /// <summary>
+    /// Путь к файлу конфигурации.
+    /// </summary>
+    public string SettingFilePath
+        => PathEx.Combine(AppDir.ConfigPath, SettingFileName);
     
+    /// <summary>
+    /// Путь к файлу конфигурации.
+    /// </summary>
+    public string SettingFullFilePath
+        => PathEx.Combine(AppDir.AbsoluteConfigPath, SettingFileName);
+
+    /// <summary>
+    /// !!!!!!!!!!!!!!!!!!!!!!.
+    /// </summary>
+    public string SettingJsonFilePath
+        => PathEx.Combine(AppDir.ConfigPath, "appsettings.json");
+
     
+    /// <summary>
+    /// Сервис директорий приложения.
+    /// </summary>
+    public AppDirService AppDir { get; }
+
     /// <summary>
     /// Сервис локализации приложения.
     /// </summary>
@@ -44,13 +69,15 @@ public class AppSettingService
     /// </summary>
     public AppSettingService()
     {
+        AppDir = new AppDirService();
+        
+        AppLocalization = new AppLocalizationService(GetLangConfigItem, SetOrUpdateLangConfigItem);
+
         var configurationFileMap = new ExeConfigurationFileMap
         {
-            ExeConfigFilename = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, SettingFileName)
+            ExeConfigFilename = SettingFullFilePath
         };
         _config = ConfigurationManager.OpenMappedExeConfiguration(configurationFileMap, ConfigurationUserLevel.None);
-
-        AppLocalization = new AppLocalizationService(GetLangConfigItem, SetOrUpdateLangConfigItem);
     }
 
     /// <summary>
@@ -75,7 +102,9 @@ public class AppSettingService
     /// <summary>
     /// Сохранение настроек в файле.
     /// </summary>
-    public async Task SaveConfig()
-        => await Task.Run(() => _config.Save());
-    
+    // public async Task SaveConfig()
+    //     => await Task.Run(() => _config.Save());
+    public void SaveConfig()
+        => _config.Save();
+
 }

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>ProblemDomain.Services</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\2.AppDomain\UseCases\UseCases.csproj" />
+      <ProjectReference Include="..\..\3.ProblemDomain\Entities\Entities.csproj" />
+    </ItemGroup>
+
+</Project>

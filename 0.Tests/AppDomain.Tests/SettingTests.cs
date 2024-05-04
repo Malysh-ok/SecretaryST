@@ -20,8 +20,6 @@ public class SettingTests
     [Test]
     public void LocalizationTest()
     {
-        // TODO: сделать копирование файла конфигурации в тесты после компиляции
-        
         var appSetting = new AppSettingService();
         var appLocalization = appSetting.AppLocalization;
 

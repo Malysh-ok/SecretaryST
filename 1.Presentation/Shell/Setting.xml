@@ -2,6 +2,14 @@
 <configuration>
     <appSettings>
         <add key="Lang" value="en-EN" />
-        <add key="Version" value="1.0.0.0" />
+        <add key="Version" value="2.0.0.0" />
     </appSettings>
+    <connectionStrings>
+        <sqliteConnection>
+            data source=Main.sqlite;Foreign Keys=True;Password=''
+        </sqliteConnection>
+        <postgreSqlConnection>
+            Host=localhost; Port=5432; Database=Main; Username=Admin; Password=''
+        </postgreSqlConnection>
+    </connectionStrings>
 </configuration>

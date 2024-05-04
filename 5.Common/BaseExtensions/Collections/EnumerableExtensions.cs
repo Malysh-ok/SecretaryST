@@ -83,6 +83,25 @@ namespace Common.BaseExtensions.Collections
             additionalItems.ForEach(item => first = first.Concat(item));
             return first;
         }
+
+        /// <summary>
+        /// Глубокое копирование последовательности.
+        /// </summary>
+        /// <param name="source">Копируемая последовательность.</param>
+        /// <typeparam name="T">Тип элемента последовательности.</typeparam>
+        /// <returns>Скопированная последовательность.</returns>
+        public static IEnumerable<T> DeepCopy<T>(this IEnumerable<T> source) where T : ICloneable
+        {
+            var cloneables = source.AsList();
+            var destination = new List<T>(cloneables.Count);
+            
+            cloneables.ForEach(item =>
+            {
+                destination.Add((T)item.Clone());
+            });
+
+            return destination;
+        }
         
         /// <summary>
         /// Выполнение некоторого действия с элементами последовательности.
