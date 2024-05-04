@@ -2,96 +2,111 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Common.BaseComponents.Components.Exceptions
+namespace Common.BaseComponents.Components.Exceptions;
+
+/// <summary>
+/// Объект для работы со списком исключений.
+/// </summary>
+/// <typeparam name="TException">Тип исключений.</typeparam>
+public class ExceptionList<TException> : IEnumerable where TException : Exception
 {
     /// <summary>
-    /// Объект для работы со списком исключений.
+    /// Список исключений.
     /// </summary>
-    /// <typeparam name="TException">Тип исключений.</typeparam>
-    public class ExceptionList<TException> : IEnumerable where TException : Exception
+    private readonly List<TException> _exceptions;
+
+    /// <summary>
+    /// Признак того, что исключения отсутствуют.
+    /// </summary>
+    public bool IsNoExceptions => _exceptions.Count == 0;
+        
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    public ExceptionList()
     {
-        /// <summary>
-        /// Список исключений.
-        /// </summary>
-        private List<TException> _exceptions;
+        _exceptions = new List<TException>();
+    }
 
-        /// <summary>
-        /// Признак того, что исключения отсутствуют.
-        /// </summary>
-        public bool IsNoExceptions => _exceptions.Count == 0;
+    /// <summary>
+    /// Добавить исключение в список.
+    /// </summary>
+    public void Add(TException item)
+    {
+        _exceptions.Add(item);
+    }
         
-        /// <summary>
-        /// Конструктор.
-        /// </summary>
-        public ExceptionList()
-        {
-            _exceptions = new List<TException>();
-        }
+    /// <summary>
+    /// Добавить в список исключения из <paramref name="addedExceptions"/>.
+    /// </summary>
+    public void AddRange(ExceptionList<TException> addedExceptions)
+    {
+        _exceptions.AddRange(addedExceptions.GetAll());
+    }
 
-        /// <summary>
-        /// Добавить исключение в список.
-        /// </summary>
-        public void Add(TException item)
-        {
-            _exceptions.Add(item);
-        }
+    /// <summary>
+    /// Получить все исключения списка.
+    /// </summary>
+    public IEnumerable<TException> GetAll()
+    {
+        return _exceptions;
+    }
         
-        /// <summary>
-        /// Добавить в список исключения из <paramref name="addedExceptions"/>.
-        /// </summary>
-        public void AddRange(ExceptionList<TException> addedExceptions)
-        {
-            _exceptions.AddRange(addedExceptions.GetAll());
-        }
+    /// <summary>
+    /// Получить первое исключение списка.
+    /// </summary>
+    public TException GetFirst()
+    {
+        return _exceptions.Count > 0
+            ? _exceptions[0]
+            : null;
+    }
+        
+    /// <summary>
+    /// Получить последнее исключение списка.
+    /// </summary>
+    public TException GetLast()
+    {
+        return _exceptions.Count > 0
+            ? _exceptions[^1]
+            : null;
+    }
 
-        /// <summary>
-        /// Получить все исключения списка.
-        /// </summary>
-        public IEnumerable<TException> GetAll()
-        {
-            return _exceptions;
-        }
+    /// <summary>
+    /// Удалить последнее исключение списка.
+    /// </summary>
+    public void RemoveLast()
+    {
+        if (_exceptions.Count > 0)
+            _exceptions.RemoveAt(_exceptions.Count - 1);
+    }
         
-        /// <summary>
-        /// Получить первое исключение списка.
-        /// </summary>
-        public TException GetFirst()
-        {
-            return _exceptions.Count > 0
-                ? _exceptions[0]
-                : null;
-        }
-        
-        /// <summary>
-        /// Получить последнее исключение списка.
-        /// </summary>
-        public TException GetLast()
-        {
-            return _exceptions.Count > 0
-                ? _exceptions[^1]
-                : null;
-        }
+    /// <summary>
+    /// Удалить все исключения списка.
+    /// </summary>
+    public void Clear()
+    {
+        _exceptions.Clear();
+    }
 
-        /// <summary>
-        /// Удалить последнее исключение списка.
-        /// </summary>
-        public void RemoveLast()
+    /// <summary>
+    /// Получить суммарный текст сообщений об ошибках всех исключений.
+    /// </summary>
+    public string GetAllMassage(string delimiter = "\n")
+    {
+        var message = string.Empty;
+        var realDelimiter = string.Empty;
+        foreach (var ex in _exceptions)
         {
-            if (_exceptions.Count > 0)
-                _exceptions.RemoveAt(_exceptions.Count - 1);
-        }
-        
-        /// <summary>
-        /// Удалить все исключения списка.
-        /// </summary>
-        public void Clear()
-        {
-            _exceptions.Clear();
+            message += realDelimiter + ex.Message;
+            realDelimiter = delimiter;
         }
 
-        public IEnumerator GetEnumerator()
-        {
-            return _exceptions.GetEnumerator();
-        }
+        return message;
+    }
+
+    public IEnumerator GetEnumerator()
+    {
+        return _exceptions.GetEnumerator();
     }
 }

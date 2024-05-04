@@ -1,6 +1,7 @@
 using AppDomain.Setting.Services;
 using AppDomain.UseCases._Contracts;
 using Common.BaseComponents.Components;
+using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions.ValueTypes;
 using DataAccess.DbContexts;
 using DataAccess.DbContexts.DbConfigure;
@@ -9,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Presentation.Shell;
 using ProblemDomain.Entities;
-using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.DistanceEntities;
 using ProblemDomain.Entities.LibraryEntities;
@@ -108,7 +108,7 @@ public class DbContextTests
         //     typeof(Athlete), typeof(Delegation),
         //     typeof(Representative),
         //     typeof(SportUnit), typeof(SportEvent),
-        //     typeof(Competition), typeof(Referee));
+        //     typeof(CompetitionData), typeof(Referee));
         //
         // dbContext.Dispose();
     }
@@ -256,72 +256,99 @@ public class DbContextTests
     }
 
     [Test, Order(4)]
-    public async Task Competition_Test()
+    public async Task Referees_Test()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
-        var competitionService = new CompetitionService();
-        var result = Result<int>.Done(0);
-
-        JobTitleEnm jobTitle;                 // должность
         
-        jobTitle = JobTitleEnm.ChiefReferee;
-        var chiefReferee = new Referee(jobTitle,
+        Result<int> result;
+        List<Referee> referees = [];
+        ExceptionList<BaseException> exceptionsList = [];
+
+        var jobTitle = // должность
+            RefereeJobTitleEnm.ChiefReferee;
+        referees.Add(new Referee(jobTitle,
             "Сретенский", "Сергей", 
             "г. Чебоксары", 
             (await repository.GetFromIdAsync<RefereeLevel>(RefereeLevelEnm.Category1.ToInt()))!,
-            (await repository.GetFromIdAsync<RefereeJobTitle>(jobTitle.ToInt()))!);
+            (await repository.GetFromIdAsync<RefereeJobTitle>(jobTitle.ToInt()))!,
+            "Валентинович"));
         
-        jobTitle = JobTitleEnm.ChiefSecretary;
-        var chiefSecretary = new Referee(jobTitle,
+        jobTitle = RefereeJobTitleEnm.ChiefSecretary;
+        referees.Add(new Referee(jobTitle,
             "Иванова", "Кристина", 
             "г. Чебоксары", 
             (await repository.GetFromIdAsync<RefereeLevel>(RefereeLevelEnm.Category1.ToInt()))!,
-            (await repository.GetFromIdAsync<RefereeJobTitle>(jobTitle.ToInt()))!);
+            (await repository.GetFromIdAsync<RefereeJobTitle>(jobTitle.ToInt()))!));
         
-        jobTitle = JobTitleEnm.MandateChairman;
-        var mandateChairman = new Referee(jobTitle,
+        jobTitle = RefereeJobTitleEnm.MandateChairman;
+        referees.Add(new Referee(jobTitle,
             "Черкасова", "Маргарита", 
             "г. Санкт-Петербург", 
             (await repository.GetFromIdAsync<RefereeLevel>(RefereeLevelEnm.AllRussCategory.ToInt()))!,
-            (await repository.GetFromIdAsync<RefereeJobTitle>(jobTitle.ToInt()))!);
-
-        var secretaries = new List<Referee>();
+            (await repository.GetFromIdAsync<RefereeJobTitle>(jobTitle.ToInt()))!));
         
-        jobTitle = JobTitleEnm.Secretary1;
-        secretaries.Add(new Referee(jobTitle,
+        jobTitle = RefereeJobTitleEnm.Secretary;
+        referees.Add(new Referee(jobTitle,
             "Тетка", "1", 
             "г. Чебоксары", 
             (await repository.GetFromIdAsync<RefereeLevel>(RefereeLevelEnm.Category2.ToInt()))!,
             (await repository.GetFromIdAsync<RefereeJobTitle>(jobTitle.ToInt()))!));
         
-        jobTitle = JobTitleEnm.Secretary2;
-        secretaries.Add(new Referee(jobTitle,
+        jobTitle = RefereeJobTitleEnm.MajorStageReferee;
+        referees.Add(new Referee(jobTitle,
             "Тетка", "2", 
             "г. Чебоксары", 
             (await repository.GetFromIdAsync<RefereeLevel>(RefereeLevelEnm.Category3.ToInt()))!,
             (await repository.GetFromIdAsync<RefereeJobTitle>(jobTitle.ToInt()))!));
 
-        var resultCompetition = await competitionService.CreateAsync(repository, "Соревы", "ФСТ ЧР",
-            "Овраг близ этнокомплекса \"Амазония\", г. Чебоксары", 
+        // Добавляем судей в репозиторий
+        foreach (var referee in referees)
+        {
+            var foundReferee = // получаем из репозитория
+                (await repository.GetFromIdAsync<Referee>((int)referee.Id));
+
+            if (foundReferee is null)
+                result = await repository.AddAsync(referee);
+            else
+            {
+                referee.Copy(foundReferee);
+                result = await repository.UpdateAsync(foundReferee);
+            }
+            
+            if (! result)
+                exceptionsList.Add(new BaseException(
+                    $"Failed to create or get the referee '{referee.Id}' from the repository.", result.Excptn, 
+                    "ru", $"Не удалось создать или получить судью '{referee.Id}' из репозитория."));
+        }        
+        
+        Assert.That(exceptionsList.GetAll(), Is.Empty, exceptionsList.GetAllMassage());
+        
+        referees = (await repository.GetAllAsync<Referee>()).ToList();
+
+        Assert.That(referees.Count(), Is.Positive);
+        
+        repository.Dispose();
+    }
+
+    [Test, Order(5)]
+    public async Task CompetitionData_Test()
+    {
+        var dbContext = new DbContextFactory().CreateDbContext([]);
+        var repository = new Repository<AppDbContext>(dbContext);
+        var competitionService = new CompetitionDataService();
+
+        var resultCompetition = await competitionService.CreateAsync(repository, "Горные соревы...", "ФСТ ЧР",
             new DateTime(2023, 2, 23), 4,
-            await repository.GetFromIdAsync<CompetitionsStatus>(CompetitionsStatusEnm.Regional.ToInt()),
-            await repository.GetFromIdAsync<DetailedCompetitionStatus>(DetailedCompetitionStatusEnm.RegionalChampionship.ToInt()),
-            chiefReferee, chiefSecretary, mandateChairman, secretaries);
+            "Овраг близ этнокомплекса \"Амазония\", г. Чебоксары", 
+            (await repository.GetFromIdAsync<CompetitionsStatus>(CompetitionsStatusEnm.Regional.ToInt()))!,
+            (await repository.GetFromIdAsync<DetailedCompetitionStatus>(DetailedCompetitionStatusEnm.RegionalChampionship.ToInt()))!);
 
         Assert.That(resultCompetition.Excptn, Is.Null);
         
-        var competitions = await repository.GetAllAsync<Competition>();
-        var referees = await repository.GetAllAsync<Referee>();
-
-        Assert.Multiple(() =>
-            {
-                Assert.That(competitions.Count(), Is.Positive);
-                Assert.That(referees.Count(), Is.Positive);
-            }
-        );
+        var competitions = await repository.GetAllAsync<CompetitionData>();
         
-        repository.Dispose();
+        Assert.That(competitions.Count(), Is.Positive);
     }
 
 }

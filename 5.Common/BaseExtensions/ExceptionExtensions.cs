@@ -3,59 +3,57 @@
 using System;
 using System.Text;
 
-namespace Common.BaseExtensions
+namespace Common.BaseExtensions;
+
+/// <summary>
+/// Методы расширения для <see cref="Exception"/>.
+/// </summary>
+public static class ExceptionExtensions
 {
     /// <summary>
-    /// Методы расширения для <see cref="Exception"/>.
+    /// Выброс исключения NullReferenceException если объект равен null.
     /// </summary>
-    public static class ExceptionExtensions
+    public static void AssertNotNull<T>(this T obj, string exceptionMessage) where T : class
     {
-        /// <summary>
-        /// Выброс исключения NullReferenceException если объект равен null.
-        /// </summary>
-        public static void AssertNotNull<T>(this T obj, string exceptionMessage) where T : class
+        if (obj == null)
+            throw new NullReferenceException(exceptionMessage);
+    }
+
+    /// <summary>
+    /// Проверка исключения на null.
+    /// </summary>
+    public static bool IsNull(this Exception ex)
+    {
+        return ex is null;
+    }
+
+    /// <summary>
+    /// Получение строки с данными текущего и внутренних исключений.
+    /// </summary>
+    /// <param name="ex">Исключение.</param>
+    /// <param name="message">Строковый префикс для добавления в результат.</param>
+    /// <param name="isIncludeStackTrace">Признак добавления в результат так же и трассировку стека.</param>
+    /// <returns>Строка с сообщением текущего исключения и сообщениями всех вложенных исключений,
+    /// сведенными вместе.</returns>
+    public static string Flatten(this Exception ex, string message = "", bool isIncludeStackTrace = false)
+    {
+        if (ex == null)
+            return message;
+
+        var sb = new StringBuilder();
+        sb.AppendLine(message);
+
+        do
         {
-            if (obj == null)
-                throw new NullReferenceException(exceptionMessage);
-        }
+            sb.AppendLine(ex.Message);
 
-        /// <summary>
-        /// Проверка исключения на null.
-        /// </summary>
-        public static bool IsNull(this Exception ex)
-        {
-            return ex is null;
-        }
+            if (isIncludeStackTrace)
+                sb.AppendLine(ex.StackTrace);
 
-        /// <summary>
-        /// Получение строки с данными текущего и внутренних исключений.
-        /// </summary>
-        /// <param name="ex">Исключение.</param>
-        /// <param name="message">Строковый префикс для добавления в результат.</param>
-        /// <param name="isIncludeStackTrace">Признак добавления в результат так же и трассировку стека.</param>
-        /// <returns>Строка с сообщением текущего исключения и сообщениями всех вложенных исключений,
-        /// сведенными вместе.</returns>
-        public static string Flatten(this Exception ex, string message = "", bool isIncludeStackTrace = false)
-        {
-            if (ex == null)
-                return message;
+            ex = ex.InnerException;
 
-            var sb = new StringBuilder();
-            sb.AppendLine(message);
+        } while (ex != null);
 
-            do
-            {
-                sb.AppendLine(ex.Message);
-
-                if (isIncludeStackTrace)
-                    sb.AppendLine(ex.StackTrace);
-
-                ex = ex.InnerException;
-
-            } while (ex != null);
-
-            return sb.ToString().Trim();
-        }
+        return sb.ToString().Trim();
     }
 }
-    

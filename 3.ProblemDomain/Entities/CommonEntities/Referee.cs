@@ -15,7 +15,7 @@ public sealed class Referee
     : AbstractPersonalityEntity, ICloneable, ICopy
 {
     /// <inheritdoc cref="AbstractEntity.Id"/>
-    public new JobTitleEnm Id { get; set; }
+    public new RefereeJobTitleEnm Id { get; set; }
     
     /// <summary>
     /// Конструктор для EF.
@@ -23,7 +23,7 @@ public sealed class Referee
     /// <param name="id">Идентификатор.</param>
     /// <inheritdoc />
     /// <param name="domicile">Место жительства.</param>
-    private Referee(JobTitleEnm id, string lastName, string firstName, string domicile,
+    private Referee(RefereeJobTitleEnm id, string lastName, string firstName, string domicile,
         string? patronymic = null, string? description = null) 
         : base(lastName, firstName, patronymic, description)
     {
@@ -54,7 +54,7 @@ public sealed class Referee
     /// <inheritdoc />
     /// <param name="refereeLevel">Судейская категория.</param>
     /// <param name="refereeJobTitle">Судейская должность.</param>
-    public Referee(JobTitleEnm id, string lastName, string firstName, string domicile, 
+    public Referee(RefereeJobTitleEnm id, string lastName, string firstName, string domicile, 
         RefereeLevel refereeLevel, RefereeJobTitle refereeJobTitle, 
         string? patronymic = null, string? description = null) 
         : this(id, lastName, firstName, domicile, patronymic, description)
@@ -79,18 +79,11 @@ public sealed class Referee
     /// <summary>
     /// Связь с судейской должностью (объектом-владельцем).
     /// </summary>
-    public JobTitleEnm JobTitleId { get; set; }
+    public RefereeJobTitleEnm RefereeRefereeJobTitleId { get; set; }
 
-    /// <inheritdoc cref="JobTitleId"/>
+    /// <inheritdoc cref="RefereeRefereeJobTitleId"/>
     public RefereeJobTitle RefereeJobTitle { get; set; } = null!;
     
-    /// <summary>
-    /// Список соревнований.
-    /// </summary>
-    // ReSharper disable once CollectionNeverUpdated.Global
-    // public List<Competition> Competitions { get; set; } = [];
-    public ICollection<Competition> Competitions { get; set; } = new HashSet<Competition>();
-
     /// <summary>
     /// Клонирование.
     /// </summary>

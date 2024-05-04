@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ProblemDomain.Entities._Contracts;
+using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 // ReSharper disable InvalidXmlDocComment
 // ReSharper disable MemberCanBePrivate.Global
@@ -65,8 +66,8 @@ public sealed class DetailedCompetitionStatus
     /// Список Соревнований.
     /// </summary>
     // ReSharper disable once CollectionNeverUpdated.Global
-    public ICollection<Competition> Competitions { get; set; } = 
-        new HashSet<Competition>();
+    public ICollection<CompetitionData> Competitions { get; set; } = 
+        new HashSet<CompetitionData>();
     
     /// <summary>
     /// Клонирование.

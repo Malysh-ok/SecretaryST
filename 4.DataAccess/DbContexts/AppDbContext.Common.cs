@@ -1,25 +1,26 @@
-using System.Diagnostics.CodeAnalysis;
 using Common.BaseExtensions.ValueTypes;
 using DataAccess.DbContexts._Contracts.DbContextPartitions;
 using Microsoft.EntityFrameworkCore;
+using ProblemDomain.Entities;
 using ProblemDomain.Entities.CommonEntities;
+using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 
 namespace DataAccess.DbContexts;
 
 // Общее.
-public sealed partial class AppDbContext : IMainDbContext
+public sealed partial class AppDbContext : ICommonDbContext
 {
     /// <summary>
     /// Наименование схемы.
     /// </summary>
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    // ReSharper disable once InconsistentNaming
     private const string COMMON_SCHEMA_NAME = "Common";
 
     /// <summary>
     /// Префикс наименования таблиц данной схемы.
     /// </summary>
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    // ReSharper disable once InconsistentNaming
     private const string COMMON_TABLE_PRE = "Common_";
 
     /// <summary>
@@ -43,9 +44,13 @@ public sealed partial class AppDbContext : IMainDbContext
     public DbSet<Representative> Representatives { get; set; }
 
     /// <summary>
+    /// Данные о соревновании.
+    /// </summary>
+    public DbSet<CompetitionData> CompetitionData { get; set; }
+
+    /// <summary>
     /// Создание спортсменов.
     /// </summary>
-    [SuppressMessage("ReSharper", "IdentifierTypo")]
     private void CreateModel_Athletes(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Athlete>(entity =>
@@ -102,7 +107,6 @@ public sealed partial class AppDbContext : IMainDbContext
     /// <summary>
     /// Создание делегаций.
     /// </summary>
-    [SuppressMessage("ReSharper", "IdentifierTypo")]
     private void CreateModel_Delegations(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Delegation>(entity =>
@@ -134,7 +138,6 @@ public sealed partial class AppDbContext : IMainDbContext
     /// <summary>
     /// Создание судей.
     /// </summary>
-    [SuppressMessage("ReSharper", "IdentifierTypo")]
     private void CreateModel_Referees(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Referee>(entity =>
@@ -145,7 +148,7 @@ public sealed partial class AppDbContext : IMainDbContext
             entity.Property(r => r.Id).ValueGeneratedNever()
                 .HasConversion(
                     enm => enm.ToInt(),
-                    i => i.ToEnumWithException<JobTitleEnm>()
+                    i => i.ToEnumWithException<RefereeJobTitleEnm>()
                 );
 
             entity.Property(r => r.FirstName).IsRequired().HasMaxLength(100);
@@ -176,7 +179,7 @@ public sealed partial class AppDbContext : IMainDbContext
             entity.HasOne(r => r.RefereeJobTitle)
                 // .WithOne(r => r.CompetitionChiefReferee)
                 .WithOne()
-                .HasForeignKey<Referee>(с => с.JobTitleId)
+                .HasForeignKey<Referee>(с => с.RefereeRefereeJobTitleId)
                 .HasConstraintName("FK_Referees_RefereeingPositionId")
                 .OnDelete(DeleteBehavior.Restrict);
         });
@@ -185,7 +188,6 @@ public sealed partial class AppDbContext : IMainDbContext
     /// <summary>
     /// Создание представителей.
     /// </summary>
-    [SuppressMessage("ReSharper", "IdentifierTypo")]
     private void CreateModel_Representatives(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Representative>(entity =>
@@ -224,5 +226,48 @@ public sealed partial class AppDbContext : IMainDbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }
+
+    /// <summary>
+    /// Создание Соревнования (главной сущности).
+    /// </summary>
+    private void CreateModel_CompetitionData(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CompetitionData>(entity =>
+        {
+            entity.ToTable($"{COMMON_TABLE_PRE}CompetitionData", COMMON_SCHEMA_NAME,
+                t => t.HasComment("Данные о соревновании"));
+
+            entity.Property(с => с.Id).ValueGeneratedOnAdd();
+                
+            entity.Property(c => c.Name).IsRequired().HasMaxLength(500);
+                
+            entity.Property(c => c.ConductingOrganizations).IsRequired().HasMaxLength(500);
+                
+            entity.Property(c => c.Date)
+                .IsRequired()
+                .HasColumnType(_dbConfigurator.ProviderOptions.DateTimeColumnType);
+
+            entity.Property(c => c.DayCount).IsRequired();
+
+            entity.Property(c => c.Venue).IsRequired().HasMaxLength(300);
+                
+            entity.Property(c => c.Description).HasMaxLength(300);
+
+            entity.HasKey(e => e.Id)
+                .HasName("PK_Competitions");
+
+            // Вторичный ключ - Статус соревнований
+            entity.HasOne(c => c.CompetitionsStatus)
+                .WithMany(cs => cs.Competitions)
+                .HasForeignKey(c => c.CompetitionsStatusId)
+                .HasConstraintName("FK_SportEvents_CompetitionsStatusId");
+                
+            // Вторичный ключ - Статус и наименования соревнования
+            entity.HasOne(c => c.DetailedCompetitionStatus)
+                .WithMany(dcs => dcs.Competitions)
+                .HasForeignKey(c => c.DetailedCompetitionStatusId)
+                .HasConstraintName("FK_SportEvents_DetailedCompetitionStatusId");
+        });
+    }    
 
 }

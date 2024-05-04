@@ -28,14 +28,14 @@ public sealed class RefereeJobTitle
     /// </summary>
     /// <param name="id">Идентификатор.</param>
     /// <inheritdoc />
-    public RefereeJobTitle(JobTitleEnm id, string name, string? description = null) 
+    public RefereeJobTitle(RefereeJobTitleEnm id, string name, string? description = null) 
         : base(name, description)
     {
         Id = id;
     }
     
     /// <inheritdoc cref="AbstractEntity.Id"/>
-    public new JobTitleEnm Id { get; set; }
+    public new RefereeJobTitleEnm Id { get; set; }
 
     /// <summary>
     /// Клонирование.

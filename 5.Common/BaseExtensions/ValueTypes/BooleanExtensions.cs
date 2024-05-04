@@ -1,24 +1,23 @@
-﻿namespace Common.BaseExtensions.ValueTypes
+﻿namespace Common.BaseExtensions.ValueTypes;
+
+/// <summary>
+/// Методы расширения для <see cref="bool" />.
+/// </summary>
+public static class BooleanExtensions
 {
     /// <summary>
-    /// Методы расширения для <see cref="bool" />.
+    /// Получить булево значение из обнуляемого типа.
     /// </summary>
-    public static class BooleanExtensions
+    public static bool FromNullable(this bool? value, bool defaultValue = false)
     {
-        /// <summary>
-        /// Получить булево значение из обнуляемого типа.
-        /// </summary>
-        public static bool FromNullable(this bool? value, bool defaultValue = false)
-        {
-            return value ?? defaultValue;
-        }
+        return value ?? defaultValue;
+    }
         
-        /// <summary>
-        /// Преобразовать в число.
-        /// </summary>
-        public static int ToInt(this bool value)
-        {
-            return value ? 1 : 0;
-        }
+    /// <summary>
+    /// Преобразовать в число.
+    /// </summary>
+    public static int ToInt(this bool value)
+    {
+        return value ? 1 : 0;
     }
 }

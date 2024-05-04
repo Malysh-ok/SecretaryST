@@ -1,25 +1,24 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Common.BaseComponents.Components.Attributes
+namespace Common.BaseComponents.Components.Attributes;
+
+/// <summary>
+/// Атрибут для декларирования максимальной длины.
+/// </summary>
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+
+public class MaxLengthAttribute : Attribute
 {
-    /// <summary>
-    /// Атрибут для декларирования максимальной длины.
-    /// </summary>
-    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-
-    public class MaxLengthAttribute : Attribute
+    /// <inheritdoc />
+    public MaxLengthAttribute(int maxLength)
     {
-        /// <inheritdoc />
-        public MaxLengthAttribute(int maxLength)
-        {
-            MaxLength = maxLength;
-        }
-
-        /// <summary>
-        /// Максимальная длина.
-        /// </summary>
-        public int MaxLength { get; }
+        MaxLength = maxLength;
     }
+
+    /// <summary>
+    /// Максимальная длина.
+    /// </summary>
+    public int MaxLength { get; }
 }

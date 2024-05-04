@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Common.BaseExtensions.ValueTypes;
 using DataAccess.DbContexts._Contracts.DbContextPartitions;
 using Microsoft.EntityFrameworkCore;
@@ -7,19 +6,19 @@ using ProblemDomain.Entities.LibraryEntities;
 
 namespace DataAccess.DbContexts;
 
-// Основное.
-public sealed partial class AppDbContext : IMainDbContext
+// Дистанции.
+public sealed partial class AppDbContext : IDistanceDbContext
 {
     /// <summary>
     /// Наименование схемы.
     /// </summary>
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    // ReSharper disable once InconsistentNaming
     private const string DISTANCE_SCHEMA_NAME = "Distance";
 
     /// <summary>
     /// Префикс наименования таблиц данной схемы.
     /// </summary>
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    // ReSharper disable once InconsistentNaming
     private const string DISTANCE_TABLE_PRE = "Distance_";
 
     /// <summary>
@@ -35,7 +34,6 @@ public sealed partial class AppDbContext : IMainDbContext
     /// <summary>
     /// Создание Видов программ.
     /// </summary>
-    [SuppressMessage("ReSharper", "IdentifierTypo")]
     private void CreateModel_SportEvents(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<SportEvent>(entity =>
@@ -72,7 +70,6 @@ public sealed partial class AppDbContext : IMainDbContext
     /// <summary>
     /// Создание Спортивных юнитов.
     /// </summary>
-    [SuppressMessage("ReSharper", "IdentifierTypo")]
     private void CreateModel_SportUnits(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<SportUnit>(entity =>

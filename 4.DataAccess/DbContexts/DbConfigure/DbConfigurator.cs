@@ -73,19 +73,48 @@ public class DbConfigurator
     private string GetProcessedConnectionString(string connectionStringPre, string? rootPath = null)
     {
         // Дешифруем строку подключения при необходимости
-        string connStr;
-        if (IsEncryptedConnectionString)
-        {
-            var secretKey = ArrayExtensions.RandomByteArray(1, Crypto.SecretKeySize);
-            var iv = ArrayExtensions.RandomByteArray(2, Crypto.IvSize);
-            connStr = Crypto.Decrypt(connectionStringPre, secretKey, iv);
-        }
-        else
-            connStr = connectionStringPre;
+        var connStr = IsEncryptedConnectionString
+            ? DecryptText(connectionStringPre)
+            : connectionStringPre;
+        
+        // Зашифрованный вариант строки подключения - для отладки
+        // var encryptConnStr = EncryptText(connStr);
 
         // Возвращаем откорректированную строку подключения 
         return ProviderOptions.FixConnectionString(connStr, rootPath);
-    }        
+    }
+
+    /// <summary>
+    /// Данные для шифрации/дешифрации.
+    /// </summary>
+    private static (byte[], byte[]) GetEncryptData()
+    {
+        var secretKey = ArrayExtensions.RandomByteArray(1, Crypto.SecretKeySize);
+        var iv = ArrayExtensions.RandomByteArray(2, Crypto.IvSize);
+
+        return (secretKey, iv);
+    }
+    
+    /// <summary>
+    /// Шифруем текст.
+    /// </summary>
+    private static string EncryptText(string text)
+    {
+        var (secretKey, iv) = GetEncryptData();
+        
+        return Crypto.Encrypt(text, secretKey, iv);
+    }
+    
+    /// <summary>
+    /// Дешифруем текст.
+    /// </summary>
+    private static string DecryptText(string text)
+    {
+        var (secretKey, iv) = GetEncryptData();
+        
+        return Crypto.Decrypt(text, secretKey, iv);
+    }
+
         
     /// <summary>
     /// Настраивает контекст для подключения к БД.

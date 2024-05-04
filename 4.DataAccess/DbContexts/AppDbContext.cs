@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Common.BaseExtensions.Collections;
 using DataAccess.DbContexts._Contracts;
 using DataAccess.DbContexts.DbConfigure;
@@ -31,12 +30,6 @@ public sealed partial class AppDbContext : AbstractDbContext
 #endif
 
     /// <summary>
-    /// Соревнования.
-    /// </summary>
-    // TODO: Разобраться, зачем нам нужны DbSet<>.
-    public DbSet<Competition> Competitions { get; set; }
-
-    /// <summary>
     /// Конструктор.
     /// </summary>
     public AppDbContext(DbContextOptions<AppDbContext> options, DbConfigurator dbConfigurator)
@@ -48,79 +41,6 @@ public sealed partial class AppDbContext : AbstractDbContext
         ConnectionString = Database.GetConnectionString();
     }
 
-    /// <summary>
-    /// Создание Соревнования (главной сущности).
-    /// </summary>
-    [SuppressMessage("ReSharper", "IdentifierTypo")]
-    private void CreateModel_Competitions(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Competition>(entity =>
-        {
-            entity.ToTable($"Competitions",
-                t => t.HasComment("Соревнования"));
-
-            entity.Property(с => с.Id).ValueGeneratedOnAdd();
-                
-            entity.Property(c => c.Name).IsRequired().HasMaxLength(500);
-                
-            entity.Property(c => c.ConductingOrganizations).IsRequired().HasMaxLength(500);
-                
-            entity.Property(c => c.Date)
-                .IsRequired()
-                .HasColumnType(_dbConfigurator.ProviderOptions.DateTimeColumnType);
-
-            entity.Property(c => c.DayCount).IsRequired();
-
-            entity.Property(c => c.Venue).IsRequired().HasMaxLength(300);
-                
-            entity.Property(c => c.Description).HasMaxLength(300);
-
-            entity.HasKey(e => e.Id)
-                .HasName("PK_Competitions");
-
-            // Вторичный ключ - Статус соревнований
-            entity.HasOne(c => c.CompetitionsStatus)
-                .WithMany(cs => cs.Competitions)
-                .HasForeignKey(c => c.CompetitionsStatusId)
-                .HasConstraintName("FK_SportEvents_CompetitionsStatusId");
-                
-            // Вторичный ключ - Статус и наименования соревнования
-            entity.HasOne(c => c.DetailedCompetitionStatus)
-                .WithMany(dcs => dcs.Competitions)
-                .HasForeignKey(c => c.DetailedCompetitionStatusId)
-                .HasConstraintName("FK_SportEvents_DetailedCompetitionStatusId");
-                
-            // Вторичный ключ (многие-ко-многим) - связь с судьями
-            entity.HasMany(c => c.Secretaries)
-                .WithMany(r => r.Competitions)
-                .UsingEntity(etb => etb.ToTable("_CompetitionsReferees"));
-                
-            // Вторичный ключ (один-к-одному) - Главный судья
-            entity.HasOne(c => c.ChiefReferee)
-                // .WithOne(r => r.CompetitionChiefReferee)
-                .WithOne()
-                .HasForeignKey<Competition>(с => с.ChiefRefereeId)
-                .HasConstraintName("FK_Competitions_ChiefRefereeId")
-                .OnDelete(DeleteBehavior.Restrict);
-                
-            // Вторичный ключ (один-к-одному) - Главный секретарь
-            entity.HasOne(c => c.ChiefSecretary)
-                // .WithOne(r => r.CompetitionChiefSecretary)
-                .WithOne()
-                .HasForeignKey<Competition>(c => c.ChiefSecretaryId)
-                .HasConstraintName("FK_Competitions_ChiefSecretaryId")
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Вторичный ключ (один-к-одному) - Председатель комиссии по допуску
-            entity.HasOne(c => c.MandateChairman)
-                // .WithOne(r => r.CompetitionMandateChairman)
-                .WithOne()
-                .HasForeignKey<Competition>(c => c.MandateChairmanId)
-                .HasConstraintName("FK_Competitions_MandateChairmanId")
-                .OnDelete(DeleteBehavior.Restrict);
-        });
-    }    
-        
     /// <summary>
     /// Конфигурация контекста БД.
     /// </summary>
@@ -146,6 +66,7 @@ public sealed partial class AppDbContext : AbstractDbContext
         _dbConfigurator.ModelBuilderInit(modelBuilder);
 
         #region [---------- КОНФИГУРАЦИЯ ----------]
+        
         // Создание статусов соревнований. 
         CreateModel_CompetitionsStatuses(modelBuilder);
             
@@ -172,6 +93,7 @@ public sealed partial class AppDbContext : AbstractDbContext
                 
         // Создание типов спортивных юнитов.
         CreateModel_SportUnitTypes(modelBuilder);
+        
         #endregion
 
         #region [---------- ОБЩИЕ ДАННЫЕ ----------]
@@ -186,9 +108,15 @@ public sealed partial class AppDbContext : AbstractDbContext
                 
         // Создание представителей.
         CreateModel_Representatives(modelBuilder);
+                    
+        // Создание данных о соревновании.
+        CreateModel_CompetitionData(modelBuilder);
+
         #endregion
 
+        
         #region [---------- ДИСТАНЦИИ ----------]
+        
         // Создание спортивных дисциплин.
         CreateModel_SportEvents(modelBuilder);
 
@@ -196,9 +124,6 @@ public sealed partial class AppDbContext : AbstractDbContext
         CreateModel_SportUnits(modelBuilder);
                 
         #endregion
-            
-        // Создание соревнований (главной сущности).
-        CreateModel_Competitions(modelBuilder);
     }
 
     /// <inheritdoc />

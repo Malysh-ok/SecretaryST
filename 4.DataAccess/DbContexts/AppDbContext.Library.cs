@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Common.BaseExtensions.ValueTypes;
 using DataAccess.DbContexts._Contracts.DbContextPartitions;
 using Microsoft.EntityFrameworkCore;
@@ -7,19 +6,19 @@ using ProblemDomain.Entities.LibraryEntities.Enums;
 
 namespace DataAccess.DbContexts;
 
-// Конфигурация.
+// Библиотека.
 public sealed partial class AppDbContext : IConfigurationDbContext
 {
     /// <summary>
     /// Наименование схемы.
     /// </summary>
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    // ReSharper disable once InconsistentNaming
     private const string CONFIGURATION_SCHEMA_NAME = "Library";
         
     /// <summary>
     /// Префикс наименования таблиц данной схемы.
     /// </summary>
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    // ReSharper disable once InconsistentNaming
     private const string CONFIGURATION_TABLE_PRE = "Lib_";
         
     /// <summary>
@@ -156,7 +155,6 @@ public sealed partial class AppDbContext : IConfigurationDbContext
     /// <summary>
     /// Создание подгрупп дисциплин.
     /// </summary>
-    [SuppressMessage("ReSharper", "IdentifierTypo")]
     private void CreateModel_DisciplineSubGroups(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<DisciplineSubGroup>(entity =>
@@ -188,7 +186,6 @@ public sealed partial class AppDbContext : IConfigurationDbContext
     /// <summary>
     /// Создание дисциплин.
     /// </summary>
-    [SuppressMessage("ReSharper", "IdentifierTypo")]
     private void CreateModel_Disciplines(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Discipline>(entity =>
@@ -263,7 +260,7 @@ public sealed partial class AppDbContext : IConfigurationDbContext
             entity.Property(jt => jt.Id).ValueGeneratedNever()
                 .HasConversion(
                     enm => enm.ToInt(),
-                    i => i.ToEnumWithException<JobTitleEnm>()
+                    i => i.ToEnumWithException<RefereeJobTitleEnm>()
                 );
 
             entity.Property(dg => dg.Name).IsRequired().HasMaxLength(100);
