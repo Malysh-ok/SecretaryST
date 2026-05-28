@@ -1,7 +1,9 @@
 using AppDomain.Setting.Services;
 using AppDomain.UseCases._Contracts;
+using AppDomain.UseCases.Services;
 using Common.BaseComponents.Components;
 using Common.BaseComponents.Components.Exceptions;
+using Common.BaseExtensions.Collections;
 using Common.BaseExtensions.ValueTypes;
 using DataAccess.DbContexts;
 using DataAccess.DbContexts.DbConfigure;
@@ -9,16 +11,14 @@ using DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Presentation.Shell;
-using ProblemDomain.Entities;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.DistanceEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
-using ProblemDomain.Services;
 
 namespace DataAccess.Tests;
 
-public class DbContextTests
+public class RepositoryTests
 {
     protected const string NoAutomatic = nameof(NoAutomatic);
     
@@ -37,19 +37,13 @@ public class DbContextTests
     private async Task<Representative> GetRepresentative(IRepository repository)
     {
         var representative = new Representative("Банько", "Яна", "Евгеньевна");
-        
-        Result<int> result;
+
         var foundRepresentative = // получаем из репозитория
             (await repository.GetAllAsync<Representative>(representative)).FirstOrDefault();
-        
-        if (foundRepresentative is null)
-            result = await repository.AddAsync(representative);
-        else
-        {
+        if (foundRepresentative is not null)
             representative.Copy(foundRepresentative);
-            result = await repository.UpdateAsync(foundRepresentative);
-        }
         
+        var result = await repository.AddOrUpdateAsync(foundRepresentative ?? representative);
         Assert.That(result.Excptn, Is.Null);
 
         return foundRepresentative ?? representative;
@@ -57,6 +51,9 @@ public class DbContextTests
     
     #endregion
 
+    /// <summary>
+    /// Полностью пересоздать БД.
+    /// </summary>
     [Test, Category($"{NoAutomatic}")]
     public async Task RebuildDbTest()
     {
@@ -64,6 +61,30 @@ public class DbContextTests
         var repository = new Repository<AppDbContext>(dbContext);
 
         await repository.RebuildRepository();
+        
+        repository.Dispose();
+    }
+    
+    [Test, Category($"Other")]
+    public async Task ReloadRangeTest()
+    {
+        var dbContext = new DbContextFactory().CreateDbContext([]);
+        var repository = new Repository<AppDbContext>(dbContext);
+        const string description = "Проверка";
+
+        var detailedCompetitionStatuses =
+            (await repository.GetAllAsync<DetailedCompetitionStatus>())
+            .Where(dcs => dcs.Id.ToInt() < 10)
+            .ToList();
+        
+        detailedCompetitionStatuses[0].Description = description;
+        
+        detailedCompetitionStatuses = 
+            (await repository.ReloadRangeAsync(detailedCompetitionStatuses)).ToList();
+        Assert.That(
+            detailedCompetitionStatuses.Where(dcs => dcs.Description == description), 
+            Is.Empty);
+        
         repository.Dispose();
     }
     
@@ -118,32 +139,19 @@ public class DbContextTests
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
-        var result = Result<int>.Done(0);
 
         // Представитель
-        // var representative = await GetRepresentative(dbContext);
         var representative = await GetRepresentative(repository);
         
-        // Делегации
+        // Новые Делегации
         var delegations = new List<Delegation>()
         {
             new(1, name: "Делегация 11111", "Якутия", representative),
             new(2, name: "Делегация 22222", "Сахалин", representative),
         };
-        
-        delegations.ForEach(async d =>
-        {
-            var foundDelegation = (await repository.GetAllFromNumberAsync<Delegation>(d.Number)).FirstOrDefault();
-            if (foundDelegation is null)
-                result =await repository.AddAsync(d);
-            else
-            {
-                d.Copy(foundDelegation);
-                result =await repository.UpdateAsync(foundDelegation);
-            }
-            
-            Assert.That(result.Excptn, Is.Null);
-        });
+
+        var result = await repository.ReplaceNumberedRangeAsync(delegations);
+        Assert.That(result.Excptn, Is.Null);
 
         var all = await repository.GetAllAsync<Delegation>(nameof(Representative));
         Assert.That(all.Count, Is.Positive);
@@ -158,58 +166,40 @@ public class DbContextTests
         var repository = new Repository<AppDbContext>(dbContext);
         Result<int> result;
 
-        var discipline = await repository.GetFromIdAsync<Discipline>(DisciplineEnm.DistanceMountainBunch.ToInt());
+        var discipline = await repository.FindAsync<Discipline>(DisciplineEnm.DistanceMountainBunch);
 
-        var sportUnitType = await repository.GetFromIdAsync<SportUnitType>(SportUnitTypeEnm.Group.ToInt());
+        var sportUnitTypes = (await repository.GetAllAsync<SportUnitType>()).AsList();
+        var groupUnitType = sportUnitTypes.FirstOrDefault(sut => sut.Id == SportUnitTypeEnm.Group);
+        var waterTeamUnitType = sportUnitTypes.FirstOrDefault(sut => sut.Id == SportUnitTypeEnm.WaterTeam);
         
-        var dlg = (await repository.GetAllFromNumberAsync<Delegation>(1)).FirstOrDefault();
-        // var representative = repository.GetFromId<Representative>(1);
-        // var dlg = GetDelegation(repository, representative);
-
-        // Создаем Вид программы
-        const string sportEventName = "Вид программы 1";
-        var sportEvent = new SportEvent(sportEventName, null,
-            Difficulty.IdEnm.Fourth, discipline!);
-
-        var foundSportEvent = // получаем из репозитория
-            (await repository.GetAllFromNameAsync<SportEvent>(sportEventName)).FirstOrDefault();
-        if (foundSportEvent is null)
-            result = await repository.AddAsync(sportEvent);
-        else
+        // Создаем Виды программ
+        var sportEvents = new List<SportEvent>()
         {
-            sportEvent.Copy(foundSportEvent);
-            result = await repository.UpdateAsync(foundSportEvent);
-        }
+            new("Вид программы 1", null,Difficulty.IdEnm.Fourth, discipline!),
+            new("Вид программы 2", null,Difficulty.IdEnm.Third, discipline!),
+        };
         
-        Assert.That(result.Excptn, Is.Null);
+        var resultSportEvents = await repository.ReplaceNamedRangeAsync(sportEvents);
+        Assert.That(resultSportEvents.Excptn, Is.Null);
+
+        // -------------------------------
 
         var sexes = (await repository.GetAllAsync<Sex>()).ToList();
 
         // Создаем спортивные юниты
         var sportUnits = new List<SportUnit>()
         {
-            new("Группа 1", sexes.Find(s => s.Id == SexEnm.Male), 
-                sportUnitType, sportEvent),
-            new("Группа 2", sexes.Find(s => s.Id == SexEnm.Female), 
-                sportUnitType, sportEvent),
-            new("Группа судов 1", sexes.Find(s => s.Id == SexEnm.Mixed),
-                await repository.GetFromIdAsync<SportUnitType>(SportUnitTypeEnm.WaterTeam.ToInt()), sportEvent),
+            new("Группа 1", sexes.Find(s => s.Id == SexEnm.Male)!, 
+                groupUnitType!, resultSportEvents.Value[0]),
+            new("Группа 2", sexes.Find(s => s.Id == SexEnm.Female)!, 
+                groupUnitType!, resultSportEvents.Value[0]),
+            new("Группа судов 1", sexes.Find(s => s.Id == SexEnm.Mixed)!,
+                waterTeamUnitType!, resultSportEvents.Value[1]),
         };
         sportUnits[2].ChildSportUnits.Add(sportUnits[1]);   // юнит3 -> юнит2
-        
-        sportUnits.ForEach(async su =>
-        {
-            var foundSportUnit = (await repository.GetAllFromNameAsync<SportUnit>(su.Name)).FirstOrDefault();
-            if (foundSportUnit is null)
-                result = await repository.AddAsync(su);
-            else
-            {
-                su.Copy(foundSportUnit);
-                result = await repository.UpdateAsync(foundSportUnit);
-            }
-            
-            Assert.That(result.Excptn, Is.Null);
-        });
+
+        var resultSportUnits = await repository.ReplaceNamedRangeAsync(sportUnits);
+        Assert.That(resultSportUnits.Excptn, Is.Null);
 
         repository.Dispose();
     }
@@ -230,27 +220,15 @@ public class DbContextTests
         var athletes = new List<Athlete>()
         {
             new("Мишенкова", "Ксения", DateTime.Today,
-                sexes.Find(s => s.Id == SexEnm.Female), dlg, sportUnit),
+                sexes.Find(s => s.Id == SexEnm.Female)!, dlg!, sportUnit!),
             new("Васильева", "Ольга",  DateTime.Today,
-                sexes.Find(s => s.Id == SexEnm.Female), dlg, sportUnit),
+                sexes.Find(s => s.Id == SexEnm.Female)!, dlg!, sportUnit!),
             new("Копылова", "Юлия",  DateTime.Today,
-                sexes.Find(s => s.Id == SexEnm.Female), dlg, sportUnit),
+                sexes.Find(s => s.Id == SexEnm.Female)!, dlg!, sportUnit!),
         };
 
-        foreach (var athlete in athletes)
-        {
-            var foundAthlete = (await repository.GetAllAsync<Athlete>(athlete)).FirstOrDefault();
-            Result<int> result;
-            if (foundAthlete is null)
-                result = await repository.AddAsync(athlete);
-            else
-            {
-                athlete.Copy(foundAthlete);
-                result = await repository.UpdateAsync(foundAthlete);
-            }
-            
-            Assert.That(result.Excptn, Is.Null);  
-        }
+        var result = await repository.ReplaceNamedRangeAsync(athletes);
+        Assert.That(result.Excptn, Is.Null);
         
         repository.Dispose();
     }
@@ -267,66 +245,48 @@ public class DbContextTests
 
         var jobTitle = // должность
             RefereeJobTitleEnm.ChiefReferee;
-        referees.Add(new Referee(jobTitle,
+        referees.Add(new Referee(1,
             "Сретенский", "Сергей", 
             "г. Чебоксары", 
-            (await repository.GetFromIdAsync<RefereeLevel>(RefereeLevelEnm.Category1.ToInt()))!,
-            (await repository.GetFromIdAsync<RefereeJobTitle>(jobTitle.ToInt()))!,
+            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category1))!,
+            (await repository.FindAsync<RefereeJobTitle>(jobTitle))!,
             "Валентинович"));
         
         jobTitle = RefereeJobTitleEnm.ChiefSecretary;
-        referees.Add(new Referee(jobTitle,
+        referees.Add(new Referee(2,
             "Иванова", "Кристина", 
             "г. Чебоксары", 
-            (await repository.GetFromIdAsync<RefereeLevel>(RefereeLevelEnm.Category1.ToInt()))!,
-            (await repository.GetFromIdAsync<RefereeJobTitle>(jobTitle.ToInt()))!));
+            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category1))!,
+            (await repository.FindAsync<RefereeJobTitle>(jobTitle))!));
         
         jobTitle = RefereeJobTitleEnm.MandateChairman;
-        referees.Add(new Referee(jobTitle,
+        referees.Add(new Referee(3,
             "Черкасова", "Маргарита", 
             "г. Санкт-Петербург", 
-            (await repository.GetFromIdAsync<RefereeLevel>(RefereeLevelEnm.AllRussCategory.ToInt()))!,
-            (await repository.GetFromIdAsync<RefereeJobTitle>(jobTitle.ToInt()))!));
+            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.AllRussCategory))!,
+            (await repository.FindAsync<RefereeJobTitle>(jobTitle))!));
         
         jobTitle = RefereeJobTitleEnm.Secretary;
-        referees.Add(new Referee(jobTitle,
+        referees.Add(new Referee(4,
             "Тетка", "1", 
             "г. Чебоксары", 
-            (await repository.GetFromIdAsync<RefereeLevel>(RefereeLevelEnm.Category2.ToInt()))!,
-            (await repository.GetFromIdAsync<RefereeJobTitle>(jobTitle.ToInt()))!));
+            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category2))!,
+            (await repository.FindAsync<RefereeJobTitle>(jobTitle))!));
         
         jobTitle = RefereeJobTitleEnm.MajorStageReferee;
-        referees.Add(new Referee(jobTitle,
+        referees.Add(new Referee(5,
             "Тетка", "2", 
             "г. Чебоксары", 
-            (await repository.GetFromIdAsync<RefereeLevel>(RefereeLevelEnm.Category3.ToInt()))!,
-            (await repository.GetFromIdAsync<RefereeJobTitle>(jobTitle.ToInt()))!));
+            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category3))!,
+            (await repository.FindAsync<RefereeJobTitle>(jobTitle))!));
 
         // Добавляем судей в репозиторий
-        foreach (var referee in referees)
-        {
-            var foundReferee = // получаем из репозитория
-                (await repository.GetFromIdAsync<Referee>((int)referee.Id));
-
-            if (foundReferee is null)
-                result = await repository.AddAsync(referee);
-            else
-            {
-                referee.Copy(foundReferee);
-                result = await repository.UpdateAsync(foundReferee);
-            }
-            
-            if (! result)
-                exceptionsList.Add(new BaseException(
-                    $"Failed to create or get the referee '{referee.Id}' from the repository.", result.Excptn, 
-                    "ru", $"Не удалось создать или получить судью '{referee.Id}' из репозитория."));
-        }        
+        var resultReferees = await repository.ReplaceNamedRangeAsync(referees);
+        Assert.That(resultReferees.Excptn, Is.Null);
         
-        Assert.That(exceptionsList.GetAll(), Is.Empty, exceptionsList.GetAllMassage());
-        
+        // Проверяем
         referees = (await repository.GetAllAsync<Referee>()).ToList();
-
-        Assert.That(referees.Count(), Is.Positive);
+        Assert.That(referees, Is.Not.Empty);
         
         repository.Dispose();
     }
@@ -336,19 +296,18 @@ public class DbContextTests
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
-        var competitionService = new CompetitionDataService();
+        var competitionService = new CompetitionDataService(repository);
 
-        var resultCompetition = await competitionService.CreateAsync(repository, "Горные соревы...", "ФСТ ЧР",
-            new DateTime(2023, 2, 23), 4,
+        // Создаем данные о соревновании
+        var resultCompetition = await competitionService.CreateAsync("Горные соревы...", "ФСТ ЧР",
+            new DateTime(2023, 2, 23), new DateTime(2023, 2, 26),
             "Овраг близ этнокомплекса \"Амазония\", г. Чебоксары", 
-            (await repository.GetFromIdAsync<CompetitionsStatus>(CompetitionsStatusEnm.Regional.ToInt()))!,
-            (await repository.GetFromIdAsync<DetailedCompetitionStatus>(DetailedCompetitionStatusEnm.RegionalChampionship.ToInt()))!);
-
+            (await repository.FindAsync<CompetitionsStatus>(CompetitionsStatusEnm.Regional))!,
+            (await repository.FindAsync<DetailedCompetitionStatus>(DetailedCompetitionStatusEnm.RegionalChampionship))!);
         Assert.That(resultCompetition.Excptn, Is.Null);
         
+        // Проверяем
         var competitions = await repository.GetAllAsync<CompetitionData>();
-        
-        Assert.That(competitions.Count(), Is.Positive);
+        Assert.That(competitions, Is.Not.Empty);
     }
-
 }

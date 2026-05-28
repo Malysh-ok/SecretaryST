@@ -126,7 +126,7 @@ public class BaseComponentsTests
         };
 
         var newList = delegations.DeepCopy();
-        ICopy delegation = delegations[0];
+        ICopyEntity delegation = delegations[0];
         delegation.Copy(delegations[1]);
     }
 }
