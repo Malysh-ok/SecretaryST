@@ -40,7 +40,7 @@ public class LocalizationHelper
     /// <remarks>
     /// Если ресурс с локализацией не найден - представление остается в прежней локализации.
     /// </remarks>
-    public async Task<bool> LocalizeView(IViewWithResources view, Lang localisation)
+    public async Task<bool> LocalizeView(IViewWithResources view, Lang localization)
     {
         return await Task.Run<bool>(() =>
         {
@@ -63,7 +63,7 @@ public class LocalizationHelper
                     {
                         Source = new Uri(
                             regex.Replace(appResources.Source.OriginalString, 
-                                GetLangResourceName(localisation)),
+                                GetLangResourceName(localization)),
                             UriKind.Relative)
                     };
 

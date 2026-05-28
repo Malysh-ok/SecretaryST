@@ -4,27 +4,70 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:v="clr-namespace:System;assembly=mscorlib">
     
-    <!-- Общие элементы -->
-    <!-- Общие элементы - Кнопки -->
+    <!-- Общие элементы ============================= -->
+    
+    <!-- Общие элементы - Кнопки ============================= -->
     <v:String x:Key="BtnOk">OK</v:String>
     <v:String x:Key="BtnCancel">Отмена</v:String>
     <v:String x:Key="BtnApply">Применить</v:String>
     <v:String x:Key="BtnExit">Выход</v:String>
 
-    <!-- Главное представление -->
+    <!-- Главное представление ============================= -->
     <v:String x:Key="MainView">SecretaryST</v:String>
-    <!-- Главное представление - Лента -->
+    
+    <!-- Главное представление - Лента ============================= -->
     <v:String x:Key="MainView_Ribbon">Лента</v:String>
+    
+    <!-- Главное представление - Лента - Backstage -->
     <v:String x:Key="MainView_Ribbon_File">Файл</v:String>
     <v:String x:Key="MainView_Ribbon_File_Open">Открыть</v:String>
     <v:String x:Key="MainView_Ribbon_File_Save">Сохранить</v:String>
     <v:String x:Key="MainView_Ribbon_File_Print">Печать</v:String>
     <v:String x:Key="MainView_Ribbon_File_Exit">Выход</v:String>
+    <!-- Главное представление - Лента - Настройки -->
     <v:String x:Key="MainView_Ribbon_Setting">Настройки</v:String>
+    <!--            Соревнования -->
+    <v:String x:Key="MainView_Ribbon_Setting_Competitions">Соревнования</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_UpdateCompetition">Обновить данные о соревновании</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_SaveChanges">Сохранить изменения</v:String>
+    <!--            Судьи -->
+    <v:String x:Key="MainView_Ribbon_Setting_Referees">Судьи</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_UpdateReferees">Обновить список судей</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_AddReferee">Добавить судью</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_DeleteReferee">Удалить судью</v:String>
+    <!--            Дополнительно -->
+    <v:String x:Key="MainView_Ribbon_Setting_Optionally">Дополнительно</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_Setting">Настройки</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_Language">Язык:</v:String>
+
+    <!-- Главное представление - Лента - База данных -->
     <v:String x:Key="MainView_Ribbon_Database">База данных</v:String>
+    <!-- ... -->
+    <!-- Главное представление - Лента - Протоколы -->
     <v:String x:Key="MainView_Ribbon_Protocols">Протоколы</v:String>
+    <!-- ... -->
     
-    <!-- Представление дополнительных настроек -->
+    <!-- Главное представление - UserControls ============================= -->
+    
+    <!-- Главное представление - UserControls - SettingControl (Настройки) -->
+    <v:String x:Key="SettingControl_CompetitionName">Название соревнований:</v:String>
+    <v:String x:Key="SettingControl_ConductingOrganizations">Проводящие организации:</v:String>
+    <v:String x:Key="SettingControl_CompetitionDate">Дата проведения:</v:String>
+    <v:String x:Key="SettingControl_CompetitionVenue">Место проведения:</v:String>
+    <v:String x:Key="SettingControl_DetailedCompetitionStatus">Статус и наименование соревнования:</v:String>
+    <v:String x:Key="SettingControl_CompetitionStatus">Статус соревнования (кратко):</v:String>
+    <v:String x:Key="SettingControl_CompetitionNote">Примечание:</v:String>
+    <v:String x:Key="SettingControl_JudgesList">Список судей:</v:String>
+    <v:String x:Key="SettingControl_JudgesList_LastName">Фамилия</v:String>
+    <v:String x:Key="SettingControl_JudgesList_FirstName">Имя</v:String>
+    <v:String x:Key="SettingControl_JudgesList_Patronymic">Отчество</v:String>
+    <v:String x:Key="SettingControl_RefereeJobTitle">Должность</v:String>
+    <v:String x:Key="SettingControl_RefereeLevel">Категория</v:String>
+    <v:String x:Key="SettingControl_RefereeDomicile">Территория</v:String>
+    <v:String x:Key="SettingControl_RefereeDescription">Примечание</v:String>
+
+    
+    <!-- Представление дополнительных настроек ============================= -->
     <v:String x:Key="OtherSettingView">SecretaryST - Дополнительные настройки</v:String>
     <v:String x:Key="OtherSettingView_Exit">Выход</v:String>
 

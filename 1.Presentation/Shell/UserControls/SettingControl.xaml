@@ -1,0 +1,286 @@
+<UserControl x:Class="Presentation.Shell.UserControls.SettingControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Presentation.Shell.UserControls"
+             xmlns:mainView="clr-namespace:Presentation.ViewModels.MainView;assembly=ViewModels"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:components="clr-namespace:Common.WpfModule.Components;assembly=Components"
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
+             xmlns:globalization="clr-namespace:System.Globalization;assembly=System.Runtime"
+             xmlns:converters="clr-namespace:Common.WpfModule.Ui.Converters;assembly=Ui"
+             xmlns:dataGrids="clr-namespace:Common.WpfModule.Ui.Behaviors.DataGrids;assembly=Ui"
+             xmlns:datePickers="clr-namespace:Common.WpfModule.Ui.Behaviors.DatePickers;assembly=Ui"
+             d:DataContext="{ d:DesignInstance mainView:SettingVM }"
+             mc:Ignorable="d"
+             >
+    <UserControl.Resources>
+        <converters:StrToXmlLangConverter x:Key="StrToXmlLangConverter" />
+    </UserControl.Resources>
+    
+    <Grid >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" MinHeight="265" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Данные о соревнованиях -->
+        <StackPanel Grid.Row="0"
+                    VerticalAlignment="Center">
+            
+            <!-- Название соревнований -->
+            <Label x:Name="CompetitionName"
+                   Content="{DynamicResource SettingControl_CompetitionName}"
+                   Padding="0 0 0 0"
+                   Style="{DynamicResource BoldLeftAlignedLabel}" />
+            <TextBox Padding="0 5"
+                     MinWidth="200"
+                     HorizontalAlignment="Left"
+                     Text="{Binding CompetitionData.Name}" />
+
+            <!-- Проводящие организации -->
+            <Label x:Name="ConductingOrganizations"
+                   Content="{DynamicResource SettingControl_ConductingOrganizations}"
+                   Padding="0 5 0 0"
+                   Style="{DynamicResource BoldLeftAlignedLabel}" />
+            <TextBox Padding="0 5"
+                     MinWidth="200"
+                     HorizontalAlignment="Left"
+                     Text="{Binding CompetitionData.ConductingOrganizations}">
+            </TextBox>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <!-- Дата проведения -->
+                <Label Grid.Row="0" Grid.Column="0" 
+                       x:Name="CompetitionDate"
+                       Content="{DynamicResource SettingControl_CompetitionDate}"
+                       Padding="0 5 0 0"
+                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                <StackPanel Grid.Row="1" Grid.Column="0"
+                            Orientation="Horizontal">
+                    <DatePicker Width="100" 
+                                Style="{DynamicResource BaseDatePicker}"
+                                SelectedDate="{Binding CompetitionData.InitialDate, Mode=TwoWay}">
+                        <i:Interaction.Behaviors>
+                            <datePickers:DatePickerLocalizationBehavior LanguageTag="{Binding CurrLang.Name}" />
+                        </i:Interaction.Behaviors>
+                    </DatePicker>
+                     <TextBlock Width="20"
+                               TextAlignment="Center"
+                               VerticalAlignment="Center"
+                               Text="-" />
+                     <DatePicker Width="100" 
+                                 Style="{DynamicResource BaseDatePicker}"
+                                 SelectedDate="{Binding CompetitionData.EndDate, Mode=TwoWay}">
+                         <i:Interaction.Behaviors>
+                             <datePickers:DatePickerLocalizationBehavior LanguageTag="{Binding CurrLang.Name}" />
+                         </i:Interaction.Behaviors>
+                     </DatePicker>
+                </StackPanel>
+
+                <!-- Место проведения -->
+                <Label Grid.Row="0" Grid.Column="1" 
+                       x:Name="CompetitionVenue"
+                       Content="{DynamicResource SettingControl_CompetitionVenue}"
+                       Padding="0 5 0 0"
+                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                <TextBox Grid.Row="1" Grid.Column="1" 
+                         Padding="0 5"
+                         MinWidth="200"
+                         HorizontalAlignment="Left"
+                         Text="{Binding CompetitionData.Venue}">
+                </TextBox>
+
+                <!-- Статус и наименование соревнования -->
+                <Label Grid.Row="2" Grid.Column="0" 
+                       x:Name="DetailedCompetitionStatus"
+                       Content="{DynamicResource SettingControl_DetailedCompetitionStatus}"
+                       Padding="0 5 0 0"
+                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                <ComboBox Grid.Row="3" Grid.Column="0" 
+                          Padding="3 5"
+                          Width="300"
+                          HorizontalAlignment="Left"
+                          ItemsSource="{Binding Path=DataContext.DetailedCompetitionStatuses, 
+                                        RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                          SelectedItem="{Binding CompetitionData.DetailedCompetitionStatus}" />
+
+                <!-- Статус соревнования (кратко) -->
+                <Label Grid.Row="2" Grid.Column="1" 
+                       x:Name="CompetitionStatus"
+                       Content="{DynamicResource SettingControl_CompetitionStatus}"
+                       Padding="0 5 0 0"
+                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                <TextBox Grid.Row="3" Grid.Column="1" 
+                         Padding="0 5"
+                         MinWidth="200"
+                         HorizontalAlignment="Left"
+                         IsReadOnly="True"
+                         Text="{Binding CompetitionData.DetailedCompetitionStatus.CompetitionsStatus.Name}">
+                </TextBox>
+            </Grid>
+
+            <!-- Примечание -->
+            <Label x:Name="CompetitionNote"
+                   Content="{DynamicResource SettingControl_CompetitionNote}"
+                   Padding="0 5 0 0"
+                   Style="{DynamicResource BoldLeftAlignedLabel}" />
+            <TextBox Padding="0 5"
+                     MinWidth="200"
+                     HorizontalAlignment="Left"
+                     Text="{Binding CompetitionData.Description}">
+            </TextBox>
+
+        </StackPanel>
+        
+        <!-- Судьи -->
+        <DockPanel Grid.Row="1">
+            <Label DockPanel.Dock="Top" 
+                   x:Name="JudgesList"
+                   Content="{DynamicResource SettingControl_JudgesList}"
+                   Padding="0 10 0 0"
+                   Style="{DynamicResource BoldLeftAlignedLabel}" />
+            <DataGrid x:Name="RefereesGrid"
+                      Style="{DynamicResource DataGridDefault}"
+                      MinColumnWidth="100"
+                      AlternationCount="2"
+                      AutoGenerateColumns="False"
+                      SelectionUnit="FullRow"
+                      SelectionMode="Single"
+                      ItemsSource="{Binding Referees, 
+                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      SelectedIndex="{Binding Referees.SelectedIndex, 
+                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      SelectedValuePath="">
+                <!-- CurrentCell="{Binding CellInfo, 
+                    Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" -->
+                <!-- SelectedValue="{Binding Referees.SelectedItem, 
+                    Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" -->
+
+                <i:Interaction.Behaviors>
+                    <dataGrids:DataGridSortDragAndDropBehavior />
+                </i:Interaction.Behaviors>
+                
+                <DataGrid.Columns>
+                    <!-- Номер -->
+                    <DataGridTextColumn Header="№"
+                                        Width="Auto"
+                                        MinWidth="30"
+                                        Binding="{Binding Number}">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <!-- Фамилия -->
+                    <DataGridTextColumn Width="*"
+                                        Binding="{Binding LastName}">
+                        <DataGridTextColumn.Header>
+                            <TextBlock Text="{DynamicResource SettingControl_JudgesList_LastName}" />
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
+                    <!-- Имя -->
+                    <DataGridTextColumn Width="*"
+                                        Binding="{Binding FirstName}">
+                        <DataGridTextColumn.Header>
+                            <TextBlock Text="{DynamicResource SettingControl_JudgesList_FirstName}" />
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
+                    <!-- Отчество -->
+                    <DataGridTextColumn Width="*"
+                                        Binding="{Binding Patronymic}">
+                        <DataGridTextColumn.Header>
+                            <TextBlock Text="{DynamicResource SettingControl_JudgesList_Patronymic}" />
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
+                    <!-- Должность -->
+                    <DataGridTemplateColumn Width="1.4*">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock Text="{DynamicResource SettingControl_RefereeJobTitle}" />
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox
+                                    ItemsSource="{Binding Path=DataContext.RefereeJobTitles, 
+                                        RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                    SelectedItem="{Binding RefereeJobTitle,
+                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    BorderThickness="0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <!--
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <ComboBox 
+                                    ItemsSource="{Binding Path=DataContext.RefereeJobTitles, 
+                                        RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                    SelectedItem="{Binding RefereeJobTitle}"
+                                />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                        -->
+                    </DataGridTemplateColumn>
+
+                    <!-- Судейская категория -->
+                    <DataGridTemplateColumn Width="0.7*">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock Text="{DynamicResource SettingControl_RefereeLevel}" />
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox
+                                    ItemsSource="{Binding Path=DataContext.RefereeLevels, 
+                                        RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                    SelectedItem="{Binding RefereeLevel,
+                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    BorderThickness="0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <!--
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <ComboBox 
+                                    ItemsSource="{Binding Path=DataContext.RefereeLevels, 
+                                        RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                    SelectedItem="{Binding RefereeLevel}"
+                                />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                        -->
+                    </DataGridTemplateColumn>
+
+                    <!-- Территория -->
+                    <DataGridTextColumn Width="*"
+                                        Binding="{Binding Domicile}">
+                        <DataGridTextColumn.Header>
+                            <TextBlock Text="{DynamicResource SettingControl_RefereeDomicile}" />
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
+                    <!-- Примечание -->
+                    <DataGridTextColumn Width="*"
+                                        Binding="{Binding Description}">
+                        <DataGridTextColumn.Header>
+                            <TextBlock Text="{DynamicResource SettingControl_RefereeDescription}" />
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+
+            </DataGrid>
+        </DockPanel>
+        <!-- </StackPanel> -->
+    </Grid>
+    
+</UserControl>
