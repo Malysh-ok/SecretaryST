@@ -8,7 +8,7 @@ namespace Common.WpfModule.Ui.Behaviors.DataGrids;
 /// <summary>
 /// Бихейвер. Использует атрибуты "ColumnName" в качестве названия столбцов при их автогенерации в DataGrid.
 /// </summary>
-public class HeaderFromAttributesBehavior : Behavior<DataGrid>
+public class DataGridHeaderFromAttributesBehavior : Behavior<DataGrid>
 {
     /// <inheritdoc />
     protected override void OnAttached()

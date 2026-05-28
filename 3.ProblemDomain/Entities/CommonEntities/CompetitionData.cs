@@ -14,25 +14,25 @@ namespace ProblemDomain.Entities.CommonEntities;
 /// Соревнования могут быть только в единственном экземпляре!
 /// </remarks>
 public sealed class CompetitionData
-    : AbstractEntity, ICloneable, ICopy
+    : AbstractEntity, ICloneable, ICopyEntity
 {
     /// <summary>
     /// Конструктор для EF.
     /// </summary>
     /// <inheritdoc />
     /// <param name="conductingOrganizations">Проводящие организации.</param>
+    /// <param name="initialDate">Начальная дата проведения.</param>
+    /// <param name="endDate">Конечная дата проведения.</param>
     /// <param name="venue">Место проведения.</param>
-    /// <param name="date">Дата проведения.</param>
-    /// <param name="dayCount">Количество дней.</param>
     private CompetitionData(string name, 
-        string conductingOrganizations, DateTime date, int dayCount, string venue, 
+        string conductingOrganizations, DateTime initialDate, DateTime endDate, string venue, 
         string? description = null) 
         : base(name, description)
     {
         ConductingOrganizations = conductingOrganizations;
         Venue = venue;
-        Date = date;
-        DayCount = dayCount;
+        InitialDate = initialDate;
+        EndDate = endDate;
     }
     
     /// <summary>
@@ -42,8 +42,8 @@ public sealed class CompetitionData
         : this(
             competitionData.Name,
             competitionData.ConductingOrganizations,
-            competitionData.Date,
-            competitionData.DayCount,
+            competitionData.InitialDate,
+            competitionData.EndDate,
             competitionData.Venue,
             competitionData.CompetitionsStatus,
             competitionData.DetailedCompetitionStatus,
@@ -56,12 +56,11 @@ public sealed class CompetitionData
     /// Конструктор.
     /// </summary>
     /// <inheritdoc />
-    /// 
     public CompetitionData(string name,
-        string conductingOrganizations, DateTime date, int dayCount, string venue,
+        string conductingOrganizations, DateTime initialDate, DateTime endDate, string venue,
         CompetitionsStatus competitionsStatus, DetailedCompetitionStatus detailedCompetitionStatus,
         string? description = null)
-        : this(name, conductingOrganizations, date, dayCount, venue, description)
+        : this(name, conductingOrganizations, initialDate, endDate, venue, description)
     {
         CompetitionsStatus = competitionsStatus;
         DetailedCompetitionStatus = detailedCompetitionStatus;
@@ -76,14 +75,14 @@ public sealed class CompetitionData
     public string ConductingOrganizations { get; set; }
     
     /// <summary>
-    /// Дата проведения.
+    /// Начальная дата проведения.
     /// </summary>
-    public DateTime Date  { get; set; }
+    public DateTime InitialDate  { get; set; }
     
     /// <summary>
-    /// Количество дней проведения.
+    /// Конечная дата проведения.
     /// </summary>
-    public int DayCount { get; set; }
+    public DateTime EndDate  { get; set; }
         
     /// <summary>
     /// Место проведения.
@@ -120,7 +119,7 @@ public sealed class CompetitionData
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     // TODO: Не понятно, что делать с копированием списка секретарей
     public void Copy(CompetitionData destination)
@@ -128,16 +127,20 @@ public sealed class CompetitionData
         destination.Name = Name;
         destination.Description = Description;
         destination.ConductingOrganizations = ConductingOrganizations;
-        destination.Date = Date;
-        destination.DayCount = DayCount;
+        destination.InitialDate = InitialDate;
+        destination.EndDate = EndDate;
         destination.Venue = Venue;
         destination.CompetitionsStatus = CompetitionsStatus;
         destination.DetailedCompetitionStatus = DetailedCompetitionStatus;
     }
     
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((CompetitionData)destination);
     }
+    
+    /// <inheritdoc />
+    public override string ToString()
+        => Name;
 }

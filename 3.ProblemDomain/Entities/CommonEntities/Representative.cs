@@ -11,7 +11,7 @@ namespace ProblemDomain.Entities.CommonEntities;
 /// Представитель.
 /// </summary>
 public sealed class Representative
-    : AbstractPersonalityEntity, IEquatable<Representative>, ICloneable, ICopy
+    : AbstractPersonalityEntity, IEquatable<Representative>, ICloneable, ICopyEntity
 {
     /// <summary>
     /// Конструктор для EF.
@@ -115,7 +115,7 @@ public sealed class Representative
         return Clone();
     }
 
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     public void Copy(Representative destination)
     {
         destination.LastName = LastName;
@@ -128,7 +128,7 @@ public sealed class Representative
     }
     
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((Representative)destination);
     }

@@ -1,5 +1,6 @@
 ﻿using System.Configuration;
 using Common.BaseComponents.Components.IO;
+// using Microsoft.Extensions.Configuration;
 
 namespace AppDomain.Setting.Services;
 
@@ -44,15 +45,9 @@ public class AppSettingService
     /// <summary>
     /// Путь к файлу конфигурации.
     /// </summary>
+    // ReSharper disable once MemberCanBePrivate.Global
     public string SettingFullFilePath
         => PathEx.Combine(AppDir.AbsoluteConfigPath, SettingFileName);
-
-    /// <summary>
-    /// !!!!!!!!!!!!!!!!!!!!!!.
-    /// </summary>
-    public string SettingJsonFilePath
-        => PathEx.Combine(AppDir.ConfigPath, "appsettings.json");
-
     
     /// <summary>
     /// Сервис директорий приложения.

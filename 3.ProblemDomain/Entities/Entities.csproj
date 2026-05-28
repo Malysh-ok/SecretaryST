@@ -2,8 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-<!--        <EnablePreviewFeatures>true</EnablePreviewFeatures>-->
-        <LangVersion>12</LangVersion>
         <IsPackable>false</IsPackable>
         <RootNamespace>ProblemDomain.Entities</RootNamespace>
         <Nullable>enable</Nullable>

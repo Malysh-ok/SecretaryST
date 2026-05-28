@@ -5,52 +5,58 @@
                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                     
                      xmlns:system="clr-namespace:System;assembly=mscorlib"
-                     xmlns:local="clr-namespace:Presentation.Shell.Views"
+                     xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
                      xmlns:fluent="urn:fluent-ribbon"
+
+                     xmlns:local="clr-namespace:Presentation.Shell.Views"
                      xmlns:viewModels="clr-namespace:Presentation.ViewModels"
                      xmlns:viewModels.MainView="clr-namespace:Presentation.ViewModels.MainView;assembly=ViewModels"
                      xmlns:common="clr-namespace:Presentation.ViewModels.Common;assembly=ViewModels"
                      xmlns:markup="clr-namespace:Common.WpfModule.Ui.Markup;assembly=Ui"
-                     
+                     xmlns:userControls="clr-namespace:Presentation.Shell.UserControls"
+
                      d:DataContext="{ d:DesignInstance viewModels.MainView:MainVM }"
                      mc:Ignorable="d"
-                     Title="{DynamicResource MainView}" 
-                     Height="800" 
-                     Width="1200">
-    
+                     Title="{DynamicResource MainView}"
+                     Height="800"
+                     Width="1200"
+                     MinHeight="600"
+                     MinWidth="700"
+                     >
+
     <Window.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Close"
-                        Executed="ExitApp"/>
+                        Executed="ExitApp" />
     </Window.CommandBindings>
-    
-    <Grid>
+
+    <Grid >
+        <!-- TODO: Background="{StaticResource GraphPaperBackgroundBrush}" -->
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        
-        <fluent:Ribbon x:Name="MainView_Ribbon" >
-            
+
+        <fluent:Ribbon x:Name="MainView_Ribbon">
+
             <!-- Панель быстрого доступа -->
             <fluent:Ribbon.QuickAccessItems>
-                <fluent:QuickAccessMenuItem IsChecked="true" >
+                <fluent:QuickAccessMenuItem IsChecked="true">
                     <fluent:Button x:Name="QatButton1"
                                    Icon="{DynamicResource Hazelnut}"
-                                   Header="Pink"/>
+                                   Header="Pink" />
                 </fluent:QuickAccessMenuItem>
-                <fluent:QuickAccessMenuItem IsChecked="true" >
+                <fluent:QuickAccessMenuItem IsChecked="true">
                     <fluent:Button x:Name="QatButton2"
                                    Icon="{DynamicResource Hazelnut}"
-                                   Header="Green"/>
+                                   Header="Green" />
                 </fluent:QuickAccessMenuItem>
             </fluent:Ribbon.QuickAccessItems>
-            
+
             <!--Backstage-->
             <fluent:Ribbon.Menu>
-                <fluent:Backstage Header="{DynamicResource MainView_Ribbon_File}" 
+                <fluent:Backstage Header="{DynamicResource MainView_Ribbon_File}"
                                   DataContext="{Binding BackstageVM}">
                     <fluent:BackstageTabControl>
                         <fluent:BackstageTabItem Header="{DynamicResource MainView_Ribbon_File_Open}" />
@@ -64,126 +70,188 @@
                     </fluent:BackstageTabControl>
                 </fluent:Backstage>
             </fluent:Ribbon.Menu>
-            
+
             <!-- Настройки -->
-            <fluent:RibbonTabItem  Header="{DynamicResource MainView_Ribbon_Setting}" 
-                                   DataContext="{Binding SettingVM}">
-                <!-- Основные -->
-                <fluent:RibbonGroupBox x:Name="SettingMain" Header="Main">
-                    <fluent:Button x:Name="Setting"
-                                   Icon="{DynamicResource SettingDrawingImage}"
-                                   Header="Setting"
-                                   Command="{x:Static local:MainView.ShowOtherSettingViewCommand}"
-                                   />
-                    <fluent:Button x:Name="Button2"
-                                   Icon="{DynamicResource Hazelnut}"
-                                   Header="Button2"
-                                   />
-                    <fluent:Button x:Name="Button3"
-                                   Icon="{DynamicResource Hazelnut}"
-                                   Header="Button3"
-                                   />
-                    <fluent:Button x:Name="Button4"
-                                   Icon="{DynamicResource Hazelnut}"
-                                   Header="Button4"
-                                   />
+            <fluent:RibbonTabItem Header="{DynamicResource MainView_Ribbon_Setting}"
+                                  DataContext="{Binding SettingVM}">
+                <!-- Соревнования -->
+                <fluent:RibbonGroupBox x:Name="SettingCompetition" 
+                                       Header="{DynamicResource MainView_Ribbon_Setting_Competitions}" >
+                    <fluent:Button x:Name="BtnLoadCompetition"
+                                   Icon="{DynamicResource RotateDrawingImage_DarkGreen}"
+                                   Header="{DynamicResource MainView_Ribbon_Setting_UpdateCompetition}" 
+                                   Command="{Binding LoadCompetitionCommand}" />
+                    <fluent:Button x:Name="BtnSaveCompetition"
+                                   Icon="{DynamicResource FloppyDiskDrawingImage_DarkGreen}"
+                                   HorizontalAlignment="Right"
+                                   Header="{DynamicResource MainView_Ribbon_Setting_SaveChanges}"
+                                   Command="{Binding SaveCompetitionDataCommand}" />
+                </fluent:RibbonGroupBox>
+
+                <!-- Судьи -->
+                <fluent:RibbonGroupBox x:Name="SettingReferees" 
+                                       Header="{DynamicResource MainView_Ribbon_Setting_Referees}" >
+                    <fluent:Button x:Name="BtnUpdateReferees"
+                                   Icon="{DynamicResource DrawingImage_Olive}"
+                                   Header="{DynamicResource MainView_Ribbon_Setting_UpdateReferees}"
+                                   Command="{Binding LoadRefereesCommand}" />
+                    <fluent:Button x:Name="BtnAddReferee"
+                                   Header="{DynamicResource MainView_Ribbon_Setting_AddReferee}"
+                                   Command="{Binding AddRefereeCommand}" />
+                    <fluent:Button x:Name="BtnDeleteReferee"
+                                   Header="{DynamicResource MainView_Ribbon_Setting_DeleteReferee}"
+                                   Command="{Binding RemoveRefereeCommand}" />
+                    <fluent:Button x:Name="BtnSaveReferees"
+                                   Icon="{DynamicResource FloppyDiskDrawingImage_Olive}"
+                                   HorizontalAlignment="Right"
+                                   Header="{DynamicResource MainView_Ribbon_Setting_SaveChanges}"
+                                   Command="{Binding SaveRefereesCommand}" />
                 </fluent:RibbonGroupBox>
                 
                 <!-- Дополнительные -->
-                <fluent:RibbonGroupBox x:Name="SettingAux" Header="Aux">
+                <fluent:RibbonGroupBox x:Name="SettingOptionally" 
+                                       Header="{DynamicResource MainView_Ribbon_Setting_Optionally}">
+                    <fluent:Button x:Name="BtnSetting"
+                                   Icon="{DynamicResource GearDrawingImage}"
+                                   Header="{DynamicResource MainView_Ribbon_Setting_Setting}"
+                                   Command="{x:Static local:MainView.ShowOtherSettingViewCommand}" 
+                                   />
                     <StackPanel Orientation="Horizontal">
-                        <Label x:Name="LblLanguage" Content="Language:" />
+                        <Label x:Name="LblLanguage" 
+                               Content="{DynamicResource MainView_Ribbon_Setting_Language}" />
                         <fluent:ComboBox x:Name="CmbBoxLanguage"
                                          ItemsSource="{Binding Languages,
-                                        Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                          SelectedItem="{Binding  CurrLang,
-                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        />
+                                         Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                 </fluent:RibbonGroupBox>
             </fluent:RibbonTabItem>
-            
-            <!-- База данных -->
+
+            <!-- База данных TODO: заменить VM на необходимую -->
             <fluent:RibbonTabItem Header="{DynamicResource MainView_Ribbon_Database}"
                                   DataContext="{Binding SettingVM}">
                 <fluent:RibbonGroupBox x:Name="DataBase" Header="DataBase">
                     <fluent:Button x:Name="Button9"
                                    Icon="{DynamicResource DataSourceDrawingImage}"
-                                   Header="Прочитать из базы"
-                    />
+                                   Header="Прочитать из базы" />
                     <fluent:Button x:Name="Button10"
                                    Icon="{DynamicResource CacheDrawingImage}"
-                                   Header="Button6"
-                    />
+                                   Header="Button6" />
                 </fluent:RibbonGroupBox>
-            </fluent:RibbonTabItem>        
+            </fluent:RibbonTabItem>
 
-            <!-- Протоколы -->
+            <!-- Протоколы TODO: заменить VM на необходимую -->
             <fluent:RibbonTabItem Header="{DynamicResource MainView_Ribbon_Protocols}"
                                   DataContext="{Binding SettingVM}">
                 <fluent:RibbonGroupBox x:Name="StartProtocols" Header="StartProtocols">
                     <!-- Стартовые -->
                     <fluent:Button x:Name="Button5"
                                    Icon="{DynamicResource Hazelnut}"
-                                   Header="Button5"
-                                   />
+                                   Header="Button5" />
                     <fluent:Button x:Name="Button6"
                                    Icon="{DynamicResource Hazelnut}"
-                                   Header="Button6"
-                                   />
+                                   Header="Button6" />
                 </fluent:RibbonGroupBox>
                 <fluent:RibbonGroupBox x:Name="ResultProtocols" Header="ResultProtocols">
                     <!-- Результатов -->
                     <fluent:Button x:Name="Button7"
                                    Icon="{DynamicResource Hazelnut}"
-                                   Header="Button7"
-                                   />
+                                   Header="Button7" />
                     <fluent:Button x:Name="Button8"
                                    Icon="{DynamicResource Hazelnut}"
-                                   Header="Button8"
-                                   />
+                                   Header="Button8" />
                 </fluent:RibbonGroupBox>
             </fluent:RibbonTabItem>
-            
+
         </fluent:Ribbon>
-        
+
         <!-- Основной контент -->
-        <StackPanel Grid.Row="1" 
-                    Orientation="Horizontal" 
-                    HorizontalAlignment="Right"
-                    DataContext="{Binding SettingVM}">
-            <Button x:Name="BtnTmp"
-                    Height="25" Width="100" 
-                    Content="Выход"
-                    Margin="15"
-                    Style="{StaticResource WebButton}"
-                    Command="ApplicationCommands.Close"
-            />
-            <Label Background="Aquamarine" Content="{Binding CurrLang}"
-                   />
-        </StackPanel>
-        
-        <!-- Статус-бар -->
-        <fluent:StatusBar Grid.Row="2">
+        <TabControl x:Name="MainView_TabControl"
+                    Background="Transparent" 
+                    Grid.Row="1"
+                    SelectedIndex="{Binding ElementName=MainView_Ribbon, Path=SelectedTabIndex}"
+        >
+            <b:Interaction.Triggers>
+                <b:EventTrigger EventName="SelectionChanged">
+                    <!-- <b:InvokeCommandAction Command="{Binding SelectedItemChangedCommand}"/> -->
+                </b:EventTrigger>
+            </b:Interaction.Triggers>
             
+            <TabControl.Style>
+                <Style TargetType="{x:Type TabControl}">
+                    <!-- <Setter Property="HorizontalAlignment" Value="Stretch" /> -->
+                    <!-- <Setter Property="VerticalAlignment" Value="Stretch" /> -->
+                    <!-- <Setter Property="HorizontalContentAlignment" Value="Stretch" /> -->
+                    <!-- <Setter Property="VerticalContentAlignment" Value="Stretch" /> -->
+                    
+                    <!-- <Setter Property="Margin" Value="0" /> -->
+                    <!-- <Setter Property="Padding" Value="0" /> -->
+                    <Setter Property="Padding" Value="10 5 10 10" />
+                    <Setter Property="BorderThickness" Value="0" />
+                </Style>
+            </TabControl.Style>
+
+            <!-- Скрываем заголовки TabItems -->
+            <TabControl.ItemContainerStyle>
+                <Style TargetType="{x:Type TabItem}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0" />
+                    
+                </Style>
+            </TabControl.ItemContainerStyle>
+
+            <!-- Индивидуальный контент для каждой вкладки -->
+            <TabItem DataContext="{Binding SettingVM}">
+                <!-- Настройки -->
+                <userControls:SettingControl />
+            </TabItem>
+            <TabItem>
+                <TextBlock Text="Second Content View (#2)" />
+            </TabItem>
+            <TabItem>
+                <TextBlock Text="Second Content View (#3)" />
+            </TabItem>
+
+        </TabControl>
+
+        <!-- Статус-бар -->
+        <fluent:StatusBar Grid.Row="2" 
+            DataContext="{Binding ElementName=MainView_Ribbon, Path=SelectedTabItem.DataContext}"
+            Height="36" >
+            <!-- ↑ Меняем привязку DataContext к необходимой модели представления, в зависимости от выбранной вкладки Ленты -->
+
             <fluent:StatusBarItem Title="Left placed item"
-                                  Value="150"
-                                  HorizontalAlignment="Left">
-                <TextBlock Text="150 px" />
-            </fluent:StatusBarItem>
-    
-            <Separator HorizontalAlignment="Left" />
-    
-            <fluent:StatusBarItem Title="Second left placed item"
                                   Value="Value shown in ContextMenu"
-                                  ToolTip="Your ToolTip"
-                                  Content="Content shown in StatusBar"
+                                  Content=""
+                                  Width="100"
                                   HorizontalAlignment="Left" />
 
-            <fluent:StatusBarItem Title="Item placed on the right side"
-                                  HorizontalAlignment="Right"
-                                  Value="Your value which is also used as content if no content is set." />
+            <Separator HorizontalAlignment="Left" />
+
+            <!-- Основной контент статус-бара -->
+            <fluent:StatusBarItem Title="Center placed item"
+                                  Value="Value shown in ContextMenu"
+                                  Foreground="{Binding StatusBarData.Brush}"
+                                  ToolTip="Всплывающая подсказка"
+                                  
+                                  
+                                  VerticalContentAlignment="Center"
+                                  HorizontalAlignment="Left"
+                                  HorizontalContentAlignment="Stretch" >
+                <TextBlock Text="{Binding StatusBarData}"
+                           Background="Blue"
+                           TextTrimming="CharacterEllipsis"
+                           TextWrapping="Wrap" />
+            </fluent:StatusBarItem>
+
+            <fluent:StatusBarItem Title="Right placed item"
+                                  Value="Your value which is also used as content if no content is set."
+                                  Content=""
+                                  HorizontalAlignment="Right" />
         </fluent:StatusBar>
-        
+
     </Grid>
 </fluent:RibbonWindow>

@@ -45,7 +45,7 @@ public static class StringExtensions
     /// </summary>
     /// <param name="text">Исходная строка.</param>
     /// <param name="maxLength">Максимальная длина строки.</param>
-    /// <param name="delimiter">Разделитель, до которого укорачивается строка (если их несколько, - то до последнего;
+    /// <param name="delimiter">Разделитель, до которого укорачивается строка (если их несколько, - то до последнего);
     /// например DirectorySeparatorChar.</param>
     /// <returns>Укороченная строка.</returns>
     public static string EllipsisString(this string text, int maxLength, char delimiter)
@@ -338,8 +338,8 @@ public static class StringExtensions
             return px * 72.0 / dpiX;
         }
 
-        /* Все это, включая graphics.MeasureString, таботает не точно,
-         * если использовать полученный результат для Excell XML !!! */
+        /* Все это, включая graphics.MeasureString, работает не точно,
+         * если использовать полученный результат для Excel XML !!! */
 
         using var g = Graphics.FromHwnd(IntPtr.Zero);
         g.TextRenderingHint = TextRenderingHint.SingleBitPerPixel; // .AntiAlias;
@@ -473,10 +473,7 @@ public static class StringExtensions
         }
         else
         {
-            if (charComparer == null)
-            {
-                charComparer = EqualityComparer<char>.Default;
-            }
+            charComparer ??= EqualityComparer<char>.Default;
 
             foreach (var c in text)
             {
@@ -643,15 +640,16 @@ public static class StringExtensions
 
         return uhorts.ToArray();
     }
-        
+
     /// <summary>
     /// Если длина строки больше <paramref name="maxLength"/> символов, метод
     /// возвращает только первые <paramref name="maxLength"/> символов строки, иначе - исходную строку.
     /// </summary>
     /// <param name="text">Исходная строка.</param>
     /// <param name="maxLength">Максимальная допустимая длина строки.</param>
+    /// <param name="finalText">Текст, добавляемый в конце, если строка была усечена.</param>
     /// <returns>Усечённая в случае превышения максимальной длины строка.</returns>
-    public static string Truncate(this string text, int maxLength)
+    public static string Truncate(this string text, int maxLength, string finalText = null)
     {
         CommonPhrases.Culture = CultureInfo.CurrentUICulture; // устанавливаем яз. стандарт для фраз
 
@@ -659,6 +657,16 @@ public static class StringExtensions
             throw new ArgumentOutOfRangeException(nameof(maxLength),
                 CommonPhrases.Exception_ParamIsNegative);
 
-        return text.IsEmpty() ? text : text.Substring(0, Math.Min(text.Length, maxLength));
+        var textLength = maxLength;
+        finalText ??= string.Empty;
+        if (text.Length < maxLength)
+        {
+            textLength = text.Length;
+            finalText = string.Empty;
+        }
+
+        return text.IsEmpty()
+            ? text
+            : $"{text[..textLength]}{finalText}";
     }
 }

@@ -1,14 +1,13 @@
-﻿namespace Common.WpfModule.Components.ObservableModels;
+﻿namespace Common.WpfModule.Components.ObservableModelInterfaces;
 
 /// <summary>
 /// Предоставляет возможность получить результат выполнения.
 /// </summary>
-/// <typeparam name="TResult"></typeparam>
+/// <typeparam name="TResult">Тип результата.</typeparam>
 public interface IResult<out TResult>
 {
     /// <summary>
     /// Получить результат.
     /// </summary>
-    /// <returns></returns>
     TResult GetResult();
 }

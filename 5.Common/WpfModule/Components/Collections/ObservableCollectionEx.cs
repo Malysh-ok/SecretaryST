@@ -9,6 +9,29 @@ namespace Common.WpfModule.Components.Collections;
 /// </summary>
 public class ObservableCollectionEx<T>: ObservableCollection<T>
 {
+    private int _selectedIndex = -1;
+    /// <summary>
+    /// Индекс выделенного элемента коллекции.
+    /// </summary>
+    public int SelectedIndex
+    {
+        get => _selectedIndex;
+        set
+        {
+            if (_selectedIndex == value)
+                return;
+            
+            // Проверяем на возможность изменения
+            CheckReentrancy();
+
+            _selectedIndex = -1;
+            if (value >= 0 && value < Items.Count)
+                _selectedIndex = value;
+            
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(SelectedIndex)));
+        }
+    }
+
     /// <summary>
     /// Добавление коллекции элементов.
     /// </summary>
@@ -32,9 +55,9 @@ public class ObservableCollectionEx<T>: ObservableCollection<T>
         #region [---------- Сортировка ----------]
         
         /// <summary>
-        /// Перемещает предметы коллекции так, чтобы их порядки совпадали с порядком предоставленных предметов.
+        /// Перемещает элементы коллекции так, чтобы их порядок совпадал с порядком элементов заданной коллекции.
         /// </summary>
-        /// <param name="sortedItems">An <see cref="IEnumerable{T}"/> to provide item orders.</param>
+        /// <param name="sortedItems">Заданная коллекция.</param>
         private void InternalSort(IEnumerable<T> sortedItems)
         {
             var sortedItemsList = sortedItems.ToList();

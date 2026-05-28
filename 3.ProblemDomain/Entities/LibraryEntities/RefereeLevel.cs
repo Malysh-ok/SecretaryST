@@ -11,7 +11,7 @@ namespace ProblemDomain.Entities.LibraryEntities;
 /// Судейская категория.
 /// </summary>
 public sealed class RefereeLevel
-    : AbstractEntity, ICloneable, ICopy
+    : AbstractEntity, ICloneable, ICopyEntity
 {
     /// <summary>
     /// Конструктор на основе готового экземпляра.
@@ -65,7 +65,7 @@ public sealed class RefereeLevel
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(RefereeLevel destination)
     {
@@ -76,8 +76,12 @@ public sealed class RefereeLevel
     }
     
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((RefereeLevel)destination);
     }
+    
+    /// <inheritdoc />
+    public override string ToString()
+        => Name;
 }

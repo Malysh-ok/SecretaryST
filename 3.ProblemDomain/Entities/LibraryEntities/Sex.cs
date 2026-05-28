@@ -13,7 +13,7 @@ namespace ProblemDomain.Entities.LibraryEntities;
 /// Пол.
 /// </summary>
 public sealed class Sex
-    : AbstractEntity, ICloneable, ICopy
+    : AbstractEntity, ICloneable, ICopyEntity
 {
     /// <summary>
     /// Конструктор на основе готового экземпляра.
@@ -138,7 +138,7 @@ public sealed class Sex
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(Sex destination)
     {
@@ -152,7 +152,7 @@ public sealed class Sex
     }
     
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((Sex)destination);
     }    

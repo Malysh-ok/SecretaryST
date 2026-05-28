@@ -124,6 +124,8 @@ public class DbConfigurator
     public void UseProvider<TDbContext>(DbContextOptionsBuilder optionsBuilder)
         where TDbContext: DbContext
     {
+        // optionsBuilder.EnableSensitiveDataLogging();
+        
         ProviderOptions.UseProvider<TDbContext>(optionsBuilder, ProcessedConnectionString);
     }
 

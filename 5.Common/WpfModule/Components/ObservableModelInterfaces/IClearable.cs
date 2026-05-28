@@ -1,4 +1,4 @@
-﻿namespace Common.WpfModule.Components.ObservableModels;
+﻿namespace Common.WpfModule.Components.ObservableModelInterfaces;
 
 /// <summary>
 /// Очищаемый.

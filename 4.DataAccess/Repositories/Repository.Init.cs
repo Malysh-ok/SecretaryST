@@ -32,14 +32,20 @@ public partial class Repository<TDbContext> : IInitRepository
     /// <inheritdoc />
     public async Task RebuildRepository()
     {
+        // Полностью удаляем БД
         await DbContext.Database.EnsureDeletedAsync();
+        
+        // Применяем ожидающие миграции
         await DbContext.Database.MigrateAsync();
+        
+        // Наполняем БД библиотечными данными
         await FillDatabase();
     }
 
     /// <summary>
-    /// Заполняем БД.
+    /// Заполняем БД библиотечными данными.
     /// </summary>
+    // ReSharper disable once MemberCanBePrivate.Global
     public async Task<Result<bool>> FillDatabase()
     {
         // Добавляем статусы соревнований

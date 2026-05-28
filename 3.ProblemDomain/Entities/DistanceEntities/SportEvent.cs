@@ -11,7 +11,7 @@ namespace ProblemDomain.Entities.DistanceEntities;
 /// Вид программы.
 /// </summary>
 public sealed class SportEvent
-    : AbstractEntity, ICloneable, ICopy
+    : AbstractEntity, ICloneable, ICopyEntity
 {
     /// <summary>
     /// Конструктор для EF.
@@ -89,7 +89,7 @@ public sealed class SportEvent
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     public void Copy(SportEvent destination)
     {
         destination.Name = Name;
@@ -100,7 +100,7 @@ public sealed class SportEvent
     }
     
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((SportEvent)destination);
     }

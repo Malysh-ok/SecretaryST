@@ -9,12 +9,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+      <PackageReference Include="Serilog" Version="4.3.0" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\2.AppDomain\Phrases\Phrases.csproj" />
       <ProjectReference Include="..\..\2.AppDomain\Setting\Setting.csproj" />
+      <ProjectReference Include="..\..\3.ProblemDomain\Entities\Entities.csproj" />
+      <ProjectReference Include="..\..\4.DataAccess\Repositories\Repositories.csproj" />
+      <ProjectReference Include="..\..\5.Common\WpfModule\Components\Components.csproj" />
       <ProjectReference Include="..\..\5.Common\WpfModule\Ui\Ui.csproj" />
+      <ProjectReference Include="..\Resources\Resources.csproj" />
     </ItemGroup>
 
 </Project>

@@ -26,7 +26,7 @@
         </Grid.RowDefinitions>
         <Label Height="100" />
         <Label Grid.Row="1" Background="LightGray" 
-               Content="{Binding DisplayMsg, Mode=TwoWay}" />
+               Content="{Binding DisplayMsg, Mode=OneWay}" />
         <Label Grid.Row="2" Height="100" />
         <Button  Grid.Row="2" x:Name="BtnTmp"
                  Content="{DynamicResource OtherSettingView_Exit}"

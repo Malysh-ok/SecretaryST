@@ -12,7 +12,7 @@ namespace ProblemDomain.Entities.DistanceEntities;
 /// Спортивный юнит.
 /// </summary>
 public sealed class SportUnit
-    : AbstractEntity, ICloneable, ICopy
+    : AbstractEntity, ICloneable, ICopyEntity
 {
     /// <summary>
     /// Конструктор для EF.
@@ -111,7 +111,7 @@ public sealed class SportUnit
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(SportUnit destination)
     {
@@ -124,7 +124,7 @@ public sealed class SportUnit
     }
     
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((SportUnit)destination);
     }

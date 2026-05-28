@@ -35,7 +35,6 @@ public sealed partial class AppDbContext : AbstractDbContext
     public AppDbContext(DbContextOptions<AppDbContext> options, DbConfigurator dbConfigurator)
         : base(options)
     {
-        // ConnectionString = Database.GetConnectionString() ?? string.Empty;
         _dbConfigurator = dbConfigurator;
             
         ConnectionString = Database.GetConnectionString();

@@ -10,6 +10,7 @@
         <ResourceDictionary Source="/CommonResources;component/Styles/Menus.xaml" />
         <ResourceDictionary Source="/CommonResources;component/Styles/StatusBars.xaml" />
         <ResourceDictionary Source="/CommonResources;component/Styles/DataGrids.xaml" />
+        <ResourceDictionary Source="/CommonResources;component/Styles/DatePickers.xaml" />
     </ResourceDictionary.MergedDictionaries>
     
 </ResourceDictionary>

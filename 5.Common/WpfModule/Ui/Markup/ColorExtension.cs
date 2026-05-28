@@ -1,16 +1,15 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Windows.Markup;
 using System.Windows.Media;
 using Common.BaseComponents.Components.Colors;
 using Common.WpfModule.Extensions;
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace Common.WpfModule.Ui.Markup;
 
 /// <summary>
 /// Расширение разметки для цвета.
 /// </summary>
-[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-public class ColorExtension: MarkupExtension
+public class ColorExtension : MarkupExtension
 {
     /// <summary>
     /// Базовый цвет.

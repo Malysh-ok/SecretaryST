@@ -10,7 +10,7 @@ namespace ProblemDomain.Entities.CommonEntities;
 /// Делегация.
 /// </summary>
 public sealed class Delegation 
-    : AbstractEntity, IEntityWithNumber, ICloneable, ICopy
+    : AbstractEntity, INumberedEntity, ICloneable, ICopyEntity
 {
     /// <summary>
     /// Конструктор для EF.
@@ -83,7 +83,7 @@ public sealed class Delegation
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     public void Copy(Delegation destination)
     {
         destination.Number = Number;
@@ -94,7 +94,7 @@ public sealed class Delegation
     }
 
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((Delegation)destination);
     }

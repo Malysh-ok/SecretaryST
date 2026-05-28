@@ -37,19 +37,20 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Fluent.Ribbon" Version="10.0.4" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
+      <PackageReference Include="Fluent.Ribbon" Version="11.0.2" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="8.0.0" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-      <PackageReference Include="Serilog" Version="3.1.1" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.9" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.9" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="9.0.9" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
+      <PackageReference Include="Serilog" Version="4.3.0" />
       <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
-      <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+      <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+      <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     </ItemGroup>
 
     <!--Копируем необходимые файлы после компиляции-->
@@ -113,6 +114,17 @@
                 pause
             </_UpdateDatabase>
 
+            <!--Откатываем базу данных до миграции-->
+            <_RollbackDatabase>
+                Write-Host "Откатываем базу данных до миграции" -ForegroundColor Green
+                Write-Host ""
+                $(_GetDbContextProjPath)
+                <!--Read-Host "Выполните сборку (а лучше - пересборку) проекта '$(ProjectName)' и нажмите 'Enter'"-->
+                $MigrationName = Read-Host "Введите название миграции"
+                dotnet ef database update $MigrationName -s "$(ProjectPath)" -p $dbContextProjPath -v
+                pause
+            </_RollbackDatabase>
+
             <!--Удаляем последнюю миграцию-->
             <_RemoveMigration>
                 Write-Host "Удаляем последнюю миграцию" -ForegroundColor Green
@@ -126,7 +138,8 @@
         <WriteLinesToFile File="$(DbContextDir)Scripts\1. Создать первую миграцию.ps1" Lines="$(_AddFirstMigration)" WriteOnlyWhenDifferent="true" Overwrite="true" Encoding="windows-1251" />
         <WriteLinesToFile File="$(DbContextDir)Scripts\2. Создать миграцию.ps1" Lines="$(_AddMigration)" WriteOnlyWhenDifferent="true" Overwrite="true" Encoding="windows-1251" />
         <WriteLinesToFile File="$(DbContextDir)Scripts\3. Обновить базу данных до последней миграции.ps1" Lines="$(_UpdateDatabase)" WriteOnlyWhenDifferent="true" Overwrite="true" Encoding="windows-1251" />
-        <WriteLinesToFile File="$(DbContextDir)Scripts\4. Удалить последнюю миграцию.ps1" Lines="$(_RemoveMigration)" WriteOnlyWhenDifferent="true" Overwrite="true" Encoding="windows-1251" />
+        <WriteLinesToFile File="$(DbContextDir)Scripts\4. Откатить базу данных до миграции.ps1" Lines="$(_RollbackDatabase)" WriteOnlyWhenDifferent="true" Overwrite="true" Encoding="windows-1251" />
+        <WriteLinesToFile File="$(DbContextDir)Scripts\5. Удалить последнюю миграцию.ps1" Lines="$(_RemoveMigration)" WriteOnlyWhenDifferent="true" Overwrite="true" Encoding="windows-1251" />
     </Target>
 
 </Project>

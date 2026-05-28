@@ -12,7 +12,7 @@ namespace ProblemDomain.Entities.CommonEntities;
 /// Спортсмен.
 /// </summary>
 public sealed class Athlete
-    : AbstractPersonalityEntity, ICloneable, ICopy
+    : AbstractPersonalityEntity, ICloneable, ICopyEntity
 {
     /// <summary>
     /// Конструктор для EF.
@@ -104,7 +104,7 @@ public sealed class Athlete
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     public void Copy(Athlete destination)
     {
         destination.LastName = LastName;
@@ -118,7 +118,7 @@ public sealed class Athlete
     }
     
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((Athlete)destination);
     }

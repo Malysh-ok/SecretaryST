@@ -6,6 +6,7 @@
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/Resources;component/Styles/FluentRibbon.xaml" />
+        <ResourceDictionary Source="/Resources;component/Styles/DefaultColorsAndBrushes.xaml" />
     </ResourceDictionary.MergedDictionaries>
     
 </ResourceDictionary>

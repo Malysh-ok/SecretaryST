@@ -17,7 +17,7 @@ public class AppLocalizationService
     /// <summary>
     /// Название языка по умолчанию.
     /// </summary>
-    private const string DefaultLangName = "en-EN";
+    private const string DefaultLangName = "en-US";
     
     /// <summary>
     /// Название русского языка.
@@ -31,7 +31,7 @@ public class AppLocalizationService
     {
         En = 1,
         Ru,
-        Fr
+        Fr      // TODO: удалить ненужные языки локализации
     }
     
     /// <summary>

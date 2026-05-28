@@ -10,7 +10,7 @@ namespace ProblemDomain.Entities.LibraryEntities;
 /// Группа дисциплин.
 /// </summary>
 public sealed class DisciplineGroup
-    : AbstractEntity, ICloneable, ICopy
+    : AbstractEntity, ICloneable, ICopyEntity
 {
     /// <summary>
     /// Конструктор на основе готового экземпляра.
@@ -63,7 +63,7 @@ public sealed class DisciplineGroup
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(DisciplineGroup destination)
     {
@@ -73,7 +73,7 @@ public sealed class DisciplineGroup
     }
     
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((DisciplineGroup)destination);
     }

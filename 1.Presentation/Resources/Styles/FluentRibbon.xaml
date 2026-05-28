@@ -8,6 +8,22 @@
                     xmlns:markup="clr-namespace:Common.WpfModule.Ui.Markup;assembly=Ui"
                     mc:Ignorable="options d">
     
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/CommonResources;component/Styles/DefaultColorsAndBrushes.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- TODO: Синие акцентные цвета, возможно надо переместить в настройки Fluent-темы -->
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Background" 
+                     Color="{StaticResource HighlightColor}" options:Freeze="True" />
+    <!--
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.TabsGrid.Background"
+                     Color="{StaticResource HighlightColor}" options:Freeze="True" />
+    -->
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonWindow.TitleBackground" 
+                     Color="{StaticResource HighlightColor}" options:Freeze="True" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.AccentBase" 
+                     Color="{StaticResource HighlightColor}" options:Freeze="True" />
+    
     <!-- Backstage -->
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Background" Color="Orange" options:Freeze="True" />
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.ItemsPanelBackground" 
@@ -22,7 +38,7 @@
         <!-- Убираем рамку фокуса -->
         <Setter Property="Focusable" Value="False"/>
     </Style>
-
+    
     <Style TargetType="fluent:RibbonGroupBox">
         <!-- Убираем сжатие группы -->
         <Setter Property="IsCollapsedHeaderContentPresenter" Value="False" />
@@ -38,6 +54,10 @@
         <!-- Ширина комбобокса и отсутствие фокуса -->
         <Setter Property="Width" Value="120" />
         <Setter Property="Focusable" Value="False" />
+    </Style>
+
+    <!-- Статус-бар -->
+    <Style TargetType="fluent:StatusBarItem">
     </Style>
 
     

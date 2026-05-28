@@ -1,4 +1,4 @@
-﻿using Common.WpfModule.Components.ObservableModels;
+﻿using Common.WpfModule.Components.ObservableModelInterfaces;
 
 namespace Common.WpfModule.Components.Signals.Interfaces;
 

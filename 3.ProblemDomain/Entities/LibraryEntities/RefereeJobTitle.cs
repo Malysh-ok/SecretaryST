@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using ProblemDomain.Entities._Contracts;
+using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 // ReSharper disable InvalidXmlDocComment
 
@@ -9,7 +11,7 @@ namespace ProblemDomain.Entities.LibraryEntities;
 /// Судейская должность.
 /// </summary>
 public sealed class RefereeJobTitle
-    : AbstractEntity, ICloneable, ICopy
+    : AbstractEntity, ICloneable, ICopyEntity
 {
     /// <summary>
     /// Конструктор на основе готового экземпляра.
@@ -38,6 +40,12 @@ public sealed class RefereeJobTitle
     public new RefereeJobTitleEnm Id { get; set; }
 
     /// <summary>
+    /// Коллекция судей.
+    /// </summary>
+    // ReSharper disable once CollectionNeverUpdated.Global
+    public ICollection<Referee> Referees { get; set; } = new HashSet<Referee>();
+
+    /// <summary>
     /// Клонирование.
     /// </summary>
     // ReSharper disable once MemberCanBePrivate.Global
@@ -49,7 +57,7 @@ public sealed class RefereeJobTitle
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(RefereeJobTitle destination)
     {
@@ -59,7 +67,12 @@ public sealed class RefereeJobTitle
     }
     
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((RefereeJobTitle)destination);
-    }}
+    }
+
+    /// <inheritdoc />
+    public override string ToString()
+        => Name;
+}

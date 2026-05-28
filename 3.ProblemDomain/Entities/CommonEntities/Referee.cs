@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
@@ -12,22 +11,19 @@ namespace ProblemDomain.Entities.CommonEntities;
 /// Судья.
 /// </summary>
 public sealed class Referee
-    : AbstractPersonalityEntity, ICloneable, ICopy
+    : AbstractPersonalityEntity, INumberedEntity, ICloneable, ICopyEntity
 {
-    /// <inheritdoc cref="AbstractEntity.Id"/>
-    public new RefereeJobTitleEnm Id { get; set; }
-    
     /// <summary>
     /// Конструктор для EF.
     /// </summary>
-    /// <param name="id">Идентификатор.</param>
+    /// <param name="number">Номер.</param>
     /// <inheritdoc />
     /// <param name="domicile">Место жительства.</param>
-    private Referee(RefereeJobTitleEnm id, string lastName, string firstName, string domicile,
+    private Referee(int number, string lastName, string firstName, string domicile,
         string? patronymic = null, string? description = null) 
         : base(lastName, firstName, patronymic, description)
     {
-        Id = id;
+        Number = number;
         Domicile = domicile;
     }
     
@@ -36,7 +32,7 @@ public sealed class Referee
     /// </summary>
     private Referee(Referee referee)
         : this(
-            referee.Id,
+            referee.Number,
             referee.LastName,
             referee.FirstName,
             referee.Domicile,
@@ -54,17 +50,20 @@ public sealed class Referee
     /// <inheritdoc />
     /// <param name="refereeLevel">Судейская категория.</param>
     /// <param name="refereeJobTitle">Судейская должность.</param>
-    public Referee(RefereeJobTitleEnm id, string lastName, string firstName, string domicile, 
+    public Referee(int number, string lastName, string firstName, string domicile, 
         RefereeLevel refereeLevel, RefereeJobTitle refereeJobTitle, 
         string? patronymic = null, string? description = null) 
-        : this(id, lastName, firstName, domicile, patronymic, description)
+        : this(number, lastName, firstName, domicile, patronymic, description)
     {
         RefereeLevel = refereeLevel;
         RefereeJobTitle = refereeJobTitle;
     }
     
+    /// <inheritdoc />
+    public int Number { get; set; }
+    
     /// <summary>
-    /// Место жительства.
+    /// Место жительства (территория).
     /// </summary>
     public string Domicile { get; set; }
     
@@ -79,9 +78,9 @@ public sealed class Referee
     /// <summary>
     /// Связь с судейской должностью (объектом-владельцем).
     /// </summary>
-    public RefereeJobTitleEnm RefereeRefereeJobTitleId { get; set; }
+    public RefereeJobTitleEnm RefereeJobTitleId { get; set; }
 
-    /// <inheritdoc cref="RefereeRefereeJobTitleId"/>
+    /// <inheritdoc cref="RefereeJobTitleId"/>
     public RefereeJobTitle RefereeJobTitle { get; set; } = null!;
     
     /// <summary>
@@ -95,10 +94,10 @@ public sealed class Referee
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     public void Copy(Referee referee)
     {
-        referee.Id = Id;
+        referee.Number = Number;
         referee.LastName = LastName;
         referee.FirstName = FirstName;
         referee.Patronymic = Patronymic;
@@ -109,8 +108,12 @@ public sealed class Referee
     }
     
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((Referee)destination);
     }
+
+    /// <inheritdoc />
+    public override string ToString()
+        => Name;
 }

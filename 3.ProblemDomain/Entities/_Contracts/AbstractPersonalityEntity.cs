@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
@@ -10,7 +11,7 @@ namespace ProblemDomain.Entities._Contracts;
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public abstract class AbstractPersonalityEntity 
-    : IAbstractEntity, IEntityWithDescription, IPersonalityEntity
+    : AbstractEntity, IPersonalityEntity
 {
     /// <summary>
     /// Конструктор.
@@ -21,18 +22,16 @@ public abstract class AbstractPersonalityEntity
     /// <param name="description">Описание.</param>
     protected AbstractPersonalityEntity(string lastName, string firstName, 
         string? patronymic = null, string? description = null)
+        : base(string.Empty, description)
     {
-        FirstName = firstName;
         LastName = lastName;
+        FirstName = firstName;
         Patronymic = patronymic;
-        Description = description;
+        // ReSharper disable once VirtualMemberCallInConstructor
+        Name = patronymic is null
+            ? $"{lastName} {firstName}"
+            : $"{lastName} {firstName} {patronymic}";
     }
-
-    /// <inheritdoc />
-    public int Id { get; set; }
-    
-    /// <inheritdoc />
-    public string? Description { get; set; }
 
     /// <inheritdoc />
     public string FirstName { get; set; }
@@ -46,7 +45,7 @@ public abstract class AbstractPersonalityEntity
     /// <summary>
     /// Полное имя.
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public override string Name { get; set; }
 
     /// <summary>
     /// Короткое имя (фамилия, инициалы).

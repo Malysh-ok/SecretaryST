@@ -8,16 +8,4 @@
         <RootNamespace>Common.WpfModule.Components</RootNamespace>
     </PropertyGroup>
 
-    <ItemGroup>
-      <Folder Include="Commands\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="Commands\RelayCommand.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Extensions\Extensions.csproj" />
-    </ItemGroup>
-
 </Project>

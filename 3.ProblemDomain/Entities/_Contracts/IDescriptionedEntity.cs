@@ -3,7 +3,7 @@ namespace ProblemDomain.Entities._Contracts;
 /// <summary>
 /// Интерфейс сущности, содержащей описание.
 /// </summary>
-public interface IEntityWithDescription
+public interface IDescriptionedEntity
 {
     /// <summary>
     /// Описание.

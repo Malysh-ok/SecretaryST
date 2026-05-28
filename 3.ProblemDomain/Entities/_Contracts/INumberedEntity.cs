@@ -3,7 +3,7 @@ namespace ProblemDomain.Entities._Contracts;
 /// <summary>
 /// Интерфейс сущности, содержащей номер.
 /// </summary>
-public interface IEntityWithNumber
+public interface INumberedEntity
 {
     /// <summary>
     /// Номер.

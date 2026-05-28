@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using AppDomain.Setting.Services;
+using AppDomain.UseCases.Services;
 using Common.BaseExtensions;
 using Common.BaseExtensions.ValueTypes;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.Input;
+using Presentation.ViewModels._Contracts;
 using Presentation.ViewModels.MainView;
+using Serilog;
 
 namespace Presentation.Shell.Views;
 
@@ -24,18 +28,18 @@ public partial class MainView : IViewWithResources
     /// </summary>
     private static OtherSettingView? _otherSettingView;
 
-    
     /// <summary>
     /// Создание команды показа представления дополнительных настроек.
     /// </summary>
     // TODO: Попытаться сделать НЕ статическую команду
-    public static ICommand ShowOtherSettingViewCommand { get; } = new RelayCommand(() =>
+    public static ICommand ShowOtherSettingViewCommand { get; } = new AsyncRelayCommand(() =>
     {
         if (_otherSettingView is { IsVisible: true })
         {
             // Если окно доп. настоек отображено
             _otherSettingView.Activate();
-            return;
+            
+            return Task.CompletedTask;
         }
 
         // Удаляем старое и создаем новое окно доп. настроек
@@ -45,23 +49,30 @@ public partial class MainView : IViewWithResources
             Owner = Application.Current.MainWindow
         };
         _otherSettingView.Show();
+        
+        return Task.CompletedTask;
     });
+    
 
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public MainView(AppSettingService appSetting)
+    public MainView(ILogger logger, IExceptionsProvider exceptionsProvider, 
+        AppSettingService appSetting,
+        CompetitionDataService competitionDataService,
+        RefereeService refereeService)
     {
         _appSetting = appSetting;
-        
+
         InitializeComponent();
-            
-        // Привязываем данные главной модели представления
-        DataContext = new MainVM(
-            new BackstageVM(),
-            new SettingVM(this, _appSetting)
-        );
         
+        // Получаем главную модель представления
+        var mainVm = MainVM.Create(this, logger, exceptionsProvider,
+            appSetting, competitionDataService, refereeService);
+        
+        // Привязываем данные главной модели представления
+        DataContext = mainVm;
+
         // TODO: Пример CommandBinding
         // var dialogCommandBinding =
         //      new CommandBinding(ShowOtherSettingViewCommand, ExecuteShowDialogCommand, CanExecuteShowDialogCommand);

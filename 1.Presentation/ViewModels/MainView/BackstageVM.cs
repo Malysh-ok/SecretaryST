@@ -1,6 +1,5 @@
-﻿using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Serilog;
 
 namespace Presentation.ViewModels.MainView;
 
@@ -8,20 +7,16 @@ namespace Presentation.ViewModels.MainView;
 /// ViewModel для специфичного меню "File" (для Backstage).
 /// </summary>
 // ReSharper disable once InconsistentNaming
-public class BackstageVM : ObservableRecipient, IDisposable
+public sealed class BackstageVM : ObservableRecipient, IDisposable
 {
-    #region [---------- НЕ публичные члены ----------]
-
-    
-
-    #endregion
-
+    private ILogger _logger;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public BackstageVM()
+    public BackstageVM(ILogger logger)
     {
+        _logger = logger;
     }
     
     public void Dispose()
@@ -30,7 +25,7 @@ public class BackstageVM : ObservableRecipient, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
     }
     

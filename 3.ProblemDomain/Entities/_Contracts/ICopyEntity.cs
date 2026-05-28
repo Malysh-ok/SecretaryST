@@ -1,9 +1,9 @@
 ﻿namespace ProblemDomain.Entities._Contracts;
 
 /// <summary>
-/// Интерфейс, реализующий копирование.
+/// Интерфейс сущности, реализующий копирование.
 /// </summary>
-public interface ICopy
+public interface ICopyEntity
 {
     /// <summary>
     /// Копирование экземпляра класса в <paramref name="destination"/>.

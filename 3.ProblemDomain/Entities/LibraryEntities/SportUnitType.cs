@@ -13,7 +13,7 @@ namespace ProblemDomain.Entities.LibraryEntities;
 /// Тип спортивного юнита.
 /// </summary>
 public sealed class SportUnitType
-    : AbstractEntity, ICloneable, ICopy
+    : AbstractEntity, ICloneable, ICopyEntity
 {
     /// <summary>
     /// Конструктор на основе готового экземпляра.
@@ -183,7 +183,7 @@ public sealed class SportUnitType
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(SportUnitType destination)
     {
@@ -194,7 +194,7 @@ public sealed class SportUnitType
     }
     
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((SportUnitType)destination);
     }    

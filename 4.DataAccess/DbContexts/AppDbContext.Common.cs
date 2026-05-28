@@ -145,11 +145,7 @@ public sealed partial class AppDbContext : ICommonDbContext
             entity.ToTable($"{COMMON_TABLE_PRE}Referees", COMMON_SCHEMA_NAME,
                 t => t.HasComment("Судьи"));
 
-            entity.Property(r => r.Id).ValueGeneratedNever()
-                .HasConversion(
-                    enm => enm.ToInt(),
-                    i => i.ToEnumWithException<RefereeJobTitleEnm>()
-                );
+            entity.Property(r => r.Id).ValueGeneratedOnAdd();
 
             entity.Property(r => r.FirstName).IsRequired().HasMaxLength(100);
 
@@ -177,11 +173,11 @@ public sealed partial class AppDbContext : ICommonDbContext
                 
             // Вторичный ключ (один-к-одному) - Судейская должность
             entity.HasOne(r => r.RefereeJobTitle)
-                // .WithOne(r => r.CompetitionChiefReferee)
-                .WithOne()
-                .HasForeignKey<Referee>(с => с.RefereeRefereeJobTitleId)
-                .HasConstraintName("FK_Referees_RefereeingPositionId")
-                .OnDelete(DeleteBehavior.Restrict);
+                // .WithOne()
+                // .HasForeignKey<Referee>(с => с.RefereeJobTitleId)
+                .WithMany(rjt => rjt.Referees)
+                .HasForeignKey(r => r.RefereeJobTitleId)
+                .HasConstraintName("FK_Referees_RefereeJobTitleId");
         });
     }
         
@@ -243,11 +239,13 @@ public sealed partial class AppDbContext : ICommonDbContext
                 
             entity.Property(c => c.ConductingOrganizations).IsRequired().HasMaxLength(500);
                 
-            entity.Property(c => c.Date)
+            entity.Property(c => c.InitialDate)
                 .IsRequired()
                 .HasColumnType(_dbConfigurator.ProviderOptions.DateTimeColumnType);
 
-            entity.Property(c => c.DayCount).IsRequired();
+            entity.Property(c => c.EndDate)
+                .IsRequired()
+                .HasColumnType(_dbConfigurator.ProviderOptions.DateTimeColumnType);
 
             entity.Property(c => c.Venue).IsRequired().HasMaxLength(300);
                 

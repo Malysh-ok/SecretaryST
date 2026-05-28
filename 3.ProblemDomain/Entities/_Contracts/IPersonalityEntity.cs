@@ -3,7 +3,7 @@ namespace ProblemDomain.Entities._Contracts;
 /// <summary>
 /// Интерфейс сущности личности (человека).
 /// </summary>
-public interface IPersonalityEntity : IEntityWithName
+public interface IPersonalityEntity : INamedEntity
 {
     /// <summary>
     /// Имя.

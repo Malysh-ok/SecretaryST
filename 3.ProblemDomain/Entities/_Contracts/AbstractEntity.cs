@@ -5,7 +5,7 @@ namespace ProblemDomain.Entities._Contracts;
 /// <summary>
 /// Абстрактный класс сущности.
 /// </summary>
-public abstract class AbstractEntity : IAbstractEntity, IEntityWithName, IEntityWithDescription
+public abstract class AbstractEntity : IAbstractEntity, INamedEntity, IDescriptionedEntity
 {
     /// <summary>
     /// Конструктор.
@@ -14,6 +14,7 @@ public abstract class AbstractEntity : IAbstractEntity, IEntityWithName, IEntity
     /// <param name="description">Описание.</param>
     protected AbstractEntity(string name, string? description = null)
     {
+        // ReSharper disable once VirtualMemberCallInConstructor
         Name = name;
         Description = description;
     }
@@ -22,7 +23,7 @@ public abstract class AbstractEntity : IAbstractEntity, IEntityWithName, IEntity
     public int Id { get; set; }
     
     /// <inheritdoc />
-    public string Name { get; set; }
+    public virtual string Name { get; set; }
     
     /// <inheritdoc />
     public string? Description { get; set; }    

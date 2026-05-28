@@ -11,13 +11,13 @@ namespace ProblemDomain.Entities.LibraryEntities;
 /// Дисциплина.
 /// </summary>
 public sealed class Discipline
-    : AbstractEntity, ICloneable, ICopy
+    : AbstractEntity, ICloneable, ICopyEntity
 {
     /// <summary>
     /// Конструктор для EF.
     /// </summary>
     /// <param name="id">Идентификатор.</param>
-    /// <inheritdoc cref="AbstractEntity(string, string)"/>
+    /// <inheritdoc cref="AbstractEntity(string,string?)"/>
     private Discipline(DisciplineEnm id, string name, string? description = null) 
         : base(name, description)
     {
@@ -89,7 +89,7 @@ public sealed class Discipline
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(Discipline destination)
     {
@@ -101,7 +101,7 @@ public sealed class Discipline
     }
     
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((Discipline)destination);
     }

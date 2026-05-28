@@ -10,7 +10,7 @@ namespace ProblemDomain.Entities.LibraryEntities;
 /// <summary>
 /// Статус соревнований.
 /// </summary>
-public sealed class CompetitionsStatus : AbstractEntity, ICloneable, ICopy
+public sealed class CompetitionsStatus : AbstractEntity, ICloneable, ICopyEntity
 {
     /// <summary>
     /// Конструктор на основе готового экземпляра.
@@ -72,7 +72,7 @@ public sealed class CompetitionsStatus : AbstractEntity, ICloneable, ICopy
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopy.Copy"/>
+    /// <inheritdoc cref="ICopyEntity.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(CompetitionsStatus destination)
     {
@@ -83,8 +83,12 @@ public sealed class CompetitionsStatus : AbstractEntity, ICloneable, ICopy
     }
     
     /// <inheritdoc />
-    void ICopy.Copy(IAbstractEntity destination)
+    void ICopyEntity.Copy(IAbstractEntity destination)
     {
         Copy((CompetitionsStatus)destination);
     }
+    
+    /// <inheritdoc />
+    public override string ToString()
+        => Name;
 }

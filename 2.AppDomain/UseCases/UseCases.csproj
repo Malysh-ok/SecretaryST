@@ -7,9 +7,15 @@
         <RootNamespace>AppDomain.UseCases</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\..\3.ProblemDomain\Entities\Entities.csproj" />
       <ProjectReference Include="..\..\5.Common\BaseComponents\BaseComponents.csproj" />
+      <ProjectReference Include="..\AppExceptions\AppExceptions.csproj" />
+      <ProjectReference Include="..\Phrases\Phrases.csproj" />
     </ItemGroup>
 
 </Project>

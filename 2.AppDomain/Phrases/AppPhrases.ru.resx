@@ -1,0 +1,38 @@
+<root>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="RefereesLoadError" xml:space="preserve">
+        <value>Не удалось получить список судей из репозитория.</value>
+    </data>
+    <data name="CompetitionDataLoadError" xml:space="preserve">
+        <value>Не удалось получить данные о соревнованиях из репозитория.</value>
+    </data>
+    <data name="MissingEntitiesError" xml:space="preserve">
+        <value>Одна или несколько сущностей Библиотеки отсутствуют.</value>
+    </data>
+    <data name="DatabaseRebuilt" xml:space="preserve">
+        <value>База данных пересоздана заново.</value>
+    </data>
+    <data name="RefereeJobTitlesLoadError" xml:space="preserve">
+        <value>Не удалось получить список судейских должностей из репозитория.</value>
+    </data>
+    <data name="RefereeLevelsLoadError" xml:space="preserve">
+        <value>Не удалось получить список судейских категорий из репозитория.</value>
+    </data>
+    <data name="CompetitionsStatusesLoadError" xml:space="preserve">
+        <value>Не удалось получить статусы соревнований из репозитория.</value>
+    </data>
+    <data name="DetailedCompetitionStatusesLoadError" xml:space="preserve">
+        <value>Не удалось получить статусы и названия соревнований из репозитория.</value>
+    </data>
+</root>
