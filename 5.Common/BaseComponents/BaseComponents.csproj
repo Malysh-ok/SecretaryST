@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <RootNamespace>Common.BaseComponents</RootNamespace>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <PropertyGroup>

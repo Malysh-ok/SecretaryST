@@ -34,10 +34,9 @@ public class GuidHelper
     /// <remarks>See <a href="http://code.logos.com/blog/2011/04/generating_a_deterministic_guid.html">Generating a deterministic GUID</a>.</remarks>
     public static Guid Create(Guid namespaceId, string name, int version)
     {
-        if (name == null)
-            throw new ArgumentNullException(nameof(name));
+        ArgumentNullException.ThrowIfNull(name);
         if (version != 3 && version != 5)
-            throw new ArgumentOutOfRangeException(nameof(version), "version must be either 3 or 5.");
+            throw new ArgumentOutOfRangeException(nameof(version), @"version must be either 3 or 5.");
 
         // convert the name to a sequence of octets (as defined by the standard or conventions of its namespace) (step 3)
         // ASSUME: UTF-8 encoding is always appropriate
@@ -49,15 +48,15 @@ public class GuidHelper
 
         // compute the hash of the name space ID concatenated with the name (step 4)
         byte[] hash;
-        using (HashAlgorithm algorithm = version == 3 ? (HashAlgorithm)MD5.Create() : SHA1.Create())
+        using (HashAlgorithm algorithm = version == 3 ? MD5.Create() : SHA1.Create())
         {
             algorithm.TransformBlock(namespaceBytes, 0, namespaceBytes.Length, null, 0);
             algorithm.TransformFinalBlock(nameBytes, 0, nameBytes.Length);
-            hash = algorithm.Hash;
+            hash = algorithm.Hash ?? [];
         }
 
         // most bytes from the hash are copied straight to the bytes of the new GUID (steps 5-7, 9, 11-12)
-        byte[] newGuid = new byte[16];
+        var newGuid = new byte[16];
         Array.Copy(hash, 0, newGuid, 0, 16);
 
         // set the four most significant bits (bits 12 through 15) of the time_hi_and_version field to the appropriate 4-bit version number from Section 4.1.3 (step 8)

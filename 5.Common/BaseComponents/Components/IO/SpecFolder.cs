@@ -44,7 +44,7 @@ public static class SpecFolder
     /// Возвращает путь к папке "Загрузки".
     /// </summary>
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public static string GetDownloadsPath()
+    public static string? GetDownloadsPath()
     {
         if (OsPlatformEx.IsWindows)
         {
@@ -64,10 +64,12 @@ public static class SpecFolder
             return path;
         }
 
+        // ReSharper disable once InvertIf
         if (OsPlatformEx.IsUnix)
         {
-            // TODO: Возратить путь к Загрузкам в Unix-системе
-            return  string.Empty;
+            // TODO: Не тестировалось в Unix-системе
+            var homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return Path.Combine(homePath, "Downloads");
         }
             
         return  string.Empty;

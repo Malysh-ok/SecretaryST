@@ -31,17 +31,17 @@ public class Result<T>
     /// <summary>
     /// Результирующее значение.
     /// </summary>
-    public T Value { get; }
+    public T? Value { get; }
 
     /// <summary>
     /// Сообщение об ошибке.
     /// </summary>
-    public string ErrorMessage { get; }
+    public string? ErrorMessage { get; }
         
     /// <summary>
     /// Исключение (ошибка).
     /// </summary>
-    public Exception Excptn { get; }
+    public Exception? Excptn { get; }
 
     /// <summary>
     /// Проверка результата на ошибки.
@@ -73,7 +73,6 @@ public class Result<T>
         Excptn = excptn;
     }
 
-        
     /// <summary>
     /// При успешном выполнении.
     /// </summary>

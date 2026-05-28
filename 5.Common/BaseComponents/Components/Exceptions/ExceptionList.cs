@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Common.BaseComponents.Components.Exceptions;
 
@@ -8,6 +9,7 @@ namespace Common.BaseComponents.Components.Exceptions;
 /// Объект для работы со списком исключений.
 /// </summary>
 /// <typeparam name="TException">Тип исключений.</typeparam>
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public class ExceptionList<TException> : IEnumerable where TException : Exception
 {
     /// <summary>
@@ -55,7 +57,7 @@ public class ExceptionList<TException> : IEnumerable where TException : Exceptio
     /// <summary>
     /// Получить первое исключение списка.
     /// </summary>
-    public TException GetFirst()
+    public TException? GetFirst()
     {
         return _exceptions.Count > 0
             ? _exceptions[0]
@@ -65,7 +67,7 @@ public class ExceptionList<TException> : IEnumerable where TException : Exceptio
     /// <summary>
     /// Получить последнее исключение списка.
     /// </summary>
-    public TException GetLast()
+    public TException? GetLast()
     {
         return _exceptions.Count > 0
             ? _exceptions[^1]

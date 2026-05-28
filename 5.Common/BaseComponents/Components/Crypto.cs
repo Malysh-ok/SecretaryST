@@ -56,8 +56,8 @@ public static class Crypto
     /// </summary>
     public static byte[] GetMd5HashArray(Stream stream)
     {
-        if (stream is null) throw new ArgumentNullException(nameof(stream));
-            
+        ArgumentNullException.ThrowIfNull(stream);
+
         return MD5.Create().ComputeHash(stream);
     }
         
@@ -66,7 +66,7 @@ public static class Crypto
     /// </summary>
     public static string GetMd5Hash(Stream stream)
     {
-        if (stream is null) throw new ArgumentNullException(nameof(stream));
+        ArgumentNullException.ThrowIfNull(stream);
 
         return GetMd5HashArray(stream).BytesToHex();
     }
@@ -76,8 +76,8 @@ public static class Crypto
     /// </summary>
     public static string GetMd5Hash(byte[] bytes)
     {
-        if (bytes is null) throw new ArgumentNullException(nameof(bytes));
-            
+        ArgumentNullException.ThrowIfNull(bytes);
+
         return MD5.Create().ComputeHash(bytes).BytesToHex();
     }
 
@@ -86,8 +86,8 @@ public static class Crypto
     /// </summary>
     public static string GetMd5Hash(string str)
     {
-        if (str is null) throw new ArgumentNullException(nameof(str));
-            
+        ArgumentNullException.ThrowIfNull(str);
+
         return GetMd5Hash(Encoding.UTF8.GetBytes(str));
     }
         
@@ -96,8 +96,8 @@ public static class Crypto
     /// </summary>
     public static byte[] GetSha256HashArray(Stream stream)
     {
-        if (stream is null) throw new ArgumentNullException(nameof(stream));
-            
+        ArgumentNullException.ThrowIfNull(stream);
+
         return SHA256.Create().ComputeHash(stream);
     }
         
@@ -106,8 +106,8 @@ public static class Crypto
     /// </summary>
     public static string GetSha256Hash(Stream stream)
     {
-        if (stream is null) throw new ArgumentNullException(nameof(stream));
-            
+        ArgumentNullException.ThrowIfNull(stream);
+
         return GetSha256HashArray(stream).BytesToHex();
     }
         
@@ -116,8 +116,8 @@ public static class Crypto
     /// </summary>
     public static string GetSha256Hash(byte[] bytes)
     {
-        if (bytes is null) throw new ArgumentNullException(nameof(bytes));
-            
+        ArgumentNullException.ThrowIfNull(bytes);
+
         return SHA256.Create().ComputeHash(bytes).BytesToHex();
     }
 
@@ -126,8 +126,8 @@ public static class Crypto
     /// </summary>
     public static string GetSha256Hash(string str)
     {
-        if (str is null) throw new ArgumentNullException(nameof(str));
-            
+        ArgumentNullException.ThrowIfNull(str);
+
         return GetSha256Hash(Encoding.UTF8.GetBytes(str));
     }
         
@@ -136,8 +136,8 @@ public static class Crypto
     /// </summary>
     public static byte[] GetSha512HashArray(Stream stream)
     {
-        if (stream is null) throw new ArgumentNullException(nameof(stream));
-            
+        ArgumentNullException.ThrowIfNull(stream);
+
         return SHA512.Create().ComputeHash(stream);
     }
         
@@ -146,8 +146,8 @@ public static class Crypto
     /// </summary>
     public static string GetSha512Hash(Stream stream)
     {
-        if (stream is null) throw new ArgumentNullException(nameof(stream));
-            
+        ArgumentNullException.ThrowIfNull(stream);
+
         return GetSha512HashArray(stream).BytesToHex();
     }
         
@@ -156,8 +156,8 @@ public static class Crypto
     /// </summary>
     public static string GetSha512Hash(byte[] bytes)
     {
-        if (bytes is null) throw new ArgumentNullException(nameof(bytes));
-            
+        ArgumentNullException.ThrowIfNull(bytes);
+
         return SHA512.Create().ComputeHash(bytes).BytesToHex();
     }
 
@@ -166,8 +166,8 @@ public static class Crypto
     /// </summary>
     public static string GetSha512Hash(string str)
     {
-        if (str is null) throw new ArgumentNullException(nameof(str));
-            
+        ArgumentNullException.ThrowIfNull(str);
+
         return GetSha512Hash(Encoding.UTF8.GetBytes(str));
     }
     #endregion
@@ -180,12 +180,12 @@ public static class Crypto
     /// <remarks>
     /// В случае неудачи возвращает null.
     /// </remarks>
-    public static string Encrypt(string str, byte[] secretKey, byte[] iv)
+    public static string? Encrypt(string str, byte[] secretKey, byte[] iv)
     {
-        if (str is null) throw new ArgumentNullException(nameof(str));
-        if (secretKey is null) throw new ArgumentNullException(nameof(secretKey));
-        if (iv is null) throw new ArgumentNullException(nameof(iv));
-            
+        ArgumentNullException.ThrowIfNull(str);
+        ArgumentNullException.ThrowIfNull(secretKey);
+        ArgumentNullException.ThrowIfNull(iv);
+
         var encryptBytes = EncryptBytes(Encoding.UTF8.GetBytes(str), secretKey, iv);
             
         return encryptBytes is null 
@@ -199,13 +199,13 @@ public static class Crypto
     /// <remarks>
     /// В случае неудачи возвращает null.
     /// </remarks>
-    public static byte[] EncryptBytes(byte[] bytes, byte[] secretKey, byte[] iv)
+    public static byte[]? EncryptBytes(byte[] bytes, byte[] secretKey, byte[] iv)
     {
-        if (bytes is null) throw new ArgumentNullException(nameof(bytes));
-        if (secretKey is null) throw new ArgumentNullException(nameof(secretKey));
-        if (iv is null) throw new ArgumentNullException(nameof(iv));
-            
-        Aes alg = null;
+        ArgumentNullException.ThrowIfNull(bytes);
+        ArgumentNullException.ThrowIfNull(secretKey);
+        ArgumentNullException.ThrowIfNull(iv);
+
+        Aes? alg = null;
         try
         {
             alg = Aes.Create();
@@ -237,12 +237,12 @@ public static class Crypto
     /// <remarks>
     /// В случае неудачи возвращает null.
     /// </remarks>
-    public static string Decrypt(string str, byte[] secretKey, byte[] iv)
+    public static string? Decrypt(string str, byte[] secretKey, byte[] iv)
     {
-        if (str is null) throw new ArgumentNullException(nameof(str));
-        if (secretKey is null) throw new ArgumentNullException(nameof(secretKey));
-        if (iv is null) throw new ArgumentNullException(nameof(iv));
-            
+        ArgumentNullException.ThrowIfNull(str);
+        ArgumentNullException.ThrowIfNull(secretKey);
+        ArgumentNullException.ThrowIfNull(iv);
+
         var bytes = new byte[str.Length];
                 
         // Получаем массив байтов bytes из исходной строки str
@@ -263,13 +263,13 @@ public static class Crypto
     /// <remarks>
     /// В случае неудачи возвращает null.
     /// </remarks>
-    public static byte[] DecryptBytes(byte[] bytes, byte[] secretKey, byte[] iv)
+    public static byte[]? DecryptBytes(byte[] bytes, byte[] secretKey, byte[] iv)
     {
-        if (bytes is null) throw new ArgumentNullException(nameof(bytes));
-        if (secretKey is null) throw new ArgumentNullException(nameof(secretKey));
-        if (iv is null) throw new ArgumentNullException(nameof(iv));
-            
-        Aes alg = null;
+        ArgumentNullException.ThrowIfNull(bytes);
+        ArgumentNullException.ThrowIfNull(secretKey);
+        ArgumentNullException.ThrowIfNull(iv);
+
+        Aes? alg = null;
         try
         {
             alg = Aes.Create();

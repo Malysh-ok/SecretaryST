@@ -13,17 +13,19 @@ namespace Common.BaseComponents.Components.IO;
 /// с целью определения по различным критериям устаревших файлов с возможностью их удаления.
 /// </summary>
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 public class FileController
 {
     /// <summary>
     /// Количество байт в мегабайте.
     /// </summary>
+    // ReSharper disable once InconsistentNaming
     private const int MEGABYTE = 1048576;
-        
+
     /// <summary>
     /// Контролируемая папка (директория).
     /// </summary>
-    public DirectoryInfo Folder { get; }
+    public DirectoryInfo Folder { get; } = null!;
 
     /// <summary>
     /// Максимальное количество файлов в папке.
@@ -43,7 +45,7 @@ public class FileController
     /// <summary>
     /// Коллекция (множество) всех файлов.
     /// </summary>
-    public HashSet<FileInfo> Files { get; private set; }
+    public HashSet<FileInfo> Files { get; private set; } = null!;
         
     /// <summary>
     /// Коллекция (множество) устаревших файлов.
@@ -51,7 +53,7 @@ public class FileController
     /// <remarks>
     /// Заполняется методами <see cref="CheckFileCount"/>, <see cref="CheckFileCount"/>, <see cref="CheckCreationDate"/>.
     /// </remarks>
-    public HashSet<FileInfo> OldFiles { get; private set; }
+    public HashSet<FileInfo> OldFiles { get; private set; } = null!;
         
     /// <summary>
     /// Конструктор, ограничивающий создание экземпляра без параметров.
@@ -91,12 +93,10 @@ public class FileController
         : this(folderName)
     {
         if (folderName.IsNullOrWhiteSpace())
-            throw new ArgumentException(nameof(folderName));
-        if (maxFileCount < 1)
-            throw new ArgumentOutOfRangeException(nameof(maxFileCount));
-        if (maxCapacity < 1)
-            throw new ArgumentOutOfRangeException(nameof(maxCapacity));
-            
+            throw new ArgumentException(null, nameof(folderName));
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxFileCount, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxCapacity, 1);
+
         MaxFileCount = maxFileCount;
         MaxCapacity = maxCapacity;
     }

@@ -8,7 +8,7 @@ namespace Common.BaseComponents.Components.Colors;
 /// </summary>
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-public struct HsbColor
+public struct HsbColor : IEquatable<HsbColor>
 {
     /// <summary>
     /// Точность при сравнении вещественных чисел.
@@ -123,23 +123,32 @@ public struct HsbColor
 
     public static bool operator ==(HsbColor item1, HsbColor item2)
     {
-        return (
-            Math.Abs(item1.Hue - item2.Hue) < TOLERANCE
-            && Math.Abs(item1.Saturation - item2.Saturation) < TOLERANCE
-            && Math.Abs(item1.Brightness - item2.Brightness) < TOLERANCE
-        );
+        return item1.Alpha == item2.Alpha
+               && item1.EqualsWithoutAlpha(item2);
     }
 
     public static bool operator !=(HsbColor item1, HsbColor item2)
     {
-        return (
-            Math.Abs(item1.Hue - item2.Hue) > TOLERANCE
-            || Math.Abs(item1.Saturation - item2.Saturation) > TOLERANCE
-            || Math.Abs(item1.Brightness - item2.Brightness) > TOLERANCE
-        );
+        return item1.Alpha != item2.Alpha
+               || !item1.EqualsWithoutAlpha(item2);
     }
 
-    public override bool Equals(object obj)
+    /// <summary>
+    /// Сравнение с другим цветом без учета прозрачности.
+    /// </summary>
+    public bool EqualsWithoutAlpha(HsbColor other)
+    {
+        return Math.Abs(Hue - other.Hue) < TOLERANCE
+               && Math.Abs(Saturation - other.Saturation) < TOLERANCE
+               && Math.Abs(Brightness - other.Brightness) < TOLERANCE;
+    }
+    
+    public bool Equals(HsbColor other)
+    {
+        return this == other;
+    }
+
+    public override bool Equals(object? obj)
     {
         if (obj == null || GetType() != obj.GetType()) return false;
 

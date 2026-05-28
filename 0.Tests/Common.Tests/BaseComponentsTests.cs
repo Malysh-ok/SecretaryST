@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Globalization;
 using AppDomain.AppExceptions;
+using Common.BaseComponents.Components.Colors;
 using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions;
 using Common.BaseExtensions.Collections;
@@ -113,6 +115,21 @@ public class BaseComponentsTests
 
     }
 
+    [Test]
+    public void HsbColorTest()
+    {
+        var hsbColor1 = HsbColor.FromAhsb(100, 180, 0.5f, 0.5f);
+        var hsbColor2 = HsbColor.FromAhsb(100, 180, 0.5f, 0.5f);
+        
+        Assert.That(hsbColor1 == hsbColor2, Is.True, "Цвета должны быть равны.");
+        Assert.That(hsbColor1 != hsbColor2, Is.False, "Цвета должны быть равны.");
+
+        hsbColor2.Alpha = 0;
+        Assert.That(hsbColor1.EqualsWithoutAlpha(hsbColor2), Is.True, "Цвета должны быть равны.");
+        Assert.That(hsbColor1 == hsbColor2, Is.False, "Цвета НЕ должны быть равны.");
+        Assert.That(hsbColor1 != hsbColor2, Is.True, "Цвета НЕ должны быть равны.");
+    }
+    
     [Test]
     public void TmpTest()
     {
