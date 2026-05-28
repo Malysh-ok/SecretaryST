@@ -190,11 +190,11 @@ public class RepositoryTests
         var sportUnits = new List<SportUnit>()
         {
             new("Группа 1", sexes.Find(s => s.Id == SexEnm.Male)!, 
-                groupUnitType!, resultSportEvents.Value[0]),
+                groupUnitType!, resultSportEvents.Value![0]),
             new("Группа 2", sexes.Find(s => s.Id == SexEnm.Female)!, 
-                groupUnitType!, resultSportEvents.Value[0]),
+                groupUnitType!, resultSportEvents.Value![0]),
             new("Группа судов 1", sexes.Find(s => s.Id == SexEnm.Mixed)!,
-                waterTeamUnitType!, resultSportEvents.Value[1]),
+                waterTeamUnitType!, resultSportEvents.Value![1]),
         };
         sportUnits[2].ChildSportUnits.Add(sportUnits[1]);   // юнит3 -> юнит2
 

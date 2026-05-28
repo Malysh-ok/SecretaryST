@@ -3,7 +3,6 @@ using AppDomain.Phrases;
 using AppDomain.UseCases._Contracts;
 using Common.BaseComponents.Components;
 using Common.BaseExtensions.Collections;
-using Common.BaseExtensions.ValueTypes;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
@@ -95,12 +94,12 @@ public class RefereeService(IRepository repository)
             return Result<IList<Referee>>.Done(referees);
 
         var removeResult = await repository.RemoveAsync(referees[index]);
-        if (removeResult == false)
-            Result<IList<Referee>>.Fail(removeResult.Excptn);
+        if (!removeResult.HasValue)
+            Result<IList<Referee>>.Fail(removeResult.Excptn!);
         
         List<Referee> newReferees = [..referees];
         newReferees.RemoveAt(index);
-        for (var i = index + 2; i < newReferees.Count; i++)
+        for (var i = index; i < newReferees.Count; i++)
         {
             newReferees[i].Number = i + 1;
         }

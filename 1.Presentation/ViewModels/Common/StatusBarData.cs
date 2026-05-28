@@ -62,7 +62,7 @@ public class StatusBarData
     public StatusBarData(Brush brush, string? text = null, int? maxTextLength = null)
     {
         MaxTextLength = maxTextLength ?? MaxTextLength;
-        Text = text!;
+        Text = text ?? string.Empty;
         Brush = brush;
     }
 
@@ -75,7 +75,7 @@ public class StatusBarData
     public StatusBarData(StatusBarTextType textType = StatusBarTextType.Info, string? text = null, int? maxTextLength = null)
     {
         MaxTextLength = maxTextLength ?? MaxTextLength;
-        Text = text!;
+        Text = text ?? string.Empty;
         Brush = textType switch
         {
             StatusBarTextType.Info => InfoBrush,
@@ -97,7 +97,7 @@ public class StatusBarData
     public string Text
     {
         get => _text;
-        set => _text = (value ?? string.Empty).Truncate(MaxTextLength, "...");
+        set => _text = value.Truncate(MaxTextLength, "...");
     }
 
     /// <summary>

@@ -112,8 +112,8 @@ public partial class App
             
             // Пробрасываем фатальное исключение
             var exceptionsProvider = _serviceProvider.GetService<IExceptionsProvider>();
-            exceptionsProvider!.Exception = new DbFatalException(innerException: exception);
-            exceptionsProvider!.IsFatal = true;
+            exceptionsProvider?.Exception = new DbFatalException(innerException: exception);
+            exceptionsProvider?.IsFatal = true;
         }
         
         // Получаем главное представление (окно) и показываем его

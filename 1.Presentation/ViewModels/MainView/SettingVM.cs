@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -24,7 +25,7 @@ namespace Presentation.ViewModels.MainView;
 /// <summary>
 /// ViewModel для меню ленты "Настройки".
 /// </summary>
-// ReSharper disable once InconsistentNaming
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMessage>, IStatusBarDataProvider, IDisposable
 {
     private readonly LocalizationHelper _localizationHelper;
@@ -280,7 +281,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         {
             // Пишем в статус-бар и лог об ошибке
             StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                detailedCompetitionsStatusesResult.Excptn.Message);
+                detailedCompetitionsStatusesResult.Excptn?.Message);
             _logger.Error(detailedCompetitionsStatusesResult.Excptn, "");
         }
     }
@@ -301,7 +302,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         {
             // Пишем в статус-бар и лог об ошибке
             StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                competitionDataResult.Excptn.Message);
+                competitionDataResult.Excptn?.Message);
             _logger.Error(competitionDataResult.Excptn, "");
         }
     }
@@ -317,7 +318,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         {
             // Пишем в статус-бар и лог об ошибке
             StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn.Message);
+                result.Excptn?.Message);
             _logger.Error(result.Excptn, "");
         }
     }
@@ -343,7 +344,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         {
             // Пишем в статус-бар и лог об ошибке
             StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn.Message);
+                result.Excptn?.Message);
             _logger.Error(result.Excptn, ""); 
         }
     }
@@ -364,7 +365,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         {
             // Пишем в статус-бар и лог об ошибке
             StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn.Message);
+                result.Excptn?.Message);
             _logger.Error(result.Excptn, "");
         }
     }
@@ -387,7 +388,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         {
             // Пишем в статус-бар и лог об ошибке
             StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn.Message);
+                result.Excptn?.Message);
             _logger.Error(result.Excptn, "");
         }
     }
@@ -409,7 +410,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         {
             // Пишем в статус-бар и лог об ошибке
             StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn.Message);
+                result.Excptn?.Message);
             _logger.Error(result.Excptn, "");
         }
     }
@@ -435,7 +436,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         {
             // Пишем в статус-бар и лог об ошибке
             StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn.Message);
+                result.Excptn?.Message);
             _logger.Error(result.Excptn, "");
         }
     }
@@ -451,7 +452,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         {
             // Пишем в статус-бар и лог об ошибке
             StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn.Message);
+                result.Excptn?.Message);
             _logger.Error(result.Excptn, "");
         }
     }

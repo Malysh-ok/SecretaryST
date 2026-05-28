@@ -11,6 +11,7 @@
         <FileVersion>2.0.0.0</FileVersion>
         <ApplicationIcon>..\Resources\Images\Человек на навеске.ico</ApplicationIcon>
         <TargetFramework>net8.0-windows</TargetFramework>
+        <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

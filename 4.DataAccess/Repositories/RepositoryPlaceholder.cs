@@ -17,8 +17,8 @@ public static class RepositoryPlaceholder
     {
         // Удаляем статусы соревнований
         var result = await repository.RemoveAllAsync<CompetitionsStatus>(true);
-        if (result == false)
-            return Result<List<CompetitionsStatus>>.Fail(result.Excptn);
+        if (!result.HasValue)
+            return Result<List<CompetitionsStatus>>.Fail(result.Excptn!);
         
         var competitionsStatusLst = new List<CompetitionsStatus>
         {
@@ -41,8 +41,8 @@ public static class RepositoryPlaceholder
     {
         // Удаляем статусы и наименования соревнований
         var result = await repository.RemoveAllAsync<DetailedCompetitionStatus>(true);
-        if (result == false)
-            return Result<List<DetailedCompetitionStatus>>.Fail(result.Excptn);
+        if (!result.HasValue)
+            return Result<List<DetailedCompetitionStatus>>.Fail(result.Excptn!);
 
         var detailedCompetitionsStatusLst = new List<DetailedCompetitionStatus>
         {
@@ -96,8 +96,8 @@ public static class RepositoryPlaceholder
     {
         // Удаляем группы дисциплин
         var result = await repository.RemoveAllAsync<DisciplineGroup>(true);
-        if (result == false)
-            return Result<List<DisciplineGroup>>.Fail(result.Excptn);
+        if (!result.HasValue)
+            return Result<List<DisciplineGroup>>.Fail(result.Excptn!);
         
         var disciplineGroupLst = new List<DisciplineGroup>
         {
@@ -119,8 +119,8 @@ public static class RepositoryPlaceholder
     {
         // Удаляем подгруппы дисциплин
         var result = await repository.RemoveAllAsync<DisciplineSubGroup>(true);
-        if (result == false)
-            return Result<List<DisciplineSubGroup>>.Fail(result.Excptn);
+        if (!result.HasValue)
+            return Result<List<DisciplineSubGroup>>.Fail(result.Excptn!);
         
         var disciplineSubGroupLst = new List<DisciplineSubGroup>
         {
@@ -161,8 +161,8 @@ public static class RepositoryPlaceholder
     {
         // Удаляем дисциплины
         var result = await repository.RemoveAllAsync<Discipline>(true);
-        if (result == false)
-            return Result<List<Discipline>>.Fail(result.Excptn);
+        if (!result.HasValue)
+            return Result<List<Discipline>>.Fail(result.Excptn!);
 
         var disciplineLst = new List<Discipline>
         {
@@ -304,8 +304,8 @@ public static class RepositoryPlaceholder
     {
         // Удаляем судейские категории
         var result = await repository.RemoveAllAsync<RefereeLevel>(true);
-        if (result == false)
-            return Result<List<RefereeLevel>>.Fail(result.Excptn);
+        if (!result.HasValue)
+            return Result<List<RefereeLevel>>.Fail(result.Excptn!);
 
         var refereeLevelLst = new List<RefereeLevel>
         {
@@ -328,8 +328,8 @@ public static class RepositoryPlaceholder
     {
         // Удаляем судейские должности
         var result = await repository.RemoveAllAsync<RefereeJobTitle>(true);
-        if (result == false)
-            return Result<List<RefereeJobTitle>>.Fail(result.Excptn);
+        if (!result.HasValue)
+            return Result<List<RefereeJobTitle>>.Fail(result.Excptn!);
 
         var refereeJobTitlesLst = new List<RefereeJobTitle>
         {
@@ -372,8 +372,8 @@ public static class RepositoryPlaceholder
     {
         // Удаляем подгруппы дисциплин
         var result = await repository.RemoveAllAsync<Sex>(true);
-        if (result == false)
-            return Result<List<Sex>>.Fail(result.Excptn);
+        if (!result.HasValue)
+            return Result<List<Sex>>.Fail(result.Excptn!);
 
         var sexLst = new List<Sex>
         {
@@ -396,8 +396,8 @@ public static class RepositoryPlaceholder
     {
         // Удаляем типы спортивных юнитов
         var result = await repository.RemoveAllAsync<SportUnitType>(true);
-        if (result == false)
-            return Result<List<SportUnitType>>.Fail(result.Excptn);
+        if (!result.HasValue)
+            return Result<List<SportUnitType>>.Fail(result.Excptn!);
 
         var sportUnitTypeLst = new List<SportUnitType>
         {

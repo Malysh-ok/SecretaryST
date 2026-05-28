@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Common.BaseComponents.Components;
 using Common.BaseExtensions;
 using DataAccess.DbContexts.DbConfigure._Contracts;
@@ -13,6 +14,7 @@ namespace DataAccess.DbContexts.DbConfigure;
 /// <remarks>
 /// Различные настройки, связанные с подключением и работой БД.
 /// </remarks>
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public class DbConfigurator
 {
     /// <summary>
@@ -102,7 +104,7 @@ public class DbConfigurator
     {
         var (secretKey, iv) = GetEncryptData();
         
-        return Crypto.Encrypt(text, secretKey, iv);
+        return Crypto.Encrypt(text, secretKey, iv) ?? string.Empty;
     }
     
     /// <summary>
@@ -112,7 +114,7 @@ public class DbConfigurator
     {
         var (secretKey, iv) = GetEncryptData();
         
-        return Crypto.Decrypt(text, secretKey, iv);
+        return Crypto.Decrypt(text, secretKey, iv) ?? string.Empty;
     }
 
         

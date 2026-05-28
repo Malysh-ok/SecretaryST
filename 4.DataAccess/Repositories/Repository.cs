@@ -279,9 +279,9 @@ public partial class Repository<TDbContext> : IRepository, IDisposable where TDb
         
         var addOrUpdateResult = await AddOrUpdateRangeAsync(repositoryEntityDic.Values);
 
-        return addOrUpdateResult
+        return addOrUpdateResult.HasValue
             ? Result<List<TEntity>>.Done(replacedEntities)
-            : Result<List<TEntity>>.Fail(addOrUpdateResult.Excptn);
+            : Result<List<TEntity>>.Fail(addOrUpdateResult.Excptn!);
     }
     
     /// <inheritdoc />
@@ -315,9 +315,9 @@ public partial class Repository<TDbContext> : IRepository, IDisposable where TDb
         
         var addOrUpdateResult = await AddOrUpdateRangeAsync(repositoryEntityDic.Values);
 
-        return addOrUpdateResult
+        return addOrUpdateResult.HasValue
             ? Result<List<TEntity>>.Done(replacedEntities)
-            : Result<List<TEntity>>.Fail(addOrUpdateResult.Excptn);
+            : Result<List<TEntity>>.Fail(addOrUpdateResult.Excptn!);
     }
     
     #endregion

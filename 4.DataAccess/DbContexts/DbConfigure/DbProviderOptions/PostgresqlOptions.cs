@@ -51,8 +51,6 @@ public class PostgresqlOptions : IDbProviderOptions
                 ($"SELECT pg_get_serial_sequence('{table}', '{autoincrementColumnName}');").FirstOrDefault();
 
             // Обнуляем счетчик
-            // dbContext.Database.ExecuteSqlRaw
-            //     ($"ALTER SEQUENCE {sequenceName} RESTART WITH 1;");
             dbContext.Database.ExecuteSqlRaw
                 ($"ALTER SEQUENCE {sequenceName} RESTART WITH 1;");
         }
