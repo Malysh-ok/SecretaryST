@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>AppDomain.Setting</RootNamespace>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.9" />
+      <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.8" />
     </ItemGroup>
 
 </Project>

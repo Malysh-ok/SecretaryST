@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
         <UseWPF>true</UseWPF>
         <RootNamespace>Common.WpfModule.Components</RootNamespace>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
 
 </Project>

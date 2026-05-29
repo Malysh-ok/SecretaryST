@@ -7,7 +7,6 @@ using AppDomain.Phrases;
 using AppDomain.Setting.Entities;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
-using Common.BaseComponents.Components;
 using Common.BaseExtensions.Collections;
 using Common.WpfModule.Components.Collections;
 using Common.WpfModule.Ui.Views;
@@ -28,17 +27,17 @@ namespace Presentation.ViewModels.MainView;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMessage>, IStatusBarDataProvider, IDisposable
 {
-    private readonly LocalizationHelper _localizationHelper;
-    private readonly IViewWithResources _view;
-    private readonly ILogger _logger;
-    private readonly AppSettingService _appSetting;
-    private readonly CompetitionDataService _competitionDataService;
-    private readonly RefereeService _refereeService;
+    private readonly LocalizationHelper _localizationHelper = null!;
+    private readonly IViewWithResources _view = null!;
+    private readonly ILogger _logger = null!;
+    private readonly AppSettingService _appSetting = null!;
+    private readonly CompetitionDataService _competitionDataService = null!;
+    private readonly RefereeService _refereeService = null!;
 
     /// <summary>
     /// Список доступных языков.
     /// </summary>
-    public ObservableCollection<Lang> Languages { get; private set; }
+    public ObservableCollection<Lang> Languages { get; private set; } = null!;
 
     private Lang? _currLang;
     /// <summary>
@@ -58,14 +57,14 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         }
     }
     
-    private StatusBarData _statusBarContent = new StatusBarData();
+    private StatusBarData _statusBarData = null!;
     /// <summary>
     /// Данные для статус-бара.
     /// </summary>
     public StatusBarData StatusBarData
     {
-        get => _statusBarContent;
-        set => SetProperty(ref _statusBarContent, value);
+        get => _statusBarData;
+        set => SetProperty(ref _statusBarData, value);
     }
 
     // !!!!!!!!!!!!!!!!!!!!!!!!
@@ -130,12 +129,12 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// <summary>
     /// Команда загрузки данных о соревнованиях.
     /// </summary>
-    public ICommand LoadCompetitionCommand { get; }
+    public ICommand LoadCompetitionCommand { get; } = null!;
     
     /// <summary>
     /// Команда сохранения изменений, связанных с соревнованиями.
     /// </summary>
-    public ICommand SaveCompetitionDataCommand { get; }
+    public ICommand SaveCompetitionDataCommand { get; } = null!;
 
     #endregion
     
@@ -145,25 +144,33 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// <summary>
     /// Команда загрузки списка судей.
     /// </summary>
-    public ICommand LoadRefereesCommand { get; }
+    public ICommand LoadRefereesCommand { get; } = null!;
     
     /// <summary>
     /// Команда добавления судьи.
     /// </summary>
-    public ICommand AddRefereeCommand { get; }
+    public ICommand AddRefereeCommand { get; } = null!;
 
     /// <summary>
     /// Команда удаления судьи.
     /// </summary>
-    public ICommand RemoveRefereeCommand { get; }
+    public ICommand RemoveRefereeCommand { get; } = null!;
     
     /// <summary>
     /// Команда сохранения изменений, связанных с судьями.
     /// </summary>
-    public ICommand SaveRefereesCommand { get; }
+    public ICommand SaveRefereesCommand { get; } = null!;
 
     #endregion
 
+    
+    /// <summary>
+    /// Конструктор, запрещающий создания экземпляра без параметров.
+    /// </summary>
+    // ReSharper disable once UnusedMember.Local
+    private SettingVM()
+    {
+    }
     
     /// <summary>
     /// Конструктор.
@@ -405,6 +412,10 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
             Referees.Clear();
             Referees.AddRange(result.Value);
             Referees.SelectedIndex = index;
+            
+            // TODO: Временно
+            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Info, 
+                "Добавили судью.");
         }
         else
         {
@@ -431,6 +442,10 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
             Referees.Clear();
             Referees.AddRange(result.Value);
             Referees.SelectedIndex = index;
+            
+            // TODO: Временно
+            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Warning, 
+                "Удалили судью.");
         }
         else
         {

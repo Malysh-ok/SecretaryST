@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>DataAccess.Repositories</RootNamespace>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup>

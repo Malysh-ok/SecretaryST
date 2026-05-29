@@ -1,19 +1,21 @@
-﻿using System.Windows.Media;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Windows.Input;
+using System.Windows.Media;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Presentation.ViewModels._Contracts;
 using Presentation.ViewModels.Common;
 using Serilog;
-
-// ReSharper disable InconsistentNaming
 
 namespace Presentation.ViewModels.MainView;
 
 /// <summary>
 /// ViewModel для основного представления.
 /// </summary>
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDisposable
 {
     /// <summary>
@@ -32,7 +34,7 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     public SettingVM SettingVM { get; } = null!;
 
     
-    private StatusBarData _statusBarData = new StatusBarData();
+    private StatusBarData _statusBarData = null!;
     /// <summary>
     /// Данные для статус-бара.
     /// </summary>
@@ -41,6 +43,9 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
         get => _statusBarData;
         set => SetProperty(ref _statusBarData, value);
     }
+
+    // TODO: Временная команда (кнопка панели быстрого доступа)
+    public ICommand PinkCommand { get; } = null!;
 
     /// <summary>
     /// Конструктор, запрещающий создания экземпляра без параметров.
@@ -58,6 +63,8 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
         BackstageVM = backstageVm;
         SettingVM = settingVm;
         _logger = logger;
+        
+        PinkCommand = new AsyncRelayCommand(OnPink);
     }
 
     /// <summary>
@@ -76,9 +83,9 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
         )
     {
         // TODO: Устанавливаем цвет кистей статус-бара (возможно изменим)
-        StatusBarData.ReSet(Brushes.Azure, Brushes.Azure, Brushes.LightSalmon);
+        // StatusBarData.ReSet(Brushes.Azure, Brushes.Azure, Brushes.LightSalmon);
 
-        return new MainVM(
+        var mainVM = new MainVM(
             new BackstageVM(logger),
             new SettingVM(view, logger, exceptionsProvider,
                 appSetting,
@@ -86,7 +93,20 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
                 refereeService),
             logger
         );
+
+        return mainVM;
     }
+    
+    /// <summary>
+    /// TODO: Временно
+    /// </summary>
+    private async Task OnPink()
+    {
+        // Пишем в статус-бар и лог об ошибке
+        StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Info, 
+            "OnPink");
+    }
+
     
     public void Dispose()
     {
@@ -96,6 +116,7 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
 
     private void Dispose(bool disposing)
     {
+        // ReSharper disable once InvertIf
         if (disposing)
         {
             BackstageVM.Dispose();

@@ -45,7 +45,8 @@
                 <fluent:QuickAccessMenuItem IsChecked="true">
                     <fluent:Button x:Name="QatButton1"
                                    Icon="{DynamicResource Hazelnut}"
-                                   Header="Pink" />
+                                   Header="Pink"
+                                   Command="{Binding PinkCommand}"/>
                 </fluent:QuickAccessMenuItem>
                 <fluent:QuickAccessMenuItem IsChecked="true">
                     <fluent:Button x:Name="QatButton2"
@@ -225,7 +226,7 @@
 
             <fluent:StatusBarItem Title="Left placed item"
                                   Value="Value shown in ContextMenu"
-                                  Content=""
+                                  Content="Left!"
                                   Width="100"
                                   HorizontalAlignment="Left" />
 
@@ -236,20 +237,18 @@
                                   Value="Value shown in ContextMenu"
                                   Foreground="{Binding StatusBarData.Brush}"
                                   ToolTip="Всплывающая подсказка"
-                                  
-                                  
                                   VerticalContentAlignment="Center"
                                   HorizontalAlignment="Left"
                                   HorizontalContentAlignment="Stretch" >
-                <TextBlock Text="{Binding StatusBarData}"
-                           Background="Blue"
+                <TextBlock MinWidth="200"
                            TextTrimming="CharacterEllipsis"
-                           TextWrapping="Wrap" />
+                           TextWrapping="Wrap"
+                           Text="{Binding  StatusBarData.Text}" />
             </fluent:StatusBarItem>
 
             <fluent:StatusBarItem Title="Right placed item"
                                   Value="Your value which is also used as content if no content is set."
-                                  Content=""
+                                  Content="Right!"
                                   HorizontalAlignment="Right" />
         </fluent:StatusBar>
 

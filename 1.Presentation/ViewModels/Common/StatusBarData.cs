@@ -3,7 +3,6 @@ using System.Windows.Media;
 using Common.BaseExtensions;
 using Common.WpfModule.Extensions;
 using Brush = System.Windows.Media.Brush;
-// ReSharper disable MemberCanBePrivate.Global
 
 namespace Presentation.ViewModels.Common;
 
@@ -56,8 +55,8 @@ public class StatusBarData
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="text">Текст для статус-бара.</param>
     /// <param name="brush">Кисть текста статус-бара.</param>
+    /// <param name="text">Текст для статус-бара.</param>
     /// <param name="maxTextLength">Максимальная длина текста статус-бара.</param>
     public StatusBarData(Brush brush, string? text = null, int? maxTextLength = null)
     {
@@ -69,8 +68,8 @@ public class StatusBarData
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="text">Текст для статус-бара.</param>
     /// <param name="textType">Тип текста.</param>
+    /// <param name="text">Текст для статус-бара.</param>
     /// <param name="maxTextLength">Максимальная длина текста статус-бара.</param>
     public StatusBarData(StatusBarTextType textType = StatusBarTextType.Info, string? text = null, int? maxTextLength = null)
     {

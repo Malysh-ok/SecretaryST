@@ -5,6 +5,7 @@
         <IsPackable>false</IsPackable>
         <RootNamespace>ProblemDomain.Entities</RootNamespace>
         <Nullable>enable</Nullable>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup>

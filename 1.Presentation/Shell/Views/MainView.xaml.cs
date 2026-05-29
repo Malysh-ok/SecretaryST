@@ -10,6 +10,7 @@ using Common.BaseExtensions.ValueTypes;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.Input;
 using Presentation.ViewModels._Contracts;
+using Presentation.ViewModels.Common;
 using Presentation.ViewModels.MainView;
 using Serilog;
 
@@ -69,6 +70,9 @@ public partial class MainView : IViewWithResources
         // Получаем главную модель представления
         var mainVm = MainVM.Create(this, logger, exceptionsProvider,
             appSetting, competitionDataService, refereeService);
+        
+        // mainVm.StatusBarData=new StatusBarData(StatusBarData.StatusBarTextType.Info, 
+        //     "Инициализация.");
         
         // Привязываем данные главной модели представления
         DataContext = mainVm;
