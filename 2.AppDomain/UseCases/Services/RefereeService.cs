@@ -59,16 +59,15 @@ public class RefereeService(IRepository repository)
     /// <summary>
     /// Добавление судьи.
     /// </summary>
-    public async Task<Result<IList<Referee>>> AddRefereeAsync(IList<Referee> referees, int index)
+    public async Task<Result<(IList<Referee> Referees, int Index)>> AddRefereeAsync(IList<Referee> referees, int index)
     {
-        if (index >= referees.Count || index < 0)
-            // return Result<IList<Referee>>.Done(referees);
-            index = 0;
+        var newIndex = index + 1;
+        if (index >= referees.Count || index < 0) newIndex = 0;
 
         var refereeLevel = await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category3);
         var refereeJobTitle = await repository.FindAsync<RefereeJobTitle>(RefereeJobTitleEnm.StageReferee);
 
-        var newReferee = new Referee(index + 2,
+        var newReferee = new Referee(newIndex + 1,
             "ФАМИЛИЯ",
             "ИМЯ",
             "ТЕРРИТОРИЯ",
@@ -76,22 +75,22 @@ public class RefereeService(IRepository repository)
             refereeJobTitle!);
         
         List<Referee> newReferees = [..referees];
-        newReferees.Insert(index + 1, newReferee);
-        for (var i = index + 2; i < newReferees.Count; i++)
+        newReferees.Insert(newIndex, newReferee);
+        for (var i = newIndex + 1; i < newReferees.Count; i++)
         {
             newReferees[i].Number = i + 1;
         }
             
-        return Result<IList<Referee>>.Done(newReferees);
+        return Result<(IList<Referee>, int)>.Done((newReferees, newIndex));
     }
     
     /// <summary>
     /// Удаление судьи.
     /// </summary>
-    public async Task<Result<IList<Referee>>> RemoveRefereeAsync(IList<Referee> referees, int index)
+    public async Task<Result<(IList<Referee> Referees, int Index)>> RemoveRefereeAsync(IList<Referee> referees, int index)
     {
         if (index >= referees.Count || index < 0)
-            return Result<IList<Referee>>.Done(referees);
+            return Result<(IList<Referee>, int)>.Done((referees, index));
 
         var removeResult = await repository.RemoveAsync(referees[index]);
         if (!removeResult.HasValue)
@@ -104,7 +103,7 @@ public class RefereeService(IRepository repository)
             newReferees[i].Number = i + 1;
         }
             
-        return Result<IList<Referee>>.Done(newReferees);
+        return Result<(IList<Referee>, int)>.Done((newReferees, index - 1));
     }
     
     /// <summary>

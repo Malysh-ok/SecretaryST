@@ -405,10 +405,9 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         var result = await _refereeService.AddRefereeAsync(Referees, Referees.SelectedIndex);
         if (result)
         {
-            var index = Referees.SelectedIndex;
             Referees.Clear();
-            Referees.AddRange(result.Value);
-            Referees.SelectedIndex = index + 1;
+            Referees.AddRange(result.Value.Referees);
+            Referees.SelectedIndex = result.Value.Index;
             
             // TODO: Временно (без ожидания окончания)
             _ = StatusBarData.SetTextAsync("Добавили судью.", StatusBarData.StatusBarTextType.Info);
@@ -434,11 +433,9 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         
         if (result)
         {
-            var index = Referees.SelectedIndex;
             Referees.Clear();
-            Referees.AddRange(result.Value);
-            Referees.SelectedIndex = index - 1;
-            
+            Referees.AddRange(result.Value.Referees);
+            Referees.SelectedIndex = result.Value.Index;
             // TODO: Временно (без ожидания окончания)
             _ = StatusBarData.SetTextAsync("Удалили судью.", StatusBarData.StatusBarTextType.Error);
         }
