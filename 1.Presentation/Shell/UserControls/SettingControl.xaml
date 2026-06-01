@@ -13,8 +13,8 @@
              xmlns:dataGrids="clr-namespace:Common.WpfModule.Ui.Behaviors.DataGrids;assembly=Ui"
              xmlns:datePickers="clr-namespace:Common.WpfModule.Ui.Behaviors.DatePickers;assembly=Ui"
              d:DataContext="{ d:DesignInstance mainView:SettingVM }"
-             mc:Ignorable="d"
-             >
+             mc:Ignorable="d" >
+    
     <UserControl.Resources>
         <converters:StrToXmlLangConverter x:Key="StrToXmlLangConverter" />
     </UserControl.Resources>

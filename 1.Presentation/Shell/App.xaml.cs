@@ -71,6 +71,7 @@ public partial class App
                     retainedFileCountLimit: 50)
                 .CreateLogger()
             )
+            .AddSingleton<StatusBarData>()
             .AddSingleton<IExceptionsProvider, ExceptionsProvider>()
             .AddTransient<CompetitionDataService>()
             .AddTransient<RefereeService>()

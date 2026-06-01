@@ -58,7 +58,9 @@ public partial class MainView : IViewWithResources
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public MainView(ILogger logger, IExceptionsProvider exceptionsProvider, 
+    public MainView(StatusBarData statusBarData,
+        ILogger logger, 
+        IExceptionsProvider exceptionsProvider, 
         AppSettingService appSetting,
         CompetitionDataService competitionDataService,
         RefereeService refereeService)
@@ -68,7 +70,7 @@ public partial class MainView : IViewWithResources
         InitializeComponent();
         
         // Получаем главную модель представления
-        var mainVm = MainVM.Create(this, logger, exceptionsProvider,
+        var mainVm = MainVM.Create(this, statusBarData, logger, exceptionsProvider,
             appSetting, competitionDataService, refereeService);
         
         // mainVm.StatusBarData=new StatusBarData(StatusBarData.StatusBarTextType.Info, 

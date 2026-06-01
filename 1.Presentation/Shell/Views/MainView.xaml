@@ -15,15 +15,19 @@
                      xmlns:common="clr-namespace:Presentation.ViewModels.Common;assembly=ViewModels"
                      xmlns:markup="clr-namespace:Common.WpfModule.Ui.Markup;assembly=Ui"
                      xmlns:userControls="clr-namespace:Presentation.Shell.UserControls"
-
+                     xmlns:converters="clr-namespace:Common.WpfModule.Ui.Converters;assembly=Ui"
+                     xmlns:dataGrids="clr-namespace:Common.WpfModule.Ui.Behaviors.DataGrids;assembly=Ui"
                      d:DataContext="{ d:DesignInstance viewModels.MainView:MainVM }"
                      mc:Ignorable="d"
                      Title="{DynamicResource MainView}"
                      Height="800"
                      Width="1200"
                      MinHeight="600"
-                     MinWidth="700"
-                     >
+                     MinWidth="700" >
+
+    <Window.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Window.Resources>
 
     <Window.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Close"
@@ -219,38 +223,69 @@
         </TabControl>
 
         <!-- Статус-бар -->
-        <fluent:StatusBar Grid.Row="2" 
-            DataContext="{Binding ElementName=MainView_Ribbon, Path=SelectedTabItem.DataContext}"
-            Height="36" >
-            <!-- ↑ Меняем привязку DataContext к необходимой модели представления, в зависимости от выбранной вкладки Ленты -->
+        <fluent:StatusBar Grid.Row="2" Height="36" >
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100"/>      <!-- Левый фиксированный -->
+                            <ColumnDefinition Width="Auto"/>     <!-- Separator -->
+                            <ColumnDefinition Width="Auto"/>     <!-- ProgressBar -->
+                            <ColumnDefinition Width="*"/>        <!-- Главный (растягивается) -->
+                            <ColumnDefinition Width="Auto"/>     <!-- Separator -->
+                            <ColumnDefinition Width="80"/>       <!-- Правый фиксированный -->
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
 
-            <fluent:StatusBarItem Title="Left placed item"
-                                  Value="Value shown in ContextMenu"
-                                  Content="Left!"
-                                  Width="100"
-                                  HorizontalAlignment="Left" />
+            <!-- Левый элемент статус-бара -->
+            <fluent:StatusBarItem Grid.Column="0" 
+                                  Title="Левая часть статус-бара"
+                                  Tag="First">
+                <TextBlock Text="Left!"/>   <!--TODO: Left! - временно-->
+            </fluent:StatusBarItem>
 
-            <Separator HorizontalAlignment="Left" />
+            <!-- Separator -->
+            <Separator Grid.Column="1"
+                       Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
 
-            <!-- Основной контент статус-бара -->
-            <fluent:StatusBarItem Title="Center placed item"
-                                  Value="Value shown in ContextMenu"
-                                  Foreground="{Binding StatusBarData.Brush}"
-                                  ToolTip="Всплывающая подсказка"
-                                  VerticalContentAlignment="Center"
-                                  HorizontalAlignment="Left"
+            <!-- Прогресс-бар статус-бара -->
+            <fluent:StatusBarItem Grid.Column="2"
+                                  Title="Прогресс-бар"
                                   HorizontalContentAlignment="Stretch" >
+                <ProgressBar Width="150"
+                             Height="20" 
+                             Minimum="0"
+                             Maximum="100"
+                             Value="{Binding StatusBarData.ProgressValue, 
+                                Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                             Visibility="{Binding StatusBarData.IsProgressVisible,
+                                Converter={StaticResource BooleanToVisibilityConverter}}" />
+            </fluent:StatusBarItem>
+
+            <!-- Главный элемент статус-бара (занимает всё оставшееся место) -->
+            <fluent:StatusBarItem Grid.Column="3"
+                                  Title="Главная часть статус-бара"
+                                  HorizontalContentAlignment="Stretch">
                 <TextBlock MinWidth="200"
                            TextTrimming="CharacterEllipsis"
                            TextWrapping="Wrap"
-                           Text="{Binding  StatusBarData.Text}" />
+                           Text="{Binding  StatusBarData.StatusText}"
+                           Foreground="{Binding  StatusBarData.Brush}"/>
             </fluent:StatusBarItem>
 
-            <fluent:StatusBarItem Title="Right placed item"
-                                  Value="Your value which is also used as content if no content is set."
-                                  Content="Right!"
-                                  HorizontalAlignment="Right" />
-        </fluent:StatusBar>
+            <!-- Separator -->
+            <Separator Grid.Column="4"
+                       Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
 
+            <!-- Правый элемент статус-бара -->
+            <fluent:StatusBarItem Grid.Column="5"
+                                  Title="Правая часть статус-бара"
+                                  Tag="Last">
+                <TextBlock  Text="Right!" HorizontalAlignment="Right" />   <!--TODO: Right! - временно-->
+            </fluent:StatusBarItem>
+            
+        </fluent:StatusBar>
     </Grid>
 </fluent:RibbonWindow>

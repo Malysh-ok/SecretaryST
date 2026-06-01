@@ -37,7 +37,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// <summary>
     /// Список доступных языков.
     /// </summary>
-    public ObservableCollection<Lang> Languages { get; private set; } = null!;
+    public ObservableCollection<Lang> Languages { get; } = null!;
 
     private Lang? _currLang;
     /// <summary>
@@ -57,25 +57,19 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         }
     }
     
-    private StatusBarData _statusBarData = null!;
     /// <summary>
     /// Данные для статус-бара.
     /// </summary>
-    public StatusBarData StatusBarData
-    {
-        get => _statusBarData;
-        set => SetProperty(ref _statusBarData, value);
-    }
+    public StatusBarData StatusBarData { get; } = null!;
 
-    // !!!!!!!!!!!!!!!!!!!!!!!!
-    private DataGridCellInfo _cellInfo;
+    // TODO: Разобраться, зачем нам понадобилось свойство (DataGridCellInfo)CellInfo.
     public DataGridCellInfo CellInfo
     {
-        get => _cellInfo;
+        get;
         set
         {
             if (value.IsValid)
-                SetProperty(ref _cellInfo, value);
+                SetProperty(ref field, value);
         }
     }
 
@@ -91,17 +85,15 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// </summary>
     public ObservableCollectionEx<DetailedCompetitionStatus> DetailedCompetitionStatuses { get; set; } = [];
 
-
-    private CompetitionData? _competitionData;
     /// <summary>
     /// Данные о соревнования.
     /// </summary>
     public CompetitionData? CompetitionData
     {
-        get => _competitionData;
-        set => SetProperty(ref _competitionData, value);
+        get;
+        private set => SetProperty(ref field, value);
     }
-    
+
     #endregion
 
     #region [---------- Судьи ----------]
@@ -167,7 +159,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// <summary>
     /// Конструктор, запрещающий создания экземпляра без параметров.
     /// </summary>
-    // ReSharper disable once UnusedMember.Local
+    [SuppressMessage("ReSharper", "UnusedMember.Local")]
     private SettingVM()
     {
     }
@@ -175,12 +167,16 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public SettingVM(IViewWithResources view, ILogger logger, IExceptionsProvider exceptionsProvider,
+    public SettingVM(IViewWithResources view, 
+        StatusBarData statusBarData, 
+        ILogger logger, 
+        IExceptionsProvider exceptionsProvider,
         AppSettingService appSetting,
         CompetitionDataService competitionDataService,
         RefereeService refereeService)
     {
         _view = view;
+        StatusBarData = statusBarData;
         _logger = logger;
         _appSetting = appSetting;
         _competitionDataService = competitionDataService;
@@ -213,8 +209,9 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         // Проверка, прислали ли исключение "сверху"?
         if (exceptionsProvider.Exception is not null)
         {
-            // Исключение прислали - отображаем ее в статус-баре
-            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, exceptionsProvider.Exception.Message);
+            // Исключение прислали - отображаем его в статус-баре и пишем в лог
+            _ = StatusBarData.SetTextAsync(exceptionsProvider.Exception.Message, 
+                StatusBarData.StatusBarTextType.Error, 0);
             _logger.Error(exceptionsProvider.Exception, "");
         }
         
@@ -287,8 +284,8 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                detailedCompetitionsStatusesResult.Excptn?.Message);
+            _ = StatusBarData.SetTextAsync(detailedCompetitionsStatusesResult.Excptn?.Message, 
+                StatusBarData.StatusBarTextType.Error, 0);            
             _logger.Error(detailedCompetitionsStatusesResult.Excptn, "");
         }
     }
@@ -308,8 +305,8 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                competitionDataResult.Excptn?.Message);
+            _ = StatusBarData.SetTextAsync(competitionDataResult.Excptn?.Message, 
+                StatusBarData.StatusBarTextType.Error, 0);            
             _logger.Error(competitionDataResult.Excptn, "");
         }
     }
@@ -324,8 +321,8 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         if (! result)
         {
             // Пишем в статус-бар и лог об ошибке
-            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn?.Message);
+            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
+                StatusBarData.StatusBarTextType.Error, 0);            
             _logger.Error(result.Excptn, "");
         }
     }
@@ -350,8 +347,8 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn?.Message);
+            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
+                StatusBarData.StatusBarTextType.Error, 0);            
             _logger.Error(result.Excptn, ""); 
         }
     }
@@ -371,8 +368,8 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn?.Message);
+            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
+                StatusBarData.StatusBarTextType.Error, 0);            
             _logger.Error(result.Excptn, "");
         }
     }
@@ -394,8 +391,8 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn?.Message);
+            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
+                StatusBarData.StatusBarTextType.Error, 0);            
             _logger.Error(result.Excptn, "");
         }
     }
@@ -411,17 +408,16 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
             var index = Referees.SelectedIndex;
             Referees.Clear();
             Referees.AddRange(result.Value);
-            Referees.SelectedIndex = index;
+            Referees.SelectedIndex = index + 1;
             
-            // TODO: Временно
-            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Info, 
-                "Добавили судью.");
+            // TODO: Временно (без ожидания окончания)
+            _ = StatusBarData.SetTextAsync("Добавили судью.", StatusBarData.StatusBarTextType.Info);
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn?.Message);
+            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
+                StatusBarData.StatusBarTextType.Error, 0);            
             _logger.Error(result.Excptn, "");
         }
     }
@@ -441,17 +437,16 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
             var index = Referees.SelectedIndex;
             Referees.Clear();
             Referees.AddRange(result.Value);
-            Referees.SelectedIndex = index;
+            Referees.SelectedIndex = index - 1;
             
-            // TODO: Временно
-            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Warning, 
-                "Удалили судью.");
+            // TODO: Временно (без ожидания окончания)
+            _ = StatusBarData.SetTextAsync("Удалили судью.", StatusBarData.StatusBarTextType.Error);
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn?.Message);
+            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
+                StatusBarData.StatusBarTextType.Error, 0);            
             _logger.Error(result.Excptn, "");
         }
     }
@@ -466,8 +461,8 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         if (! result)
         {
             // Пишем в статус-бар и лог об ошибке
-            StatusBarData = new StatusBarData(StatusBarData.StatusBarTextType.Error, 
-                result.Excptn?.Message);
+            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
+                StatusBarData.StatusBarTextType.Error, 0);            
             _logger.Error(result.Excptn, "");
         }
     }

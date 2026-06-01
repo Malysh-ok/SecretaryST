@@ -6,6 +6,7 @@
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                     xmlns:fluent="urn:fluent-ribbon"
                     xmlns:markup="clr-namespace:Common.WpfModule.Ui.Markup;assembly=Ui"
+                    xmlns:converters="clr-namespace:Common.WpfModule.Ui.Converters;assembly=Ui"
                     mc:Ignorable="options d">
     
     <ResourceDictionary.MergedDictionaries>
@@ -69,7 +70,21 @@
 
     <!-- Статус-бар -->
     <Style TargetType="fluent:StatusBarItem">
+        <!-- Общие отступы -->
+        <Setter Property="Padding" Value="5, 0, 5, 0" />
+        
+        <Style.Triggers>
+            <!-- Первый элемент -->
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" 
+                         Value="First">
+                <Setter Property="Padding" Value="10, 0, 5, 0"/>
+            </DataTrigger>
+            
+            <!-- Последний элемент -->
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" 
+                         Value="Last">
+                <Setter Property="Padding" Value="0, 0, 10, 0"/>
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
-
-    
 </ResourceDictionary>

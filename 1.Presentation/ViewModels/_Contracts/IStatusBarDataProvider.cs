@@ -10,5 +10,5 @@ public interface IStatusBarDataProvider
     /// <summary>
     /// Данные для статус-бара.
     /// </summary>
-    StatusBarData StatusBarData { get; set; }
+    StatusBarData StatusBarData { get; }
 }
