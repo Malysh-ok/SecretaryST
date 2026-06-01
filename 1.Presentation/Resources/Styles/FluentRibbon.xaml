@@ -24,8 +24,19 @@
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.AccentBase" 
                      Color="{StaticResource HighlightColor}" options:Freeze="True" />
     
+    <!-- Меню (RibbonTabItem) -->
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.Foreground"
+                     Color="{StaticResource DefaultDarkBackgroundColor}" options:Freeze="True" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabItem.Selected.Foreground"
+                     Color="{StaticResource DefaultBackgroundColor}" options:Freeze="True" />
+
     <!-- Backstage -->
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Background" Color="Orange" options:Freeze="True" />
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Foreground" 
+                     Color="{StaticResource DefaultDarkBackgroundColor}" options:Freeze="True" />
+    <!--
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Background" 
+                     Color="{StaticResource AccentColor}" options:Freeze="True" />
+    -->
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.ItemsPanelBackground" 
                      Color="{StaticResource Fluent.Ribbon.Colors.Accent80}" options:Freeze="True" />
     <!--
