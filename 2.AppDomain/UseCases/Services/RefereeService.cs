@@ -61,26 +61,42 @@ public class RefereeService(IRepository repository)
     /// </summary>
     public async Task<Result<(IList<Referee> Referees, int Index)>> AddRefereeAsync(IList<Referee> referees, int index)
     {
+        AppException innerException;
         var newIndex = index + 1;
         if (index >= referees.Count || index < 0) newIndex = 0;
 
         var refereeLevel = await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category3);
+        if (refereeLevel  is null)
+        {
+            innerException = new AppException(AppPhrases.RefereeLevelFindError);
+            return Result<(IList<Referee>, int)>.Fail(
+                new AppException(AppPhrases.RefereeAddError, innerException)
+            );
+        }
+        
         var refereeJobTitle = await repository.FindAsync<RefereeJobTitle>(RefereeJobTitleEnm.StageReferee);
+        if (refereeJobTitle  is null)
+        {
+            innerException = new AppException(AppPhrases.RefereeJobTitleFindError);
+            return Result<(IList<Referee>, int)>.Fail(
+                new AppException(AppPhrases.RefereeAddError, innerException)
+            );
+        }
 
         var newReferee = new Referee(newIndex + 1,
             "ФАМИЛИЯ",
             "ИМЯ",
             "ТЕРРИТОРИЯ",
-            refereeLevel!,
-            refereeJobTitle!);
-        
+            refereeLevel,
+            refereeJobTitle);
+
         List<Referee> newReferees = [..referees];
         newReferees.Insert(newIndex, newReferee);
         for (var i = newIndex + 1; i < newReferees.Count; i++)
         {
             newReferees[i].Number = i + 1;
         }
-            
+
         return Result<(IList<Referee>, int)>.Done((newReferees, newIndex));
     }
     
@@ -90,12 +106,17 @@ public class RefereeService(IRepository repository)
     public async Task<Result<(IList<Referee> Referees, int Index)>> RemoveRefereeAsync(IList<Referee> referees, int index)
     {
         if (index >= referees.Count || index < 0)
-            return Result<(IList<Referee>, int)>.Done((referees, index));
+            return Result<(IList<Referee>, int)>.Done(([..referees], index));
 
-        var removeResult = await repository.RemoveAsync(referees[index]);
-        if (!removeResult.HasValue)
-            Result<IList<Referee>>.Fail(removeResult.Excptn!);
-        
+        // Удаляем
+        // var intResult = await repository.RemoveAsync(referees[index]);
+        // if (! intResult)
+        // {
+        //     return Result<(IList<Referee>, int)>.Fail(
+        //         new AppException(AppPhrases.RefereeRemoveError, intResult.Excptn)
+        //     );
+        // }
+
         List<Referee> newReferees = [..referees];
         newReferees.RemoveAt(index);
         for (var i = index; i < newReferees.Count; i++)
@@ -111,5 +132,11 @@ public class RefereeService(IRepository repository)
     /// </summary>
     /// <param name="referees">Список судей.</param>
     public async Task<Result<int>> SaveRefereesAsync(IEnumerable<Referee> referees)
-        => await repository.AddOrUpdateRangeAsync(referees);
+    {
+        var intResult = await repository.AddOrUpdateRangeAsync(referees);
+        
+        return intResult
+            ? intResult
+            : Result<int>.Fail(new AppException(AppPhrases.RefereesSaveError, intResult.Excptn));
+    }
 }

@@ -65,7 +65,7 @@ public partial class Repository<TDbContext> : IRepository, IDisposable where TDb
     }
     
     /// <summary>
-    /// Конструктор. !!!!!!!!!!!!!!!!!!!
+    /// Конструктор.
     /// </summary>
     internal Repository(IDbContextFactory<TDbContext> contextFactory) : this()
     {

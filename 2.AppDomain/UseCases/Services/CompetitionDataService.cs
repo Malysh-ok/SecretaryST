@@ -59,29 +59,36 @@ public class CompetitionDataService(IRepository repository)
         CompetitionsStatus competitionsStatus, DetailedCompetitionStatus detailedCompetitionStatus,
         string? description = null)
     {
-        // Удаляем данные о соревновании из репозитория
-        var result = await repository.RemoveRangeAsync(await repository.GetAllAsync<CompetitionData>());
-        if (! result)
-            return Result<CompetitionData>.Fail(
-                new AppException(
-                    $"Failed to delete the competition data from the repository.", result.Excptn,
-                    "ru", $"Не удалось удалить данные о соревновании из репозитория.")
-            );
+        AppException innerException;
         
+        // Удаляем данные о соревновании из репозитория
+        var intResult = await repository.RemoveRangeAsync(await repository.GetAllAsync<CompetitionData>());
+
+        if (! intResult)
+        {
+            innerException = new AppException(AppPhrases.CompetitionDataRemoveError, intResult.Excptn);
+            return Result<CompetitionData>.Fail(
+                new AppException(AppPhrases.CompetitionDataCreateError, innerException)
+            );
+        }
+
         // Создаем данные о соревновании и добавляем в репозиторий
         var competition =
             new CompetitionData(name, conductingOrganizations, initialDate, endDate, venue,
                 competitionsStatus, detailedCompetitionStatus,
                 description);
-        result = await repository.AddAsync(competition);
-        
-        return result 
-            ? Result<CompetitionData>.Done(competition)
-            : Result<CompetitionData>.Fail(
-                new AppException(
-                    $"Failed to save the competition data to the repository.", result.Excptn,
-                    "ru", $"Ошибка при сохранении данных о соревновании в репозитории.")
+        intResult = await repository.AddAsync(competition);
+
+        // ReSharper disable once InvertIf
+        if (! intResult)
+        {
+            innerException = new AppException(AppPhrases.CompetitionDataSaveError, intResult.Excptn);
+            return Result<CompetitionData>.Fail(
+                new AppException(AppPhrases.CompetitionDataCreateError, innerException)
             );
+        }
+        
+        return Result<CompetitionData>.Done(competition);
     }
     
     /// <summary>
@@ -105,5 +112,11 @@ public class CompetitionDataService(IRepository repository)
     /// </summary>
     /// <param name="competitionData">Данные о соревнования.</param>
     public async Task<Result<int>> SaveCompetitionDataAsync(CompetitionData competitionData)
-        => await repository.AddOrUpdateAsync(competitionData);
+    {
+        var intResult = await repository.AddOrUpdateAsync(competitionData);
+
+        return intResult
+            ? intResult
+            : Result<int>.Fail(new AppException(AppPhrases.CompetitionDataSaveError, intResult.Excptn));
+    }
 }

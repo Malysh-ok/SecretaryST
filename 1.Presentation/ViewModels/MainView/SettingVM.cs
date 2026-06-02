@@ -275,6 +275,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     private async Task OnGetDetailedCompetitionStatuses()
     {
         var detailedCompetitionsStatusesResult = await _competitionDataService.GetDetailedCompetitionsStatusesAsync();
+
         if (detailedCompetitionsStatusesResult)
         {
             // Перезаписываем коллекцию статусов и наименований соревнований
@@ -286,7 +287,9 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
             // Пишем в статус-бар и лог об ошибке
             _ = StatusBarData.SetTextAsync(detailedCompetitionsStatusesResult.Excptn?.Message, 
                 StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(detailedCompetitionsStatusesResult.Excptn, "");
+            _logger.Error(detailedCompetitionsStatusesResult.Excptn, 
+                "{class}.{method}.", 
+                typeof(SettingVM), nameof(OnGetDetailedCompetitionStatuses));
         }
     }
 
@@ -307,7 +310,9 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
             // Пишем в статус-бар и лог об ошибке
             _ = StatusBarData.SetTextAsync(competitionDataResult.Excptn?.Message, 
                 StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(competitionDataResult.Excptn, "");
+            _logger.Error(competitionDataResult.Excptn, 
+                "{class}.{method}.", 
+                typeof(SettingVM), nameof(OnGetCompetitionData));
         }
     }
 
@@ -316,14 +321,16 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// </summary>
     private async Task OnSaveCompetitionData()
     {
-        var result = await _competitionDataService.SaveCompetitionDataAsync(CompetitionData!);
+        var intResult = await _competitionDataService.SaveCompetitionDataAsync(CompetitionData!);
 
-        if (! result)
+        if (! intResult)
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
+            _ = StatusBarData.SetTextAsync(intResult.Excptn?.Message, 
                 StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(result.Excptn, "");
+            _logger.Error(intResult.Excptn, 
+                "{class}.{method}.", 
+                typeof(SettingVM), nameof(OnSaveCompetitionData));
         }
     }
     
@@ -337,19 +344,21 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// </summary>
     private async Task OnGetRefereeLevels()
     {
-        var result = await _refereeService.GetRefereeLevelsAsync();
-        if (result)
+        var refereeLevelsResult = await _refereeService.GetRefereeLevelsAsync();
+        if (refereeLevelsResult)
         {
             // Перезаписываем коллекцию судейских категорий
             RefereeLevels.Clear();
-            RefereeLevels.AddRange(result.Value);
+            RefereeLevels.AddRange(refereeLevelsResult.Value);
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
+            _ = StatusBarData.SetTextAsync(refereeLevelsResult.Excptn?.Message, 
                 StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(result.Excptn, ""); 
+            _logger.Error(refereeLevelsResult.Excptn, 
+                "{class}.{method}.", 
+                typeof(SettingVM), nameof(OnGetRefereeLevels));
         }
     }
     
@@ -358,19 +367,20 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// </summary>
     private async Task OnGetRefereeJobTitles()
     {
-        var result = await _refereeService.GetRefereeJobTitlesAsync();
-        if (result)
+        var refereeJobTitlesResult = await _refereeService.GetRefereeJobTitlesAsync();
+        if (refereeJobTitlesResult)
         {
             // Перезаписываем коллекцию судейских должностей
             RefereeJobTitles.Clear();
-            RefereeJobTitles.AddRange(result.Value);
+            RefereeJobTitles.AddRange(refereeJobTitlesResult.Value);
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
+            _ = StatusBarData.SetTextAsync(refereeJobTitlesResult.Excptn?.Message, 
                 StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(result.Excptn, "");
+            _logger.Error(refereeJobTitlesResult.Excptn, "{class}.{method}", 
+                typeof(SettingVM), nameof(OnGetRefereeJobTitles));
         }
     }
     
@@ -379,21 +389,22 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// </summary>
     private async Task OnGetReferees()
     {
-        var result = await _refereeService.GetRefereesAsync(Referees);
-        if (result)
+        var refereesResult = await _refereeService.GetRefereesAsync(Referees);
+        if (refereesResult)
         {
             // Перезаписываем коллекцию судей
             var index = Referees.SelectedIndex;
             Referees.Clear();
-            Referees.AddRange(result.Value);
+            Referees.AddRange(refereesResult.Value);
             Referees.SelectedIndex = index;
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
+            _ = StatusBarData.SetTextAsync(refereesResult.Excptn?.Message, 
                 StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(result.Excptn, "");
+            _logger.Error(refereesResult.Excptn, "{class}.{method}", 
+                typeof(SettingVM), nameof(OnGetReferees));
         }
     }
 
@@ -402,12 +413,12 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// </summary>
     private async Task OnAddReferee()
     {
-        var result = await _refereeService.AddRefereeAsync(Referees, Referees.SelectedIndex);
-        if (result)
+        var refereesResult = await _refereeService.AddRefereeAsync(Referees, Referees.SelectedIndex);
+        if (refereesResult)
         {
             Referees.Clear();
-            Referees.AddRange(result.Value.Referees);
-            Referees.SelectedIndex = result.Value.Index;
+            Referees.AddRange(refereesResult.Value.Referees);
+            Referees.SelectedIndex = refereesResult.Value.Index;
             
             // TODO: Временно (без ожидания окончания)
             _ = StatusBarData.SetTextAsync("Добавили судью.", StatusBarData.StatusBarTextType.Info);
@@ -415,9 +426,10 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
-                StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(result.Excptn, "");
+            _ = StatusBarData.SetTextAsync(refereesResult.Excptn?.Message, 
+                StatusBarData.StatusBarTextType.Error, 0);
+            _logger.Error(refereesResult.Excptn, "{class}.{method}", 
+                typeof(SettingVM), nameof(OnAddReferee));
         }
     }
 
@@ -426,25 +438,25 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// </summary>
     private async Task OnRemoveReferee()
     {
-        var result = await _refereeService.RemoveRefereeAsync(Referees, Referees.SelectedIndex);
+        var refereesResult = await _refereeService.RemoveRefereeAsync(Referees, Referees.SelectedIndex);
         
-        // result = Result<IList<Referee>>.Fail(new Exception(AppPhrases.RefereesLoadError +
-        //                                                    AppPhrases.RefereesLoadError + AppPhrases.RefereesLoadError));
-        
-        if (result)
+        if (refereesResult)
         {
             Referees.Clear();
-            Referees.AddRange(result.Value.Referees);
-            Referees.SelectedIndex = result.Value.Index;
+            Referees.AddRange(refereesResult.Value.Referees);
+            Referees.SelectedIndex = refereesResult.Value.Index;
+            
             // TODO: Временно (без ожидания окончания)
-            _ = StatusBarData.SetTextAsync("Удалили судью.", StatusBarData.StatusBarTextType.Error);
+            if (refereesResult.Value.Index >= 0)
+                _ = StatusBarData.SetTextAsync("Удалили судью.", StatusBarData.StatusBarTextType.Error);
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
+            _ = StatusBarData.SetTextAsync(refereesResult.Excptn?.Message, 
                 StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(result.Excptn, "");
+            _logger.Error(refereesResult.Excptn, "{class}.{method}", 
+                typeof(SettingVM), nameof(OnRemoveReferee));
         }
     }
 
@@ -453,14 +465,15 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// </summary>
     private async Task OnSaveReferees()
     {
-        var result = await _refereeService.SaveRefereesAsync(Referees);
+        var intResult = await _refereeService.SaveRefereesAsync(Referees);
 
-        if (! result)
+        if (! intResult)
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(result.Excptn?.Message, 
+            _ = StatusBarData.SetTextAsync(intResult.Excptn?.Message, 
                 StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(result.Excptn, "");
+            _logger.Error(intResult.Excptn, "{class}.{method}", 
+                typeof(SettingVM), nameof(OnSaveReferees));
         }
     }
 

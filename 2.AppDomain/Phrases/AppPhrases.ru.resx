@@ -35,4 +35,28 @@
     <data name="DetailedCompetitionStatusesLoadError" xml:space="preserve">
         <value>Не удалось получить статусы и названия соревнований из репозитория.</value>
     </data>
+    <data name="CompetitionDataSaveError" xml:space="preserve">
+        <value>Не удалось сохранить данные о соревновании в репозитории.</value>
+    </data>
+    <data name="CompetitionDataCreateError" xml:space="preserve">
+        <value>Не удалось создать новые данные о соревновании в репозитории.</value>
+    </data>
+    <data name="CompetitionDataRemoveError" xml:space="preserve">
+        <value>Не удалось удалить данные о соревновании из репозитория.</value>
+    </data>
+    <data name="RefereeLevelFindError" xml:space="preserve">
+        <value>Не удалось найти судейскую категорию в репозитории.</value>
+    </data>
+    <data name="RefereeAddError" xml:space="preserve">
+        <value>Не удалось добавить судью в список.</value>
+    </data>
+    <data name="RefereeJobTitleFindError" xml:space="preserve">
+        <value>Не удалось найти судейскую должность в репозитории.</value>
+    </data>
+    <data name="RefereeRemoveError" xml:space="preserve">
+        <value>Не удалось удалить судью из репозитория.</value>
+    </data>
+    <data name="RefereesSaveError" xml:space="preserve">
+        <value>Не удалось сохранить список судей в репозитории.</value>
+    </data>
 </root>

@@ -112,7 +112,7 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
             " Если нужно добавить всплывающие подсказки, иконки и кликабельность" + 
             " Если нужно добавить всплывающие подсказки, иконки и кликабельность" + 
             " Если нужно добавить всплывающие подсказки, иконки и кликабельность", 
-            null, 0, false);
+                StatusBarData.StatusBarTextType.Info, 0, false);
         await Task.Delay(2000);
         await StatusBarData.SetProgressAsync(100);
         await Task.Delay(3000);
