@@ -20,7 +20,7 @@
       <ProjectReference Include="..\..\4.DataAccess\DbContexts\DbContexts.csproj" />
       <ProjectReference Include="..\..\4.DataAccess\Repositories\Repositories.csproj" />
       <ProjectReference Include="..\..\5.Common\BaseExtensions\BaseExtensions.csproj" />
-      <ProjectReference Include="..\..\5.Common\CommonPhrases\CommonPhrases.csproj" />
+      <ProjectReference Include="..\..\5.Common\BasePhrases\BasePhrases.csproj" />
       <ProjectReference Include="..\..\5.Common\WpfModule\CommonResources\CommonResources.csproj" />
       <ProjectReference Include="..\..\5.Common\WpfModule\Components\Components.csproj" />
       <ProjectReference Include="..\..\5.Common\WpfModule\Extensions\Extensions.csproj" />

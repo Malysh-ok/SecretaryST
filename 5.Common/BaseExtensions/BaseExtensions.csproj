@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CommonPhrases\CommonPhrases.csproj" />
+      <ProjectReference Include="..\BasePhrases\BasePhrases.csproj" />
     </ItemGroup>
 
 </Project>

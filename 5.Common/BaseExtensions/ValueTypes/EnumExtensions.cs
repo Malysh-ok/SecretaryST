@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
-using Common.Phrases;
+using Common.BasePhrases;
 
 namespace Common.BaseExtensions.ValueTypes;
 

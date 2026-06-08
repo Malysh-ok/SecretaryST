@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using Common.Phrases;
+using Common.BasePhrases;
 
 namespace Common.BaseExtensions;
 

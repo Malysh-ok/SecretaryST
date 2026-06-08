@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Xml;
-using Common.Phrases;
+using Common.BasePhrases;
 
 namespace Common.BaseExtensions;
 

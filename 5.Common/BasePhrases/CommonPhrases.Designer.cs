@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Common.Phrases {
+namespace Common.BasePhrases {
     using System;
     
     
@@ -38,7 +38,7 @@ namespace Common.Phrases {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Common.CommonPhrases.CommonPhrases", typeof(CommonPhrases).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Common.BasePhrases.CommonPhrases", typeof(CommonPhrases).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

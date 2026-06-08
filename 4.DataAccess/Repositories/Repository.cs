@@ -1,10 +1,9 @@
-using System.Globalization;
+﻿using System.Globalization;
 using AppDomain.UseCases._Contracts;
 using Common.BaseComponents.Components;
 using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions;
-using Common.BaseExtensions.Collections;
-using Common.Phrases;
+using Common.BasePhrases;
 using DataAccess.DbContexts._Contracts;
 using DataAccess.Repositories.Exceptions;
 using Microsoft.EntityFrameworkCore;

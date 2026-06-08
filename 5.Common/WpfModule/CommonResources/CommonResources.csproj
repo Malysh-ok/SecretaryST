@@ -5,7 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <UseWPF>true</UseWPF>
-        <RootNamespace>Common.WpfModule.CommonStyles</RootNamespace>
+        <RootNamespace>Common.WpfModule.CommonResources</RootNamespace>
         <LangVersion>default</LangVersion>
     </PropertyGroup>
 

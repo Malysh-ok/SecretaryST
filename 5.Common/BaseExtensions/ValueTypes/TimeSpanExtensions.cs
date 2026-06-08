@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Globalization;
-using Common.Phrases;
+using Common.BasePhrases;
 
 namespace Common.BaseExtensions.ValueTypes;
 

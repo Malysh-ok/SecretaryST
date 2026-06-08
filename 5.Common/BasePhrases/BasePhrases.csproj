@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>Common.CommonPhrases</RootNamespace>
+        <RootNamespace>Common.BasePhrases</RootNamespace>
         <LangVersion>default</LangVersion>
     </PropertyGroup>
 

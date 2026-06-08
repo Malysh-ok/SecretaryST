@@ -1,4 +1,4 @@
-﻿using Common.Phrases;
+﻿using Common.BasePhrases;
 
 namespace DataAccess.Repositories.Exceptions;
 
