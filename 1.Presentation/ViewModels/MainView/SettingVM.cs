@@ -152,6 +152,11 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// Команда сохранения изменений, связанных с судьями.
     /// </summary>
     public ICommand SaveRefereesCommand { get; } = null!;
+    
+    /// <summary>
+    /// Команда перенумерования судей.
+    /// </summary>
+    public ICommand RenumberRefereesCommand { get; } = null!;
 
     #endregion
 
@@ -190,6 +195,10 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         AddRefereeCommand = new AsyncRelayCommand(OnAddReferee);
         RemoveRefereeCommand = new AsyncRelayCommand(OnRemoveReferee);
         SaveRefereesCommand = new AsyncRelayCommand(OnSaveReferees);
+        
+        // Привязываем команду перенумерования к методу в сервисе для работы с судьями
+        RenumberRefereesCommand =
+            new RelayCommand<ObservableCollection<Referee>>(_ => _refereeService.RenumberRefereesCollection(Referees));
         
         // Установка локализации из настроек
         Languages = new ObservableCollection<Lang>(localization.Languages.Values);

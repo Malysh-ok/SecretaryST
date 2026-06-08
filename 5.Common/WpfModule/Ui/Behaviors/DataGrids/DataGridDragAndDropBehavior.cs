@@ -12,27 +12,38 @@ using Microsoft.Xaml.Behaviors;
 namespace Common.WpfModule.Ui.Behaviors.DataGrids;
 
 /// <summary>
-/// Бихейвер. Сортирует список элементов в DataGrid.
+/// Бихейвер. Реализует перемещение строк (drag and drop) в DataGrid.
 /// </summary>
-public class DataGridSortDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehavior
+public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehavior
 {
+    // Список строк DataGrid
     public static readonly DependencyProperty ItemsProperty = DependencyProperty.Register(
-        nameof(Items), typeof(ICollection), typeof(DataGridSortDragAndDropBehavior), 
+        nameof(Items), typeof(IList), typeof(DataGridDragAndDropBehavior), 
         new PropertyMetadata(default(IList)));
+    
+    // Команда, выполняемая после перемещения строки
+    public static readonly DependencyProperty AfterItemMovedCommandProperty = 
+        DependencyProperty.Register(nameof(AfterItemMovedCommand), typeof(ICommand), 
+            typeof(DataGridDragAndDropBehavior));
 
     public IList? Items
     {
         get => (IList)GetValue(ItemsProperty);
         set => SetValue(ItemsProperty, value);
     }
+    
+    public ICommand? AfterItemMovedCommand
+    {
+        get => (ICommand)GetValue(AfterItemMovedCommandProperty);
+        set => SetValue(AfterItemMovedCommandProperty, value);
+    }
 
     #region Fields
 
     private bool _mouseDown;
-    private double _tolerance = 20;
-    private double _offset = 5;
     private bool _isDragging;
     private Point _startPosition;
+    private bool _isMovePerformed;
 
     #endregion Fields
 
@@ -41,17 +52,9 @@ public class DataGridSortDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropB
     /// <inheritdoc />
     public bool IsAllowDrop { get; set; }
 
-    public double Tolerance
-    {
-        get => _tolerance;
-        set => _tolerance = value;
-    }
+    public double Tolerance { get; set; } = 20;
 
-    public double Offset
-    {
-        get => _offset;
-        set => _offset = _tolerance;
-    }
+    public double Offset { get; set; } = 5;
 
     #endregion Properties
 
@@ -82,7 +85,7 @@ public class DataGridSortDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropB
         AssociatedObject.Drop -= Drop;
         AssociatedObject.GiveFeedback -= OnGiveFeedback;
     }
-
+    
     private void Drop(object sender, DragEventArgs e)
     {
         if (Items != null && Items.Count > 0)
@@ -103,11 +106,20 @@ public class DataGridSortDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropB
                         var destIndex = Items.IndexOf(destinationItem);
                         Items.Remove(droppedItem);
                         Items.Insert(destIndex, droppedItem);
+                        
+                        _isMovePerformed = true; // перемещение выполнено
+                        
                         var view = CollectionViewSource.GetDefaultView(Items);
                         view.Refresh();
                     }
                 }
             }
+        }
+        
+        // Выполняем команду, если перемещение было
+        if (_isMovePerformed)
+        {
+            AfterItemMovedCommand?.Execute(null);
         }
     }
 
@@ -149,15 +161,20 @@ public class DataGridSortDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropB
 
     private void OnDragMoving(object sender, DragEventArgs e)
     {
+    
         if (Items != null && Items.Count > 0)
         {
-            var droppedItem = e.Data.GetData(Items[0]!.GetType());
+            var itemType = Items[0]!.GetType();
+        
+            var droppedItem = e.Data.GetData(itemType);
+        
             if (droppedItem != null)
             {
                 if (e.OriginalSource is FrameworkElement element)
                 {
-                    var contentControl = element.TryFindParent<ContentControl>();
-                    var destinationItem = contentControl?.DataContext;
+                    var row = element.TryFindParent<DataGridRow>();
+                    var destinationItem = row?.Item;
+                
                     if (destinationItem != null && destinationItem.GetType() == droppedItem.GetType())
                     {
                         if (!droppedItem.Equals(destinationItem))
@@ -171,7 +188,7 @@ public class DataGridSortDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropB
         }
         IsAllowDrop = false;
     }
-
+    
     private bool IsDragStart(Point position)
     {
         if (_mouseDown)
@@ -207,6 +224,7 @@ public class DataGridSortDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropB
         MouseMove(sender, e);
     }
 
+    // ReSharper disable once UnusedParameter.Local
     private void MouseMove(object sender, MouseEventArgs e)
     {
         if (e.LeftButton == MouseButtonState.Pressed && !_isDragging && IsDragStart(e.GetPosition(null)))
@@ -214,22 +232,18 @@ public class DataGridSortDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropB
             _isDragging = true;
 
             var result = VisualTreeHelper.HitTest(AssociatedObject, e.GetPosition(AssociatedObject));
-            if (result != null)
+            var element = result?.VisualHit;
+            if (element is FrameworkElement frameworkElement)
             {
-                var element = result.VisualHit;
-                if (element is FrameworkElement frameworkElement)
+                if (frameworkElement.DataContext != null)
                 {
-                    if (frameworkElement.DataContext != null)
-                    {
-                        DragDrop.DoDragDrop(AssociatedObject, frameworkElement.DataContext, DragDropEffects.Move);
-                        //| DragDropEffects.Copy);
-                    }
+                    DragDrop.DoDragDrop(AssociatedObject, frameworkElement.DataContext, DragDropEffects.Move);
                 }
             }
-
 
             _isDragging = false;
         }
     }
+    
     #endregion Handlers
 }

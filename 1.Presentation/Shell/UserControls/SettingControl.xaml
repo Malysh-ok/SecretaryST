@@ -163,14 +163,17 @@
                         Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       SelectedIndex="{Binding Referees.SelectedIndex, 
                         Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      SelectedValuePath="">
+                      SelectedValuePath=""
+                      AllowDrop="True">
                 <!-- CurrentCell="{Binding CellInfo, 
                     Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" -->
                 <!-- SelectedValue="{Binding Referees.SelectedItem, 
                     Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" -->
 
                 <i:Interaction.Behaviors>
-                    <dataGrids:DataGridSortDragAndDropBehavior />
+                    <dataGrids:DataGridDragAndDropBehavior 
+                        Items="{Binding Referees}"
+                        AfterItemMovedCommand="{Binding RenumberRefereesCommand}" />
                 </i:Interaction.Behaviors>
                 
                 <DataGrid.Columns>
@@ -269,6 +272,7 @@
                             <TextBlock Text="{DynamicResource SettingControl_RefereeDomicile}" />
                         </DataGridTextColumn.Header>
                     </DataGridTextColumn>
+                    
                     <!-- Примечание -->
                     <DataGridTextColumn Width="*"
                                         Binding="{Binding Description}">
