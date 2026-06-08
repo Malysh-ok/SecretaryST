@@ -7,42 +7,77 @@ using Common.BasePhrases;
 using DataAccess.DbContexts._Contracts;
 using DataAccess.Repositories.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using ProblemDomain.Entities._Contracts;
 
 namespace DataAccess.Repositories;
 
+/// <inheritdoc />
 /// <summary>
 /// Репозиторий (класс, для непосредственной работы с БД).
 /// </summary>
-public partial class Repository<TDbContext> : IRepository, IDisposable where TDbContext : AbstractDbContext
+// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
+public class Repository<TDbContext> : IRepository 
+    where TDbContext : AbstractDbContext
 {
     /// <summary>
-    /// Признак использования пакетного режима.
+    /// Признак того, что ресурсы освобождены.
     /// </summary>
-    private bool _isUseBatch;
+    // ReSharper disable once RedundantDefaultMemberInitializer
+    private bool _disposed = false;
     
+    /// <summary>
+    /// Автоматическое обнаружение изменений в уже отслеживаемых сущностях.
+    /// </summary>
+    // ReSharper disable once RedundantDefaultMemberInitializer
+    private readonly bool _autoDetectChangesState = false;
+
     /// <summary>
     /// Контекст БД.
     /// </summary>
     // ReSharper disable once MemberCanBePrivate.Global
+    // ReSharper disable once FieldCanBeMadeReadOnly.Global
     protected TDbContext DbContext;
 
     /// <summary>
     /// Фабрика создания контекста (по факту - не используется)
     /// </summary>
-    // ReSharper disable once MemberCanBePrivate.Global
-    protected readonly IDbContextFactory<TDbContext> ContextFactory;
-        
+    protected IDbContextFactory<TDbContext> ContextFactory;
+    
     /// <inheritdoc />
+    // TODO: Удалить ExceptionsList?
     public ExceptionList<BaseException> ExceptionsList { get; }
+
+    #region [---------- Скрытые методы ----------]
+    
+    /// <summary>
+    /// Добавить связанные сущности в запрос.
+    /// </summary>
+    /// <param name="queryable">IQueryable-запрос.</param>
+    /// <param name="navigationProperties">Добавляемые сущности.</param>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    /// <returns>IQueryable-запрос.</returns>
+    // ReSharper disable once MemberCanBePrivate.Global
+    protected IQueryable<TEntity> AddNavigationProperties<TEntity>(
+        IQueryable<TEntity> queryable, IEnumerable<string> navigationProperties)
+        where TEntity : class
+    {
+        // Перебираем все названия навигационных свойств
+        foreach (var propName in navigationProperties)
+        {
+            if (! propName.IsNullOrEmpty())
+                queryable = queryable.Include(propName);    // включаем связанные сущности в результат запроса к БД
+        }
+
+        return queryable;
+    }
+    
+    #endregion
 
     /// <summary>
     /// Конструктор, запрещающий создание экземпляра без параметров.
     /// </summary>
     private Repository()
     {
-        _isUseBatch = false;
         DbContext = null!;
         ContextFactory = null!;
         DbPhrases.Culture = CultureInfo.CurrentUICulture;       // устанавливаем языковой стандарт для фраз
@@ -54,7 +89,11 @@ public partial class Repository<TDbContext> : IRepository, IDisposable where TDb
     /// </summary>
     public Repository(TDbContext dbContext) : this()
     {
-        DbContext = dbContext;
+        DbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        
+        // Отключаем AutoDetectChanges при создании для производительности
+        _autoDetectChangesState = DbContext.ChangeTracker.AutoDetectChangesEnabled;
+        DbContext.ChangeTracker.AutoDetectChangesEnabled = false;
             
         if (dbContext.IsNullOrEmptyConnectionString || !dbContext.IsPossibleConnect)
         {
@@ -70,669 +109,695 @@ public partial class Repository<TDbContext> : IRepository, IDisposable where TDb
     {
         ContextFactory = contextFactory;
     }
-
-
-    /// <summary>
-    /// Добавить связанные сущности в запрос.
-    /// </summary>
-    /// <param name="queryable">IQueryable-запрос.</param>
-    /// <param name="navigationProperties">Добавляемые сущности.</param>
-    /// <typeparam name="TEntity">Тип сущности.</typeparam>
-    /// <returns>IQueryable-запрос.</returns>
-    // ReSharper disable once MemberCanBePrivate.Global
-    protected IQueryable<TEntity> AddNavigationProperties<TEntity>(
-        IQueryable<TEntity> queryable, IEnumerable<string> navigationProperties)
-        where TEntity : AbstractEntity
-    {
-        // Перебираем все названия навигационных свойств
-        foreach (var propName in navigationProperties)
-        {
-            if (!propName.IsNullOrEmpty())
-                queryable = queryable.Include(propName);    // включаем связанные сущности в результат запроса к БД
-        }
-
-        return queryable;
-    }
-
-    /// <summary>
-    /// Отмена изменений в сущностях.
-    /// </summary>
-    /// <typeparam name="TEntity">Тип сущностей.</typeparam>
-    // ReSharper disable once MemberCanBePrivate.Global
-    protected void CancelingEntitiesChanges<TEntity>()
-        where TEntity : class
-    {
-        var entries = DbContext.ChangeTracker.Entries<TEntity>();
-        entries.ForEach(e => e.CurrentValues.SetValues(e.OriginalValues));
-    }
-    
-    /// <summary>
-    /// Использование пакетного режима.
-    /// </summary>
-    /// <param name="isUseBatch">Состояние режима.</param>
-    public async Task<int> UseBatch(bool isUseBatch = false)
-    {
-        _isUseBatch = isUseBatch;
-
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        if (_isUseBatch == false && DbContext is not null)
-        {
-            // TODO: переделать на Result<int> ???
-            await DbContext.SaveChangesAsync();
-        }
-
-        return 0;
-    }
-
-    /// <summary>
-    /// Действия, выполняемые перед основным методом.
-    /// </summary>
-    // ReSharper disable once MemberCanBePrivate.Global
-    protected async Task BeforeAsync()
-    {
-        /*
-        DbContext ??= await ContextFactory.CreateDbContextAsync();
-        */
-        
-        await Task.CompletedTask;
-    }
-    
-    /// <summary>
-    /// Действия, выполняемые после основного метода.
-    /// </summary>
-    // ReSharper disable once MemberCanBePrivate.Global
-    protected async Task AfterAsync()
-    {
-        /*
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        if (_isUseBatch == false && DbContext is not null)
-        {
-            await DbContext.DisposeAsync();
-            DbContext = null!;
-        }
-        */
-        
-        await Task.CompletedTask;
-    }
-
-
-    #region [---------- Добавление/обновление ----------]
     
     /// <inheritdoc />
-    public async Task<Result<int>> AddAsync<TEntity>(TEntity entity)
-        where TEntity : class, IAbstractEntity
+    public DbContext GetDbContext()
     {
-        try
-        {
-            await BeforeAsync();
-            
-            await DbContext.Set<TEntity>().AddAsync(entity);
-            return Result<int>.Done(await DbContext.SaveChangesAsync());
-        }
-        catch (Exception ex)
-        {
-            return Result<int>.Fail(ex);
-        }
-        finally
-        {
-            await AfterAsync();
-        }
+        return DbContext;
     }
-        
-    /// <inheritdoc />
-    public async Task<Result<int>> AddRangeAsync<TEntity>(IEnumerable<TEntity> entities)
-        where TEntity : class, IAbstractEntity
-    {
-        try
-        {
-            await BeforeAsync();
-
-            await DbContext.Set<TEntity>().AddRangeAsync(entities);
-            return Result<int>.Done(await DbContext.SaveChangesAsync());
-        }
-        catch (Exception ex)
-        {
-            return Result<int>.Fail(ex);
-        }
-        finally
-        {
-            await AfterAsync();
-        }
-    }
-    
-    /// <inheritdoc />
-    public async Task<Result<int>> AddOrUpdateAsync<TEntity>(TEntity entity)
-        where TEntity : class, IAbstractEntity
-    {
-        try
-        {
-            await BeforeAsync();
-            
-            if (entity.Id == 0)
-                await DbContext.Set<TEntity>().AddAsync(entity);
-            
-            return Result<int>.Done(await DbContext.SaveChangesAsync());
-        }
-        catch (Exception ex)
-        {
-            return Result<int>.Fail(ex);
-        }
-        finally
-        {
-            await AfterAsync();
-        }
-    }
-    
-    /// <inheritdoc />
-    public async Task<Result<int>> AddOrUpdateRangeAsync<TEntity>(IEnumerable<TEntity> entities)
-        where TEntity : class, IAbstractEntity
-    {
-        try
-        {
-            await BeforeAsync();
-
-            var dbSet =
-                DbContext.Set<TEntity>();
-            await dbSet.AddRangeAsync(entities.Where(e => e.Id == 0));
-            
-            return Result<int>.Done(await DbContext.SaveChangesAsync());
-        }
-        catch (Exception ex)
-        {
-            return Result<int>.Fail(ex);
-        }
-        finally
-        {
-            await AfterAsync();
-        }
-    }
-    
-    /// <inheritdoc />
-    public async Task<Result<List<TEntity>>> ReplaceNumberedRangeAsync<TEntity>(IList<TEntity> replaceableEntities)
-        where TEntity : AbstractEntity, INumberedEntity, ICopyEntity
-    {
-        // Замененные сущности
-        List<TEntity> replacedEntities = [];
-
-        // Получаем словарь всех сущностей, где в качестве ключа - номер
-        var repositoryEntityDic = 
-            (await GetNumberedAllAsync<TEntity>()).ToDictionary(d => d.Number);
-        
-        // Перебираем заменяемые сущности
-        foreach (var item in replaceableEntities)
-        {
-            // Если в словаре есть заменяемая сущность - копируем ее данные в сущность словаря,
-            // иначе - добавляем ее в словарь
-            repositoryEntityDic.TryGetValue(item.Number, out var repositoryEntity);
-            if (repositoryEntity is not null)
-            {
-                item.Copy(repositoryEntity);
-                replacedEntities.Add(repositoryEntity);
-            }
-            else
-            {
-                repositoryEntityDic[item.Number] = item;
-                replacedEntities.Add(item);
-            }
-        }
-        
-        var addOrUpdateResult = await AddOrUpdateRangeAsync(repositoryEntityDic.Values);
-
-        return addOrUpdateResult.HasValue
-            ? Result<List<TEntity>>.Done(replacedEntities)
-            : Result<List<TEntity>>.Fail(addOrUpdateResult.Excptn!);
-    }
-    
-    /// <inheritdoc />
-    public async Task<Result<List<TEntity>>> ReplaceNamedRangeAsync<TEntity>(IEnumerable<TEntity> replaceableEntities)
-        where TEntity : AbstractEntity, INamedEntity, ICopyEntity
-    {
-        // Замененные сущности
-        List<TEntity> replacedEntities = [];
-        
-        // Получаем словарь всех сущностей, где в качестве ключа - наименование
-        var repositoryEntityDic = 
-            (await GetAllAsync<TEntity>()).ToDictionary(d => d.Name);
-        
-        // Перебираем заменяемые сущности
-        foreach (var item in replaceableEntities)
-        {
-            // Если в словаре есть заменяемая сущность - копируем ее данные в сущность словаря,
-            // иначе - добавляем ее в словарь
-            repositoryEntityDic.TryGetValue(item.Name, out var repositoryEntity);
-            if (repositoryEntity is not null)
-            {
-                item.Copy(repositoryEntity);
-                replacedEntities.Add(repositoryEntity);
-            }
-            else
-            {
-                repositoryEntityDic[item.Name] = item;
-                replacedEntities.Add(item);
-            }
-        }
-        
-        var addOrUpdateResult = await AddOrUpdateRangeAsync(repositoryEntityDic.Values);
-
-        return addOrUpdateResult.HasValue
-            ? Result<List<TEntity>>.Done(replacedEntities)
-            : Result<List<TEntity>>.Fail(addOrUpdateResult.Excptn!);
-    }
-    
-    #endregion
-
     
     #region [---------- Получение ----------]
-    
+
     /// <inheritdoc />
-    public async Task<int> CountAsync<TEntity>()
+    public async Task<Result<int>> CountAsync<TEntity>()
         where TEntity : class, IAbstractEntity
     {
         try
         {
-            await BeforeAsync();
-
-            return await DbContext.Set<TEntity>().CountAsync();
+            return Result<int>.Done(await DbContext.Set<TEntity>().CountAsync());
         }
-        finally
+        catch (Exception ex)
         {
-            await AfterAsync();
+            return Result<int>.Fail(ex);
         }
     }
 
     /// <inheritdoc />
-    public async Task<TEntity?> FindAsync<TEntity>(object id) 
+    public async Task<Result<TEntity?>> FindAsync<TEntity>(object id) 
         where TEntity : class, IAbstractEntity 
     {
         try
         {
-            await BeforeAsync();
-
-            var entity = await DbContext.Set<TEntity>().FindAsync(id);
-
-            return entity;
+            return Result<TEntity?>.Done(await DbContext.Set<TEntity>().FindAsync(id));
         }
-        finally
+        catch (Exception ex)
         {
-            await AfterAsync();
+            return Result<TEntity?>.Fail(ex);
         }
     }
     
     /// <inheritdoc />
-    public async Task<IEnumerable<TEntity>> GetAllAsync<TEntity>(params string[] navigationProperties)
-        where TEntity : AbstractEntity
+    public async Task<Result<TEntity?>> GetByIdAsync<TEntity>(int id, params string[] navigationProperties)
+        where TEntity : class, IAbstractEntity
     {
         try
         {
-            await BeforeAsync();
+            var queryable = DbContext.Set<TEntity>().AsTracking(); // Т.к. запрос может быть сложным,
+                                                                   // .AsNoTracking() использовать не получается
 
-            // Отмена изменений в сущностях
-            CancelingEntitiesChanges<TEntity>();
-
-            // Используем универсальный метод Set
-            IQueryable<TEntity> queryable =
-                    DbContext.Set<TEntity>()
-                /*.AsNoTracking()*/; // Т.к. запрос может быть сложным, .AsNoTracking() использовать не получается
-
-            var entities =
-                AddNavigationProperties(queryable, navigationProperties).OrderBy(e => e.Id).ToListAsync();
-
-            return await entities;
+            return Result<TEntity?>.Done(await AddNavigationProperties(queryable, navigationProperties)
+                .FirstOrDefaultAsync(e => e.Id == id));
         }
-        finally
+        catch (Exception ex)
         {
-            await AfterAsync();
+            return Result<TEntity?>.Fail(ex);
         }
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<TEntity>> GetAllAsync<TEntity>(IPersonalityEntity personality, params string[] navigationProperties)
-        where TEntity : AbstractEntity, IPersonalityEntity
+    public async Task<Result<TEntity?>> GetFirstAsync<TEntity>(params string[] navigationProperties) 
+        where TEntity : class, IAbstractEntity
     {
         try
         {
-            await BeforeAsync();
+            var queryable = DbContext.Set<TEntity>().AsTracking();  // Т.к. запрос может быть сложным,
+                                                                    // .AsNoTracking() использовать не получается
 
-            // Отмена изменений в сущностях
-            CancelingEntitiesChanges<TEntity>();
-
-            // Используем универсальный метод Set
-            IQueryable<TEntity> queryable =
-                DbContext.Set<TEntity>(); // Т.к. запрос может быть сложным, .AsNoTracking() использовать не получается
-
-            var entity = await AddNavigationProperties(queryable, navigationProperties)
-                .OrderBy(e => e.Name)
-                .Where(e =>
-                    e.FirstName == personality.FirstName
-                    && e.LastName == personality.LastName
-                    && e.Patronymic == personality.Patronymic)
-                .ToListAsync();
-
-            return entity;
+            return Result<TEntity?>.Done(await AddNavigationProperties(queryable, navigationProperties)
+                                               .OrderBy(e => e.Id).FirstOrDefaultAsync());
         }
-        finally
+        catch (Exception ex)
         {
-            await AfterAsync();
+            return Result<TEntity?>.Fail(ex);
         }
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<TEntity>> GetNumberedAllAsync<TEntity>(params string[] navigationProperties)
-        where TEntity : AbstractEntity, INumberedEntity
+    public async Task<Result<TEntity?>> GetLastAsync<TEntity>(params string[] navigationProperties) 
+        where TEntity : class, IAbstractEntity
     {
         try
         {
-            await BeforeAsync();
+            var queryable = DbContext.Set<TEntity>().AsTracking();  // Т.к. запрос может быть сложным,
+                                                                    // .AsNoTracking() использовать не получается
 
-            // Отмена изменений в сущностях
-            CancelingEntitiesChanges<TEntity>();
-
-            IQueryable<TEntity> queryable =
-                DbContext.Set<TEntity>();
-
-            var entities =
-                AddNavigationProperties(queryable, navigationProperties).OrderBy(e => e.Number).ToListAsync();
-
-            return await entities;
+            return Result<TEntity?>.Done(await AddNavigationProperties(queryable, navigationProperties)
+                .OrderBy(e => e.Id).LastOrDefaultAsync());
         }
-        finally
+        catch (Exception ex)
         {
-            await AfterAsync();
-        }
-    }
-        
-    /// <inheritdoc />
-    public async Task<IEnumerable<TEntity>> GetAllFromNameAsync<TEntity>(string? name, bool isUseLike = false,
-        params string[] navigationProperties) 
-        where TEntity : AbstractEntity, INamedEntity
-    {
-        try
-        {
-            await BeforeAsync();
-            
-            // Отмена изменений в сущностях
-            CancelingEntitiesChanges<TEntity>();
-
-            // Используем универсальный метод Set
-            IQueryable<TEntity> queryable =
-                DbContext.Set<TEntity>(); // Т.к. запрос может быть сложным, .AsNoTracking() использовать не получается
-
-            var entities = isUseLike
-                ? await AddNavigationProperties(queryable, navigationProperties)
-                    .OrderBy(e => e.Name)
-                    .Where(e
-                        // Ищем, используя оператор LIKE
-                        => EF.Functions.Like(e.Name, name))
-                    .ToListAsync()
-                : await AddNavigationProperties(queryable, navigationProperties)
-                    .OrderBy(e => e.Name)
-                    .Where(e
-                        // Ищем точные совпадения
-                        => e.Name == name)
-                    .ToListAsync();
-
-            return entities;
-        }
-        finally
-        {
-            await AfterAsync();
-        }
-    }
-        
-    /// <inheritdoc />
-    public async Task<IEnumerable<TEntity>> GetAllFromNumberAsync<TEntity>(int? number,
-        params string[] navigationProperties) 
-        where TEntity : AbstractEntity, INumberedEntity
-    {
-        try
-        {
-            await BeforeAsync();
-
-            // Отмена изменений в сущностях
-            CancelingEntitiesChanges<TEntity>();
-
-            // Используем универсальный метод Set
-            IQueryable<TEntity> queryable =
-                DbContext.Set<TEntity>(); // Т.к. запрос может быть сложным, .AsNoTracking() использовать не получается
-
-            var entities = await AddNavigationProperties(queryable, navigationProperties)
-                .OrderBy(e => e.Number)
-                .Where(e => e.Number == number)
-                .ToListAsync();
-
-            return entities;
-        }
-        finally
-        {
-            await AfterAsync();
+            return Result<TEntity?>.Fail(ex);
         }
     }
 
     /// <inheritdoc />
-    public async Task<TEntity?> GetFirstAsync<TEntity>(params string[] navigationProperties) 
-        where TEntity : AbstractEntity
+    public async Task<Result<IList<TEntity>>> GetAllAsync<TEntity>(params string[] navigationProperties)
+        where TEntity : class
     {
         try
         {
-            await BeforeAsync();
+            var queryable = DbContext.Set<TEntity>().AsTracking();  // Т.к. запрос может быть сложным,
+                                                                    // .AsNoTracking() использовать не получается
 
-            // Отмена изменений в сущностях
-            CancelingEntitiesChanges<TEntity>();
-
-            // Используем универсальный метод Set
-            IQueryable<TEntity> queryable =
-                    DbContext.Set<TEntity>()
-                /*.AsNoTracking()*/; // Т.к. запрос может быть сложным, .AsNoTracking() использовать не получается
-
-            var entity = await AddNavigationProperties(queryable, navigationProperties)
-                .OrderBy(e => e.Id).FirstOrDefaultAsync();
-
-            return entity;
+            return Result<IList<TEntity>>.Done(await AddNavigationProperties(queryable, navigationProperties)
+                .ToListAsync());
         }
-        finally
+        catch (Exception ex)
         {
-            await AfterAsync();
-        }
-    }
-        
-    /// <inheritdoc />
-    public async Task<TEntity?> GetFromIdAsync<TEntity>(int id, params string[] navigationProperties) 
-        where TEntity : AbstractEntity 
-    {
-        try
-        {
-            await BeforeAsync();
-            
-            // Отмена изменений в сущностях
-            CancelingEntitiesChanges<TEntity>();
-
-            // Используем универсальный метод Set
-            IQueryable<TEntity> queryable =
-                DbContext.Set<TEntity>(); // Т.к. запрос может быть сложным, .AsNoTracking() использовать не получается
-
-            var entity = await AddNavigationProperties(queryable, navigationProperties)
-                .OrderBy(e => e.Id).FirstOrDefaultAsync(e => e.Id == id);
-
-            return entity;
-        }
-        finally
-        {
-            await AfterAsync();
-        }
-    }
-
-    /// <inheritdoc />
-    public async Task<TEntity?> GetLastAsync<TEntity>(params string[] navigationProperties) 
-        where TEntity : AbstractEntity
-    {
-        try
-        {
-            await BeforeAsync();
-
-            // Отмена изменений в сущностях
-            CancelingEntitiesChanges<TEntity>();
-
-            // Используем универсальный метод Set
-            IQueryable<TEntity> queryable =
-                DbContext.Set<TEntity>(); // Т.к. запрос может быть сложным, .AsNoTracking() использовать не получается
-
-            var entity = await AddNavigationProperties(queryable, navigationProperties)
-                .OrderBy(e => e.Id).LastOrDefaultAsync();
-
-            return entity;
-        }
-        finally
-        {
-            await AfterAsync();
+            return Result<IList<TEntity>>.Fail(ex);
         }
     }
     
     /// <inheritdoc />
-    public async Task ReloadAsync<TEntity>(TEntity? entity)
-        where TEntity : AbstractEntity
+    public async Task<Result<IList<TEntity>>> GetNumberedAllAsync<TEntity>(bool ascending = true,
+            params string[] navigationProperties
+        )
+        where TEntity : class, INumberedEntity
     {
         try
         {
-            await BeforeAsync();
-
-            if (entity != null)
-                await DbContext.Entry(entity).ReloadAsync();
+            var queryable = DbContext.Set<TEntity>().AsTracking();  // Т.к. запрос может быть сложным,
+                                                                    // .AsNoTracking() использовать не получается
+        
+            queryable = ascending 
+                ? queryable.OrderBy(e => e.Number) 
+                : queryable.OrderByDescending(e => e.Number);
+        
+            return Result<IList<TEntity>>.Done(await AddNavigationProperties(queryable, navigationProperties)
+                .ToListAsync());
         }
-        finally
+        catch (Exception ex)
         {
-            await AfterAsync();
+            return Result<IList<TEntity>>.Fail(ex);
         }
-    }
-
-    /// <inheritdoc />
-    // TODO: Возможно нужно удалить.
-    public async Task<IEnumerable<TEntity>> ReloadRangeAsync<TEntity>(IEnumerable<TEntity> entities)
-        where TEntity : AbstractEntity
-    {
-        List<EntityEntry<TEntity>> entries = [];
-        entries.AddRange(entities.Select(entity =>
-        {
-            var entry = DbContext.Entry(entity);
-            entry.CurrentValues.SetValues(entry.OriginalValues);
-            return entry;
-        }));
-
-        return entries.Select(ee => ee.Entity);
     }
     
+    /// <inheritdoc />
+    public async Task<Result<IList<TEntity>>> GetAllByNumberAsync<TEntity>(int? number,
+            params string[] navigationProperties
+        )
+        where TEntity : class, INumberedEntity
+    {
+        try
+        {
+            var queryable = DbContext.Set<TEntity>().AsTracking();  // Т.к. запрос может быть сложным,
+                                                                    // .AsNoTracking() использовать не получается
+        
+            return Result<IList<TEntity>>.Done(await AddNavigationProperties(queryable, navigationProperties)
+                                               .Where(e => e.Number == number)
+                                               .ToListAsync());
+        }
+        catch (Exception ex)
+        {
+            return Result<IList<TEntity>>.Fail(ex);
+        }
+    }
+
     #endregion
 
-    
-    #region [---------- Проверки ----------]
-    
-    // TODO: Возможно нужно удалить.
-    
+    #region [---------- Добавление/обновление ----------]
+
     /// <inheritdoc />
-    public async Task<bool> IsExistingAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default)
-        where TEntity : AbstractEntity
-    {
-        return await DbContext.Set<TEntity>().AsNoTracking()
-            .ContainsAsync(entity, cancellationToken); // Стандартный comparer сравнивает только по id!
-    }
-        
-    /// <inheritdoc />
-    public async Task<bool> IsExistingAsync<TEntity>(IEnumerable<TEntity> entities,  CancellationToken cancellationToken = default)
-        where TEntity : AbstractEntity
+    public Result<int> Add<TEntity>(TEntity? entity) where TEntity : class, IAbstractEntity
     {
         try
         {
-            await BeforeAsync();
+            if (entity == null)
+                return Result<int>.Done(0);
+            
+            var entry = DbContext.Entry(entity);
 
-            var result = true;
-            foreach (var item in entities)
+            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+            switch (entry.State)
             {
-                result &= await IsExistingAsync(item, cancellationToken);
+                case EntityState.Detached:
+                    DbContext.Set<TEntity>().Add(entity);
+                    break;
+
+                case EntityState.Unchanged:
+                case EntityState.Modified:
+                    // Уже отслеживается как существующий - проверяем ID
+                    if (entity.Id == 0)
+                    {
+                        entry.State = EntityState.Added;
+                    }
+                    else
+                    {
+                        // Ошибка
+                        return Result<int>.Fail(DbException.CreateException(
+                            $"It is not possible to add an entity of type {typeof(TEntity).Name} with Id = {entity.Id} " +
+                            "An entity with this Id already exists.",
+                            null,
+                            "ru",
+                            $"Невозможно добавить сущность типа {typeof(TEntity).Name} с Id = {entity.Id}. " +
+                            "Сущность с таким Id уже существует.")
+                        );
+                    }
+
+                    break;
+
+                case EntityState.Added:
+                    // Уже добавлен, ничего не делаем
+                    break;
+
+                case EntityState.Deleted:
+                    entry.State = EntityState.Added;
+                    break;
             }
 
-            return result;
+            return Result<int>.Done(1);
         }
-        finally
+        catch (Exception ex)
         {
-            await AfterAsync();
+            return Result<int>.Fail(ex);
+        }
+    }
+    
+    /// <inheritdoc />
+    /// <remarks>
+    /// Работает медленно. По возможности не использовать.
+    /// </remarks>
+    public Result<int> AddRange<TEntity>(IList<TEntity>? entities) where TEntity : class, IAbstractEntity
+    {
+        try
+        {
+            if (entities == null || entities.Count == 0)
+                return Result<int>.Done(0);
+
+            foreach (var entity in entities)
+            {
+                Add(entity); // Используем Add с проверками
+            }
+            
+            return Result<int>.Done(entities.Count);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+
+    /// <inheritdoc />
+    public Result<int> AddRangeQuickly<TEntity>(IList<TEntity>? entities) where TEntity : class
+    {
+        try
+        {
+            if (entities == null || entities.Count == 0)
+                return Result<int>.Done(0);
+
+            DbContext.Set<TEntity>().AddRange(entities);
+            
+            return Result<int>.Done(entities.Count);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+
+    /// <inheritdoc />
+    public Result<int> Update<TEntity>(TEntity? entity) where TEntity : class, IAbstractEntity
+    {
+        try
+        {
+            if (entity == null)
+                return Result<int>.Done(0);
+
+            var entry = DbContext.Entry(entity);
+
+            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+            switch (entry.State)
+            {
+                case EntityState.Detached:
+                    if (entity.Id == 0)
+                    {
+                        DbContext.Set<TEntity>().Add(entity);
+                    }
+                    else
+                    {
+                        DbContext.Set<TEntity>().Attach(entity);
+                        entry.State = EntityState.Modified;
+                    }
+                    break;
+
+                case EntityState.Unchanged:
+                    entry.State = EntityState.Modified;
+                    break;
+
+                case EntityState.Modified:
+                case EntityState.Added:
+                    break;
+
+                case EntityState.Deleted:
+                    // Ошибка
+                    return Result<int>.Fail(DbException.CreateException(
+                        $"It is not possible to update a deleted entity of type {typeof(TEntity).Name}.",
+                        null,
+                        "ru",
+                        $"Невозможно обновить удалённую сущность типа {typeof(TEntity).Name}.")
+                    );
+            }
+            
+            return Result<int>.Done(1);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+    
+    /// <inheritdoc />
+    /// <remarks>
+    /// Работает медленно. По возможности не использовать.
+    /// </remarks>
+    public Result<int> UpdateRange<TEntity>(IList<TEntity>? entities) where TEntity : class, IAbstractEntity
+    {
+        try
+        {
+            if (entities == null || entities.Count == 0)
+                return Result<int>.Done(0);
+
+            foreach (var entity in entities)
+            {
+                Update(entity); // Используем Update с проверками
+            }
+            
+            return Result<int>.Done(entities.Count);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+
+    /// <inheritdoc />
+    public Result<int> UpdateRangeQuickly<TEntity>(IList<TEntity>? entities) where TEntity : class
+    {
+        try
+        {
+            if (entities == null || entities.Count == 0)
+                return Result<int>.Done(0);
+
+            DbContext.Set<TEntity>().UpdateRange(entities);
+        
+            return Result<int>.Done(entities.Count);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
         }
     }
 
     #endregion
 
     #region [---------- Удаление ----------]
+
+    /// <inheritdoc />
+    public Result<int> Remove<TEntity>(TEntity? entity) where TEntity : class, IAbstractEntity
+    {
+        try
+        {
+            if (entity == null)
+                return Result<int>.Done(0);
+        
+            var entry = DbContext.Entry(entity);
+
+            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+            switch (entry.State)
+            {
+                case EntityState.Detached:
+                    if (entity.Id == 0)
+                    {
+                        // Новая сущность, не сохранённая в БД - просто игнорируем
+                        return Result<int>.Done(1);
+                    }
+                    DbContext.Set<TEntity>().Attach(entity);
+                    entry.State = EntityState.Deleted;
+                    break;
+
+                case EntityState.Added:
+                    // Новая сущность - просто отключаем
+                    entry.State = EntityState.Detached;
+                    break;
+
+                case EntityState.Unchanged:
+                case EntityState.Modified:
+                    entry.State = EntityState.Deleted;
+                    break;
+
+                case EntityState.Deleted:
+                    // Уже удалён
+                    break;
+            }
+        
+            return Result<int>.Done(1);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
     
     /// <inheritdoc />
-    public async Task<Result<int>> RemoveAsync<TEntity>(TEntity entity)
-        where TEntity : AbstractEntity
+    /// <remarks>
+    /// Работает медленно. По возможности не использовать.
+    /// </remarks>
+    public Result<int> RemoveRange<TEntity>(IList<TEntity>? entities) where TEntity : class, IAbstractEntity
     {
         try
         {
-            await BeforeAsync();
+            if (entities == null || entities.Count == 0)
+                return Result<int>.Done(0);
 
-            DbContext.Set<TEntity>().Remove(entity);
-            // TODO: переделать удаление
-            return Result<int>.Done(0);
-            return Result<int>.Done(await DbContext.SaveChangesAsync());
+            foreach (var entity in entities)
+            {
+                Remove(entity); // Используем Remove с проверками
+            }
+            
+            return Result<int>.Done(entities.Count);
         }
         catch (Exception ex)
         {
             return Result<int>.Fail(ex);
         }
-        finally
-        {
-            await AfterAsync();
-        }
     }
-        
+    
     /// <inheritdoc />
-    public async Task<Result<int>> RemoveRangeAsync<TEntity>(IEnumerable<TEntity> entities)
-        where TEntity : AbstractEntity
+    public Result<int> RemoveRangeQuickly<TEntity>(IList<TEntity>? entities) where TEntity : class
     {
         try
         {
-            await BeforeAsync();
+            if (entities == null || entities.Count == 0)
+                return Result<int>.Done(0);
 
             DbContext.Set<TEntity>().RemoveRange(entities);
-            // TODO: переделать удаление
-            return Result<int>.Done(0);
-            return Result<int>.Done(await DbContext.SaveChangesAsync());
+        
+            return Result<int>.Done(entities.Count);
         }
         catch (Exception ex)
         {
             return Result<int>.Fail(ex);
-        }
-        finally
-        {
-            await AfterAsync();
         }
     }
 
-    /// <inheritdoc />
-    public async Task<Result<int>> RemoveAllAsync<TEntity>(bool isSaveChanges = false)
-        where TEntity : AbstractEntity
+    public Result<int> RemoveAllQuickly<TEntity>() where TEntity : class
     {
         try
         {
-            await BeforeAsync();
-
-            DbContext.Set<TEntity>().RemoveRange(DbContext.Set<TEntity>());
-            return isSaveChanges
-                ? Result<int>.Done(await DbContext.SaveChangesAsync())
-                : Result<int>.Done(0);
+            var allEntities =  DbContext.Set<TEntity>();
+            DbContext.Set<TEntity>().RemoveRange(allEntities);
+            
+            return Result<int>.Done(allEntities.Count());
         }
         catch (Exception ex)
         {
             return Result<int>.Fail(ex);
-        }
-        finally
-        {
-            await AfterAsync();
         }
     }
     
     #endregion
-        
-        
+
+    #region [---------- Присоединение/отсоединение ----------]
+
     /// <inheritdoc />
-    public void Dispose() => DbContext.Dispose();
+    public Result<int> Attach<TEntity>(TEntity? entity) where TEntity : class
+    {
+        try
+        {
+            if (entity == null)
+                return Result<int>.Done(0);
+
+            var entry = DbContext.Entry(entity);
+            
+            if (entry.State == EntityState.Detached)
+            {
+                DbContext.Set<TEntity>().Attach(entity);
+            }
+            
+            return Result<int>.Done(1);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+
+    /// <inheritdoc />
+    public Result<int> AttachRange<TEntity>(IList<TEntity>? entities) where TEntity : class
+    {
+        try
+        {
+            if (entities == null || entities.Count == 0)
+                return Result<int>.Done(0);
+
+            foreach (var entity in entities)
+            {
+                Attach(entity); // Используем Attach с проверками
+            }
+            
+            return Result<int>.Done(entities.Count);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+    
+    /// <inheritdoc />
+    public Result<int> DetachAll<TEntity>()
+        where TEntity : class
+    {
+        try
+        {
+            var entries = DbContext.ChangeTracker.Entries<TEntity>().ToList();
+
+            // Удаляем из отслеживания все сущности заданного типа
+            foreach (var entry in entries)
+            {
+                entry.State = EntityState.Detached;
+            }
+        
+            return Result<int>.Done(entries.Count);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+    
+    #endregion
+    
+    #region [---------- Состояние и сохранение ----------]
+
+    /// <inheritdoc />
+    public Result<EntityState> GetEntityState<TEntity>(TEntity entity) where TEntity : class
+    {
+        try
+        {
+            return Result<EntityState>.Done(DbContext.Entry(entity).State);
+        }
+        catch (Exception ex)
+        {
+            return Result<EntityState>.Fail(ex);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<Result<int>> SaveChangesAsync()
+    {
+        try
+        {
+            // Включаем AutoDetectChanges ТОЛЬКО на время сохранения
+            DbContext.ChangeTracker.AutoDetectChangesEnabled = true;
+            var result = await DbContext.SaveChangesAsync();
+
+            return Result<int>.Done(result);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            // Если конфликт - перезагружаем из БД
+            foreach (var entry in ex.Entries)
+            {
+                await entry.ReloadAsync();
+            }
+
+            return Result<int>.Fail(ex);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+        finally
+        {
+            DbContext.ChangeTracker.AutoDetectChangesEnabled = false;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<Result<int>> DiscardChangesAsync()
+    {
+        try
+        {
+            var entries = DbContext.ChangeTracker.Entries().ToList();
+            foreach (var entry in entries)
+            {
+                // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        entry.State = EntityState.Detached;
+                        break;
+                    case EntityState.Modified:
+                    case EntityState.Deleted:
+                        await entry.ReloadAsync();
+                        break;
+                }
+            }
+            
+            return Result<int>.Done(entries.Count);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+
+    #endregion
+    
+    #region [---------- Перезагрузки ----------]
+    
+    /// <inheritdoc />
+    public async Task<Result<int>> ReloadAsync<TEntity>(TEntity entity)
+        where TEntity : class
+    {
+        try
+        {
+            var entry = DbContext.Entry(entity);
+            if (entry.State == EntityState.Detached) 
+                return Result<int>.Done(0);
+            
+            await entry.ReloadAsync();
+
+            return Result<int>.Done(1);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Работает медленно. По возможности не использовать.
+    /// </remarks>
+    public async Task<Result<int>> ReloadRangeAsync<TEntity>(IList<TEntity> entities)
+        where TEntity : class
+    {
+        try
+        {
+            foreach (var entity in entities)
+            {
+                await ReloadAsync(entity);
+            }
+            
+            return Result<int>.Done(entities.Count);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+    
+    /// <inheritdoc />
+    /// <remarks>
+    /// Работает медленно. По возможности не использовать.
+    /// </remarks>
+    public async Task<Result<int>> ReloadAllAsync<TEntity>()
+        where TEntity : class
+    {
+        try
+        {
+            var entities = await DbContext.Set<TEntity>().ToListAsync();
+            foreach (var entity in entities)
+            {
+                await ReloadAsync(entity);
+            }
+            
+            return Result<int>.Done(entities.Count);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+    
+    #endregion
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed && disposing)
+        {
+            // Восстанавливаем исходное состояние перед Dispose
+            DbContext.ChangeTracker.AutoDetectChangesEnabled = _autoDetectChangesState;
+            
+            DbContext.Dispose();
+        }
+        _disposed = true;
+    }
 }

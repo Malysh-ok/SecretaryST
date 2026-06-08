@@ -1,9 +1,9 @@
+using System.Reflection;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases._Contracts;
 using AppDomain.UseCases.Services;
 using Common.BaseComponents.Components;
 using Common.BaseComponents.Components.Exceptions;
-using Common.BaseExtensions.Collections;
 using Common.BaseExtensions.ValueTypes;
 using DataAccess.DbContexts;
 using DataAccess.DbContexts.DbConfigure;
@@ -20,15 +20,27 @@ namespace DataAccess.Tests;
 
 public class RepositoryTests
 {
+    // Константа для маркировки теста: неавтоматический режим теста
     protected const string NoAutomatic = nameof(NoAutomatic);
+    
+    // Атрибут для маркировки тестов: в тесте пересоздаются сущности (а не добавляются)
+    [AttributeUsage(AttributeTargets.Method)]
+    private class RecreateEntitiesAttribute : Attribute { }
+    
+    private bool _isRecreateEntities = false;       // признак пересоздания сущностей
     
     [SetUp]
     public void Setup()
     {
-        // Игнорируем тест с аттрибутом NoAutomatic
+        // Игнорируем тест с атрибутом NoAutomatic
         var testCategory = (string)TestContext.CurrentContext.Test.Properties["Category"].FirstOrDefault()!;
         if (testCategory == NoAutomatic)
             Assert.Inconclusive();
+        
+        // Устанавливаем (или сбрасываем) признак пересоздания сущностей,
+        // в зависимости от установленного атрибута RecreateEntities
+        var methodInfo = TestContext.CurrentContext.Test.Method?.MethodInfo;
+        _isRecreateEntities = methodInfo?.GetCustomAttribute<RecreateEntitiesAttribute>() != null;
     }
     
     #region [---------- Вспомогательные методы ----------]
@@ -36,14 +48,18 @@ public class RepositoryTests
     // Создать или получить Представителя
     private async Task<Representative> GetRepresentative(IRepository repository)
     {
-        var representative = new Representative("Банько", "Яна", "Евгеньевна");
+        // var representative = new Representative("Банько", "Яна", "Евгеньевна");
+        var representative = new Representative("Шлепко", "Яна", "Ульяновна");
 
+        // Заменяем первого найденного в базе представителя на нового (для примера)
         var foundRepresentative = // получаем из репозитория
-            (await repository.GetAllAsync<Representative>(representative)).FirstOrDefault();
+            (await repository.GetFirstAsync<Representative>()).Value;
         if (foundRepresentative is not null)
             representative.Copy(foundRepresentative);
+        var result = repository.Update(foundRepresentative ?? representative);
+        Assert.That(result.Excptn, Is.Null);
         
-        var result = await repository.AddOrUpdateAsync(foundRepresentative ?? representative);
+        result = await repository.SaveChangesAsync();
         Assert.That(result.Excptn, Is.Null);
 
         return foundRepresentative ?? representative;
@@ -54,13 +70,16 @@ public class RepositoryTests
     /// <summary>
     /// Полностью пересоздать БД.
     /// </summary>
-    [Test, Category($"{NoAutomatic}")]
+    [Test]
+    [Category($"{NoAutomatic}")]
+    // [Category($"Other")]
     public async Task RebuildDbTest()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
+        var repositoryInit = new InitRepository(repository);
 
-        await repository.RebuildRepository();
+        await repositoryInit.RebuildRepository();
         
         repository.Dispose();
     }
@@ -71,16 +90,16 @@ public class RepositoryTests
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
         const string description = "Проверка";
-
+    
         var detailedCompetitionStatuses =
-            (await repository.GetAllAsync<DetailedCompetitionStatus>())
-            .Where(dcs => dcs.Id.ToInt() < 10)
-            .ToList();
+            (await repository.GetAllAsync<DetailedCompetitionStatus>()).Value!
+                                                                       .Where(dcs => dcs.Id.ToInt() < 10)
+                                                                       .ToList();
         
         detailedCompetitionStatuses[0].Description = description;
-        
-        detailedCompetitionStatuses = 
-            (await repository.ReloadRangeAsync(detailedCompetitionStatuses)).ToList();
+
+        var result =
+            (await repository.ReloadRangeAsync(detailedCompetitionStatuses));
         Assert.That(
             detailedCompetitionStatuses.Where(dcs => dcs.Description == description), 
             Is.Empty);
@@ -105,11 +124,11 @@ public class RepositoryTests
         
         // Контекст БД
         var dbContext = new AppDbContext(provider.Options, dbConfigurator);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(dbContext.IsNullOrEmptyConnectionString, Is.False, "Пустая строка подключения.");
             Assert.That(dbContext.IsPossibleConnect, Is.True, "Невозможно подключиться к БД.");
-        });
+        }
         
         dbContext.Dispose();
     }
@@ -118,11 +137,11 @@ public class RepositoryTests
     public void CreatingDbContextTest_DbContextFactory()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(dbContext.IsNullOrEmptyConnectionString, Is.False, "Пустая строка подключения.");
             Assert.That(dbContext.IsPossibleConnect, Is.True, "Невозможно подключиться к БД.");
-        });
+        }
         
         // Сбрасываем начальные значения автоинкремента 
         // dbContext.ClearAutoincrementSequence(nameof(IAbstractEntity.Id),
@@ -135,10 +154,19 @@ public class RepositoryTests
     }
     
     [Test, Order(1)]
+    [RecreateEntities]
     public async Task Delegations_Test()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
+        Result<int> result;
+
+        // Удаляем все сущности при атрибуте RecreateEntities
+        if (_isRecreateEntities)
+        {
+            result = repository.RemoveAllQuickly<Delegation>();
+            Assert.That(result.Excptn, Is.Null);
+        }
 
         // Представитель
         var representative = await GetRepresentative(repository);
@@ -148,98 +176,146 @@ public class RepositoryTests
         {
             new(1, name: "Делегация 11111", "Якутия", representative),
             new(2, name: "Делегация 22222", "Сахалин", representative),
+            new(3, name: "Делегация 33333", "Камчатка", representative),
         };
 
-        var result = await repository.ReplaceNumberedRangeAsync(delegations);
+        result = repository.UpdateRangeQuickly(delegations);
+        Assert.That(result.Excptn, Is.Null);
+        
+        result = await repository.SaveChangesAsync();
         Assert.That(result.Excptn, Is.Null);
 
-        var all = await repository.GetAllAsync<Delegation>(nameof(Representative));
-        Assert.That(all.Count, Is.Positive);
+        var allDelegationResult = await repository.GetAllAsync<Delegation>(nameof(Representative));
+        Assert.That(allDelegationResult.Excptn, Is.Null);
         
         repository.Dispose();
     }
 
     [Test, Order(2)]
+    [RecreateEntities]
     public async Task SportEvent_SportUnit_Test()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
         Result<int> result;
 
-        var discipline = await repository.FindAsync<Discipline>(DisciplineEnm.DistanceMountainBunch);
+        // Удаляем все сущности при атрибуте RecreateEntities
+        if (_isRecreateEntities)
+        {
+            result = repository.RemoveAllQuickly<SportEvent>();
+            Assert.That(result.Excptn, Is.Null);
+            
+            result = repository.RemoveAllQuickly<SportUnit>();
+            Assert.That(result.Excptn, Is.Null);
+        }
 
-        var sportUnitTypes = (await repository.GetAllAsync<SportUnitType>()).AsList();
+        var disciplineResult = await repository.FindAsync<Discipline>(DisciplineEnm.DistanceMountainBunch);
+
+        var sportUnitTypes = (await repository.GetAllAsync<SportUnitType>()).Value!;
         var groupUnitType = sportUnitTypes.FirstOrDefault(sut => sut.Id == SportUnitTypeEnm.Group);
         var waterTeamUnitType = sportUnitTypes.FirstOrDefault(sut => sut.Id == SportUnitTypeEnm.WaterTeam);
         
         // Создаем Виды программ
         var sportEvents = new List<SportEvent>()
         {
-            new("Вид программы 1", null,Difficulty.IdEnm.Fourth, discipline!),
-            new("Вид программы 2", null,Difficulty.IdEnm.Third, discipline!),
+            new("Вид программы 1", null,Difficulty.IdEnm.Fourth, disciplineResult.Value!),
+            new("Вид программы 2", null,Difficulty.IdEnm.Third, disciplineResult.Value!),
         };
         
-        var resultSportEvents = await repository.ReplaceNamedRangeAsync(sportEvents);
-        Assert.That(resultSportEvents.Excptn, Is.Null);
+        result = repository.UpdateRangeQuickly(sportEvents);
+        Assert.That(result.Excptn, Is.Null);
+        await repository.SaveChangesAsync();
+        Assert.That(result.Excptn, Is.Null);
+        var allSportEvents = (await repository.GetAllAsync<SportEvent>()).Value;
+        Assert.That(allSportEvents, Is.Not.Empty);
 
         // -------------------------------
 
-        var sexes = (await repository.GetAllAsync<Sex>()).ToList();
+        var sexes = (await repository.GetAllAsync<Sex>()).Value!.ToList();
 
         // Создаем спортивные юниты
         var sportUnits = new List<SportUnit>()
         {
             new("Группа 1", sexes.Find(s => s.Id == SexEnm.Male)!, 
-                groupUnitType!, resultSportEvents.Value![0]),
+                groupUnitType!, allSportEvents[0]),
             new("Группа 2", sexes.Find(s => s.Id == SexEnm.Female)!, 
-                groupUnitType!, resultSportEvents.Value![0]),
+                groupUnitType!, allSportEvents[0]),
             new("Группа судов 1", sexes.Find(s => s.Id == SexEnm.Mixed)!,
-                waterTeamUnitType!, resultSportEvents.Value![1]),
+                waterTeamUnitType!, allSportEvents[1]),
         };
         sportUnits[2].ChildSportUnits.Add(sportUnits[1]);   // юнит3 -> юнит2
 
-        var resultSportUnits = await repository.ReplaceNamedRangeAsync(sportUnits);
-        Assert.That(resultSportUnits.Excptn, Is.Null);
+        result = repository.UpdateRangeQuickly(sportUnits);
+        Assert.That(result.Excptn, Is.Null);
+        
+        await repository.SaveChangesAsync();
+        Assert.That(result.Excptn, Is.Null);
+        
+        var allSportUnitsResult = await repository.GetAllAsync<SportUnit>();
+        Assert.That(allSportUnitsResult.Excptn, Is.Null);
 
         repository.Dispose();
     }
 
     [Test, Order(3)]
+    [RecreateEntities]
     public async Task Athletes_Test()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
+        Result<int> result;
 
-        var dlg = (await repository.GetAllFromNumberAsync<Delegation>(1)).FirstOrDefault();
+        // Удаляем все сущности при атрибуте RecreateEntities
+        if (_isRecreateEntities)
+        {
+            result = repository.RemoveAllQuickly<Athlete>();
+            Assert.That(result.Excptn, Is.Null);
+        }
+
+        var dlg = (await repository.GetAllByNumberAsync<Delegation>(1)).Value!.FirstOrDefault();
 
         var sportUnit = await repository.GetLastAsync<SportUnit>();
 
-        var sexes = (await repository.GetAllAsync<Sex>()).ToList();
+        var sexes = (await repository.GetAllAsync<Sex>()).Value!.ToList();
 
         // Создаем спортсменов
         var athletes = new List<Athlete>()
         {
             new("Мишенкова", "Ксения", DateTime.Today,
-                sexes.Find(s => s.Id == SexEnm.Female)!, dlg!, sportUnit!),
+                sexes.Find(s => s.Id == SexEnm.Female)!, dlg!, sportUnit.Value!),
             new("Васильева", "Ольга",  DateTime.Today,
-                sexes.Find(s => s.Id == SexEnm.Female)!, dlg!, sportUnit!),
+                sexes.Find(s => s.Id == SexEnm.Female)!, dlg!, sportUnit.Value!),
             new("Копылова", "Юлия",  DateTime.Today,
-                sexes.Find(s => s.Id == SexEnm.Female)!, dlg!, sportUnit!),
+                sexes.Find(s => s.Id == SexEnm.Female)!, dlg!, sportUnit.Value!),
         };
 
-        var result = await repository.ReplaceNamedRangeAsync(athletes);
+        result = repository.UpdateRangeQuickly(athletes);
         Assert.That(result.Excptn, Is.Null);
+        
+        result = await repository.SaveChangesAsync();
+        Assert.That(result.Excptn, Is.Null);
+        
+        var allAthletesResult = await repository.GetAllAsync<SportUnit>();
+        Assert.That(allAthletesResult.Excptn, Is.Null);
         
         repository.Dispose();
     }
 
     [Test, Order(4)]
+    [RecreateEntities]
     public async Task Referees_Test()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
-        
         Result<int> result;
+
+        // Удаляем все сущности при атрибуте RecreateEntities
+        if (_isRecreateEntities)
+        {
+            result = repository.RemoveAllQuickly<Referee>();
+            Assert.That(result.Excptn, Is.Null);
+        }
+        
         List<Referee> referees = [];
         ExceptionList<BaseException> exceptionsList = [];
 
@@ -248,45 +324,57 @@ public class RepositoryTests
         referees.Add(new Referee(1,
             "Сретенский", "Сергей", 
             "г. Чебоксары", 
-            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category1))!,
-            (await repository.FindAsync<RefereeJobTitle>(jobTitle))!,
-            "Валентинович"));
+            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category1)).Value!,
+            (await repository.FindAsync<RefereeJobTitle>(jobTitle)).Value!,
+            "Валентинович"
+            )
+        );
         
         jobTitle = RefereeJobTitleEnm.ChiefSecretary;
         referees.Add(new Referee(2,
             "Иванова", "Кристина", 
             "г. Чебоксары", 
-            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category1))!,
-            (await repository.FindAsync<RefereeJobTitle>(jobTitle))!));
+            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category1)).Value!,
+            (await repository.FindAsync<RefereeJobTitle>(jobTitle)).Value!
+            )
+        );
         
         jobTitle = RefereeJobTitleEnm.MandateChairman;
         referees.Add(new Referee(3,
             "Черкасова", "Маргарита", 
             "г. Санкт-Петербург", 
-            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.AllRussCategory))!,
-            (await repository.FindAsync<RefereeJobTitle>(jobTitle))!));
+            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.AllRussCategory)).Value!,
+            (await repository.FindAsync<RefereeJobTitle>(jobTitle)).Value!
+            )
+        );
         
         jobTitle = RefereeJobTitleEnm.Secretary;
         referees.Add(new Referee(4,
             "Тетка", "1", 
             "г. Чебоксары", 
-            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category2))!,
-            (await repository.FindAsync<RefereeJobTitle>(jobTitle))!));
+            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category2)).Value!,
+            (await repository.FindAsync<RefereeJobTitle>(jobTitle)).Value!
+            )
+        );
         
         jobTitle = RefereeJobTitleEnm.MajorStageReferee;
         referees.Add(new Referee(5,
             "Тетка", "2", 
             "г. Чебоксары", 
-            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category3))!,
-            (await repository.FindAsync<RefereeJobTitle>(jobTitle))!));
+            (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category3)).Value!,
+            (await repository.FindAsync<RefereeJobTitle>(jobTitle)).Value!
+            )
+        );
 
         // Добавляем судей в репозиторий
-        var resultReferees = await repository.ReplaceNamedRangeAsync(referees);
-        Assert.That(resultReferees.Excptn, Is.Null);
+        result = repository.UpdateRangeQuickly(referees);
+        Assert.That(result.Excptn, Is.Null);
+        await repository.SaveChangesAsync();
+        Assert.That(result.Excptn, Is.Null);
         
         // Проверяем
-        referees = (await repository.GetAllAsync<Referee>()).ToList();
-        Assert.That(referees, Is.Not.Empty);
+        var newReferees = (await repository.GetAllAsync<Referee>()).Value;
+        Assert.That(newReferees, Is.Not.Empty);
         
         repository.Dispose();
     }
@@ -297,17 +385,20 @@ public class RepositoryTests
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
         var competitionService = new CompetitionDataService(repository);
-
+        
         // Создаем данные о соревновании
         var resultCompetition = await competitionService.CreateAsync("Горные соревы...", "ФСТ ЧР",
             new DateTime(2023, 2, 23), new DateTime(2023, 2, 26),
             "Овраг близ этнокомплекса \"Амазония\", г. Чебоксары", 
-            (await repository.FindAsync<CompetitionsStatus>(CompetitionsStatusEnm.Regional))!,
-            (await repository.FindAsync<DetailedCompetitionStatus>(DetailedCompetitionStatusEnm.RegionalChampionship))!);
+            (await repository.FindAsync<CompetitionsStatus>(CompetitionsStatusEnm.Regional)).Value!,
+            (await repository.FindAsync<DetailedCompetitionStatus>(DetailedCompetitionStatusEnm.RegionalChampionship)).Value!
+            );
         Assert.That(resultCompetition.Excptn, Is.Null);
         
         // Проверяем
-        var competitions = await repository.GetAllAsync<CompetitionData>();
-        Assert.That(competitions, Is.Not.Empty);
+        var competitionsResult = await repository.GetAllAsync<CompetitionData>();
+        Assert.That(competitionsResult.Excptn, Is.Null);
+        
+        repository.Dispose();
     }
 }

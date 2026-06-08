@@ -1,4 +1,6 @@
-﻿namespace AppDomain.UseCases._Contracts;
+﻿using Common.BaseComponents.Components;
+
+namespace AppDomain.UseCases._Contracts;
 
 /// <summary>
 /// Интерфейс, реализующий свойства/методы, необходимые для инициализации.
@@ -13,5 +15,5 @@ public interface IInitRepository
     /// <summary>
     /// Полное пересоздание репозитория (БД).
     /// </summary>
-    public Task RebuildRepository();
+    public Task<Result<bool>> RebuildRepository();
 }

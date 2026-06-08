@@ -1,116 +1,137 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using AppDomain.UseCases._Contracts;
+﻿using AppDomain.UseCases._Contracts;
 using Common.BaseComponents.Components;
 using Microsoft.EntityFrameworkCore;
 using ProblemDomain.Entities.LibraryEntities;
 
 namespace DataAccess.Repositories;
 
-[SuppressMessage("ReSharper", "UnusedVariable")]
-public partial class Repository<TDbContext> : IInitRepository
+public class InitRepository : IInitRepository
 {
-    #region [---------- НЕ публичные члены ----------]
-
+    private readonly IRepository _repository = null!;
     
+    /// <summary>
+    /// Конструктор, запрещающий создание экземпляра без параметров.
+    /// </summary>
+    private InitRepository()
+    {
+    }
 
-    #endregion
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    public InitRepository(IRepository repository) : this()
+    {
+        _repository =  repository;
+    }
 
     /// <inheritdoc />
     public async Task<bool> IsExistLibrary()
     {
-        var isExist = await GetFirstAsync<CompetitionsStatus>() != null &&
-                      await GetFirstAsync<DetailedCompetitionStatus>() != null &&
-                      await GetFirstAsync<DisciplineGroup>() != null &&
-                      await GetFirstAsync<DisciplineSubGroup>() != null &&
-                      await GetFirstAsync<Discipline>() != null &&
-                      await GetFirstAsync<RefereeLevel>() != null &&
-                      await GetFirstAsync<RefereeJobTitle>() != null &&
-                      await GetFirstAsync<Sex>() != null &&
-                      await GetFirstAsync<SportUnitType>() != null;
+        try
+        {
+            var isExist = (await _repository.GetFirstAsync<CompetitionsStatus>()).Value != null &&
+                          (await _repository.GetFirstAsync<DetailedCompetitionStatus>()).Value != null &&
+                          (await _repository.GetFirstAsync<DisciplineGroup>()).Value != null &&
+                          (await _repository.GetFirstAsync<DisciplineSubGroup>()).Value != null &&
+                          (await _repository.GetFirstAsync<Discipline>()).Value != null &&
+                          (await _repository.GetFirstAsync<RefereeLevel>()).Value != null &&
+                          (await _repository.GetFirstAsync<RefereeJobTitle>()).Value != null &&
+                          (await _repository.GetFirstAsync<Sex>()).Value != null &&
+                          (await _repository.GetFirstAsync<SportUnitType>()).Value != null;
 
-        return isExist;
+            return isExist;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
     /// <inheritdoc />
-    public async Task RebuildRepository()
+    public async Task<Result<bool>> RebuildRepository()
     {
         // Полностью удаляем БД
-        await DbContext.Database.EnsureDeletedAsync();
+        await _repository.GetDbContext().Database.EnsureDeletedAsync();
         
         // Применяем ожидающие миграции
-        await DbContext.Database.MigrateAsync();
+        await _repository.GetDbContext().Database.MigrateAsync();
         
         // Наполняем БД библиотечными данными
-        await FillDatabase();
+        return await FillDatabase();
     }
 
     /// <summary>
     /// Заполняем БД библиотечными данными.
     /// </summary>
-    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-    public async Task<Result<bool>> FillDatabase()
+    private async Task<Result<bool>> FillDatabase()
     {
         // Добавляем статусы соревнований
         var resultCompetitionsStatusLst = 
-            await RepositoryPlaceholder.FillCompetitionsStatuses(this);
+            await RepositoryPlaceholder.FillCompetitionsStatuses(_repository);
         if (!resultCompetitionsStatusLst.HasValue)
             return Result<bool>.Fail(resultCompetitionsStatusLst.Excptn!);
         var competitionsStatusLst = resultCompetitionsStatusLst.Value!;
         
         // Добавляем статусы и наименования спортивных соревнований
         var resultDetailedCompetitionStatusLst = 
-            await RepositoryPlaceholder.FillDetailedCompetitionStatuses(this, competitionsStatusLst);
+            await RepositoryPlaceholder.FillDetailedCompetitionStatuses(_repository, competitionsStatusLst);
         if (!resultDetailedCompetitionStatusLst.HasValue)
             return Result<bool>.Fail(resultDetailedCompetitionStatusLst.Excptn!);
+        // ReSharper disable once UnusedVariable
         var detailedCompetitionStatusLst = resultDetailedCompetitionStatusLst.Value!;
         
         // Добавляем группы дисциплин
         var resultDisciplineGroupLst = 
-            await RepositoryPlaceholder.FillDisciplineGroups(this);
+            await RepositoryPlaceholder.FillDisciplineGroups(_repository);
         if (!resultDisciplineGroupLst.HasValue)
             return Result<bool>.Fail(resultDisciplineGroupLst.Excptn!);
         var disciplineGroupLst = resultDisciplineGroupLst.Value!;
 
         // Добавляем подгруппы дисциплин
         var resultDisciplineSubGroupLst = 
-            await RepositoryPlaceholder.FillDisciplineSubGroups(this, disciplineGroupLst);
+            await RepositoryPlaceholder.FillDisciplineSubGroups(_repository, disciplineGroupLst);
         if (!resultDisciplineSubGroupLst.HasValue)
             return Result<bool>.Fail(resultDisciplineSubGroupLst.Excptn!);
         var disciplineSubGroupLst = resultDisciplineSubGroupLst.Value!;
 
         // Добавляем дисциплины
         var resultDisciplineLst = 
-            await RepositoryPlaceholder.FillDisciplines(this, disciplineGroupLst, disciplineSubGroupLst);
+            await RepositoryPlaceholder.FillDisciplines(_repository, disciplineGroupLst, disciplineSubGroupLst);
         if (!resultDisciplineLst.HasValue)
             return Result<bool>.Fail(resultDisciplineLst.Excptn!);
+        // ReSharper disable once UnusedVariable
         var disciplineLst = resultDisciplineLst.Value;
         
         // Добавляем судейские категории
         var resultRefereeLevelLst = 
-            await RepositoryPlaceholder.FillRefereeLevels(this);
+            await RepositoryPlaceholder.FillRefereeLevels(_repository);
         if (!resultRefereeLevelLst.HasValue)
             return Result<bool>.Fail(resultRefereeLevelLst.Excptn!);
+        // ReSharper disable once UnusedVariable
         var refereeLevels = resultRefereeLevelLst.Value;
         
         // Добавляем судейские должности
         var resultFillRefereeJobTitleLst = 
-            await RepositoryPlaceholder.FillRefereeJobTitles(this);
+            await RepositoryPlaceholder.FillRefereeJobTitles(_repository);
         if (!resultFillRefereeJobTitleLst.HasValue)
             return Result<bool>.Fail(resultFillRefereeJobTitleLst.Excptn!);
+        // ReSharper disable once UnusedVariable
         var refereeingPositionLst = resultFillRefereeJobTitleLst.Value;
 
         // Добавляем варианты пола
         var resultSexLst = 
-            await RepositoryPlaceholder.FillSexes(this);
+            await RepositoryPlaceholder.FillSexes(_repository);
         if (!resultSexLst.HasValue)
             return Result<bool>.Fail(resultSexLst.Excptn!);
+        // ReSharper disable once UnusedVariable
         var sexLst = resultSexLst.Value;
         
         // Добавляем типы спортивных юнитов
         var resultSportUnitTypeLst = 
-            await RepositoryPlaceholder.FillSportUnitType(this);
+            await RepositoryPlaceholder.FillSportUnitType(_repository);
         if (!resultSportUnitTypeLst.HasValue)
             return Result<bool>.Fail(resultSportUnitTypeLst.Excptn!);
+        // ReSharper disable once UnusedVariable
         var sportUnitTypeLst = resultSportUnitTypeLst.Value;
 
         return Result<bool>.Done(true);

@@ -2,7 +2,6 @@
 using AppDomain.Phrases;
 using AppDomain.UseCases._Contracts;
 using Common.BaseComponents.Components;
-using Common.BaseExtensions.Collections;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities;
 
@@ -19,12 +18,11 @@ public class CompetitionDataService(IRepository repository)
     /// </summary>
     public async Task<Result<IList<CompetitionsStatus>>> GetCompetitionsStatusesAsync()
     {
-        var competitionsStatuses = 
-            (await repository.GetAllAsync<CompetitionsStatus>()).AsList();
+        var competitionsStatusesResult = await repository.GetAllAsync<CompetitionsStatus>();
 
-        return competitionsStatuses is null 
-            ? Result<IList<CompetitionsStatus>>.Fail(new AppException(AppPhrases.CompetitionsStatusesLoadError)) 
-            : Result<IList<CompetitionsStatus>>.Done(competitionsStatuses);
+        return competitionsStatusesResult 
+            ? Result<IList<CompetitionsStatus>>.Done(competitionsStatusesResult.Value!) 
+            : Result<IList<CompetitionsStatus>>.Fail(new AppException(AppPhrases.CompetitionsStatusesLoadError));
     }
 
     /// <summary>
@@ -35,12 +33,12 @@ public class CompetitionDataService(IRepository repository)
     /// </remarks>
     public async Task<Result<IList<DetailedCompetitionStatus>>> GetDetailedCompetitionsStatusesAsync()
     {
-        var detailedCompetitionStatuses 
-            = (await repository.GetAllAsync<DetailedCompetitionStatus>(nameof(CompetitionsStatus))).AsList();
+        var detailedCompetitionStatuses
+            = await repository.GetAllAsync<DetailedCompetitionStatus>(nameof(CompetitionsStatus));
         
-        return detailedCompetitionStatuses is null 
-            ? Result<IList<DetailedCompetitionStatus>>.Fail(new AppException(AppPhrases.DetailedCompetitionStatusesLoadError)) 
-            : Result<IList<DetailedCompetitionStatus>>.Done(detailedCompetitionStatuses);
+        return detailedCompetitionStatuses
+            ? Result<IList<DetailedCompetitionStatus>>.Done(detailedCompetitionStatuses.Value!) 
+            : Result<IList<DetailedCompetitionStatus>>.Fail(new AppException(AppPhrases.DetailedCompetitionStatusesLoadError));
     }
 
     /// <summary>
@@ -59,16 +57,12 @@ public class CompetitionDataService(IRepository repository)
         CompetitionsStatus competitionsStatus, DetailedCompetitionStatus detailedCompetitionStatus,
         string? description = null)
     {
-        AppException innerException;
-        
-        // Удаляем данные о соревновании из репозитория
-        var intResult = await repository.RemoveRangeAsync(await repository.GetAllAsync<CompetitionData>());
-
-        if (! intResult)
+        // Удаляем данные о соревнованиях из репозитория
+        var intResult = repository.RemoveAllQuickly<CompetitionData>();
+        if (!intResult)
         {
-            innerException = new AppException(AppPhrases.CompetitionDataRemoveError, intResult.Excptn);
             return Result<CompetitionData>.Fail(
-                new AppException(AppPhrases.CompetitionDataCreateError, innerException)
+                new AppException(AppPhrases.CompetitionDataCreateError, intResult.Excptn)
             );
         }
 
@@ -77,34 +71,44 @@ public class CompetitionDataService(IRepository repository)
             new CompetitionData(name, conductingOrganizations, initialDate, endDate, venue,
                 competitionsStatus, detailedCompetitionStatus,
                 description);
-        intResult = await repository.AddAsync(competition);
-
-        // ReSharper disable once InvertIf
-        if (! intResult)
+        intResult = repository.Add(competition);
+        if (!intResult)
         {
-            innerException = new AppException(AppPhrases.CompetitionDataSaveError, intResult.Excptn);
             return Result<CompetitionData>.Fail(
-                new AppException(AppPhrases.CompetitionDataCreateError, innerException)
+                new AppException(AppPhrases.CompetitionDataCreateError, intResult.Excptn)
             );
         }
         
+        intResult = await repository.SaveChangesAsync();
+        // ReSharper disable once InvertIf
+        if (!intResult)
+        {
+            return Result<CompetitionData>.Fail(
+                new AppException(AppPhrases.CompetitionDataCreateError, intResult.Excptn)
+            );
+        }
+
         return Result<CompetitionData>.Done(competition);
     }
     
     /// <summary>
     /// Получение данных о соревнованиях.
     /// </summary>
-    /// <param name="competitionData">Текущие данные о соревнованиях, если не null - то обновляем значение.</param>
-    public async Task<Result<CompetitionData>> GetCompetitionDataAsync(CompetitionData? competitionData)
+    public async Task<Result<CompetitionData?>> GetCompetitionDataAsync()
     {
+        // Сбрасываем отслеживание сущностей
+        var result = repository.DetachAll<CompetitionData>();
+        if (!result)
+            return Result<CompetitionData?>.Fail(new AppException(AppPhrases.CompetitionDataLoadError));
+
         // Загружаем данные из репозитория
-        var readCompetitionData = await repository.GetFirstAsync<CompetitionData>(
+        var competitionDataResult = await repository.GetFirstAsync<CompetitionData>(
             nameof(CompetitionsStatus),
             nameof(DetailedCompetitionStatus));
 
-        return readCompetitionData is null
-            ? Result<CompetitionData>.Fail(new AppException(AppPhrases.CompetitionDataLoadError))
-            : Result<CompetitionData>.Done(readCompetitionData);
+        return competitionDataResult
+            ? Result<CompetitionData?>.Done(competitionDataResult.Value)
+            : Result<CompetitionData?>.Fail(new AppException(AppPhrases.CompetitionDataLoadError));
     }
     
     /// <summary>
@@ -113,10 +117,11 @@ public class CompetitionDataService(IRepository repository)
     /// <param name="competitionData">Данные о соревнования.</param>
     public async Task<Result<int>> SaveCompetitionDataAsync(CompetitionData competitionData)
     {
-        var intResult = await repository.AddOrUpdateAsync(competitionData);
-
-        return intResult
-            ? intResult
-            : Result<int>.Fail(new AppException(AppPhrases.CompetitionDataSaveError, intResult.Excptn));
+        var intResult1 = repository.Update(competitionData);
+        var intResult2 = await repository.SaveChangesAsync();
+        return intResult1 && intResult2 
+            ? intResult2
+            : Result<int>.Fail(new AppException(AppPhrases.CompetitionDataSaveError, 
+                !intResult1 ? intResult1.Excptn : intResult2.Excptn));
     }
 }

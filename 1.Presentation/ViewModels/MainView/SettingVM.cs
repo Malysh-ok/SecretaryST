@@ -298,7 +298,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// </summary>
     private async Task OnGetCompetitionData()
     {
-        var competitionDataResult = await _competitionDataService.GetCompetitionDataAsync(CompetitionData);
+        var competitionDataResult = await _competitionDataService.GetCompetitionDataAsync();
         if (competitionDataResult)
         {
             // Обновляем свойство с данными о соревнованиях
@@ -389,14 +389,11 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// </summary>
     private async Task OnGetReferees()
     {
-        var refereesResult = await _refereeService.GetRefereesAsync(Referees);
+        var refereesResult = await _refereeService.GetRefereesAsync(Referees, Referees.SelectedIndex);
         if (refereesResult)
         {
-            // Перезаписываем коллекцию судей
-            var index = Referees.SelectedIndex;
-            Referees.Clear();
-            Referees.AddRange(refereesResult.Value);
-            Referees.SelectedIndex = index;
+            // Перезаписываем индекс
+            Referees.SelectedIndex = refereesResult.Value;
         }
         else
         {
@@ -416,9 +413,8 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         var refereesResult = await _refereeService.AddRefereeAsync(Referees, Referees.SelectedIndex);
         if (refereesResult)
         {
-            Referees.Clear();
-            Referees.AddRange(refereesResult.Value.Referees);
-            Referees.SelectedIndex = refereesResult.Value.Index;
+            // Перезаписываем индекс
+            Referees.SelectedIndex = refereesResult.Value;
             
             // TODO: Временно (без ожидания окончания)
             _ = StatusBarData.SetTextAsync("Добавили судью.", StatusBarData.StatusBarTextType.Info);
@@ -436,18 +432,17 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// <summary>
     /// Удаление судьи.
     /// </summary>
-    private async Task OnRemoveReferee()
+    private Task OnRemoveReferee()
     {
-        var refereesResult = await _refereeService.RemoveRefereeAsync(Referees, Referees.SelectedIndex);
+        var refereesResult = _refereeService.RemoveReferee(Referees, Referees.SelectedIndex);
         
         if (refereesResult)
         {
-            Referees.Clear();
-            Referees.AddRange(refereesResult.Value.Referees);
-            Referees.SelectedIndex = refereesResult.Value.Index;
+            // Перезаписываем индекс
+            Referees.SelectedIndex = refereesResult.Value;
             
             // TODO: Временно (без ожидания окончания)
-            if (refereesResult.Value.Index >= 0)
+            if (refereesResult.Value >= 0)
                 _ = StatusBarData.SetTextAsync("Удалили судью.", StatusBarData.StatusBarTextType.Error);
         }
         else
@@ -458,6 +453,8 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
             _logger.Error(refereesResult.Excptn, "{class}.{method}", 
                 typeof(SettingVM), nameof(OnRemoveReferee));
         }
+
+        return Task.CompletedTask;
     }
 
     /// <summary>

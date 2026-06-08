@@ -1,11 +1,11 @@
 using System.Diagnostics;
 using System.Globalization;
 using AppDomain.AppExceptions;
+using Common.BaseComponents.Components;
 using Common.BaseComponents.Components.Colors;
 using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions;
 using Common.BaseExtensions.Collections;
-using Common.Phrases;
 using DataAccess.Repositories.Exceptions;
 using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.CommonEntities;
@@ -145,5 +145,12 @@ public class BaseComponentsTests
         var newList = delegations.DeepCopy();
         ICopyEntity delegation = delegations[0];
         delegation.Copy(delegations[1]);
+    }
+    
+    [Test]
+    public void ResultTest()
+    {
+        var result = Result<object?>.Done(null);
+        Assert.That(result.Excptn, Is.Null);
     }
 }

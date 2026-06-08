@@ -1,231 +1,301 @@
-using System.Diagnostics.CodeAnalysis;
-using Common.BaseComponents.Components;
+﻿using Common.BaseComponents.Components;
 using Common.BaseComponents.Components.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using ProblemDomain.Entities._Contracts;
-// ReSharper disable InvalidXmlDocComment
 
 namespace AppDomain.UseCases._Contracts;
 
 /// <summary>
-/// Интерфейс репозитория.
+/// Интерфейс репозитория (класса, для непосредственной работы с БД).
 /// </summary>
-public interface IRepository
+/// <remarks>
+/// <b>Когда использовать стандартные методы (<see cref="AddRangeQuickly{TEntity}"/>,
+/// <see cref="RemoveRangeQuickly{TEntity}"/>, <see cref="UpdateRangeQuickly{TEntity}"/>):</b>
+/// <list type="bullet">
+///     <item>Сущность только что загружена из БД через этот же контекст</item>
+///     <item>Сущность создана вручную через <c>new</c> (заведомо новая)</item>
+///     <item>Вы точно знаете состояние сущности (новая/существующая)</item>
+///     <item>Массовая операция с заведомо новыми сущностями (например, импорт из CSV)</item>
+/// </list>
+/// <b>Когда использовать "умные" методы с проверками (<see cref="AddRange{TEntity}"/>,
+/// <see cref="RemoveRange{TEntity}"/>, <see cref="UpdateRange{TEntity}"/>):</b>
+/// <list type="bullet">
+///     <item>Сущность пришла извне (другой контекст, API, десериализация, Blazor)</item>
+///     <item>Вы НЕ уверены в состоянии сущности (новая или уже существует в БД)</item>
+///     <item>Массовая операция с сущностями неизвестного происхождения</item>
+///     <item>Долгоживущий репозиторий, где сущности могут быть из разных источников</item>
+/// </list>
+/// <b>Проще говоря:</b> стандартные методы — когда вы контролируете жизненный цикл сущности;
+/// "умные" методы — когда сущность пришла из "внешнего мира".
+/// </remarks>
+public interface IRepository : IDisposable
 {
+    /// <summary>
+    /// Получить контекст БД.
+    /// </summary>
+    public DbContext GetDbContext();
+
     /// <summary>
     /// Список ошибок, возникших при работе с репозиторием.
     /// </summary>
     public ExceptionList<BaseException> ExceptionsList { get; }
 
-    /// <summary>
-    /// Добавить сущность типа <typeparamref name="TEntity"/> в репозиторий.
-    /// </summary>
-    /// <param name="entity">Добавляемая сущность.</param>
-    /// <typeparam name="TEntity">Тип сущности.</typeparam>
-    /// <returns>Количество добавленных сущностей.</returns>
-    public Task<Result<int>> AddAsync<TEntity>(TEntity entity) 
-        where TEntity : class, IAbstractEntity;
-
-    /// <summary>
-    /// Добавить коллекцию сущностей типа <typeparamref name="TEntity"/> в репозиторий.
-    /// </summary>
-    /// <param name="entities">Добавляемая коллекция сущностей.</param>
-    /// <typeparam name="TEntity">Тип сущностей.</typeparam>
-    /// <returns>Количество добавленных сущностей.</returns>
-    public Task<Result<int>> AddRangeAsync<TEntity>(IEnumerable<TEntity> entities) 
-        where TEntity : class, IAbstractEntity;
-    
-    /// <summary>
-    /// Добавить или обновить сущность типа <typeparamref name="TEntity"/> в репозитории.
-    /// </summary>
-    /// <param name="entity">Добавляемая сущность.</param>
-    /// <typeparam name="TEntity">Тип сущности.</typeparam>
-    /// <returns>Количество добавленных сущностей.</returns>
-    public Task<Result<int>> AddOrUpdateAsync<TEntity>(TEntity entity)
-        where TEntity : class, IAbstractEntity;
-
-    /// <summary>
-    /// Добавить или обновить коллекцию сущностей типа <typeparamref name="TEntity"/> в репозитории.
-    /// </summary>
-    /// <param name="entities">Добавляемая коллекция сущностей.</param>
-    /// <typeparam name="TEntity">Тип сущностей.</typeparam>
-    /// <returns>Количество добавленных сущностей.</returns>
-    public Task<Result<int>> AddOrUpdateRangeAsync<TEntity>(IEnumerable<TEntity> entities)
-        where TEntity : class, IAbstractEntity;
-
-    /// <summary>
-    /// Заменить сущности с номером в репозитории.
-    /// </summary>
-    /// <remarks>
-    /// Поиск по номеру и замена сущностей в репозитории.
-    /// Если сущности не найдены, то они добавляются. 
-    /// </remarks>
-    /// <param name="replaceableEntities">Заменяемые сущности.</param>
-    /// <typeparam name="TEntity">Тип сущностей.</typeparam>
-    /// <returns>Заменённые сущности.</returns>
-    public Task<Result<List<TEntity>>> ReplaceNumberedRangeAsync<TEntity>(IList<TEntity> replaceableEntities)
-        where TEntity : AbstractEntity, INumberedEntity, ICopyEntity;
-
-    /// <summary>
-    /// Заменить сущности с именем в репозитории.
-    /// </summary>
-    /// <remarks>
-    /// Поиск по имени и замена сущностей в репозитории.
-    /// Если сущности не найдены, то они добавляются. 
-    /// </remarks>
-    /// <param name="replaceableEntities">Заменяемые сущности.</param>
-    /// <typeparam name="TEntity">Тип сущностей.</typeparam>
-    /// <returns>Заменённые сущности.</returns>
-    public Task<Result<List<TEntity>>> ReplaceNamedRangeAsync<TEntity>(IEnumerable<TEntity> replaceableEntities)
-        where TEntity : AbstractEntity, INamedEntity, ICopyEntity;
+    #region [---------- Получение ----------]
     
     /// <summary>
     /// Получить количество сущностей в репозитории.
     /// </summary>
     /// <typeparam name="TEntity">Тип сущности.</typeparam>
-    public Task<int> CountAsync<TEntity>()
+    public Task<Result<int>> CountAsync<TEntity>()
         where TEntity : class, IAbstractEntity;
 
     /// <summary>
-    /// Получить из репозитория сущность типа <typeparamref name="TEntity"/> по Id.
+    /// Получить из репозитория сущность по Id.
+    /// </summary>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    /// <param name="id">Id получаемой сущности.</param>
+    /// <returns>Получаемая сущность.</returns>
+    public Task<Result<TEntity?>> FindAsync<TEntity>(object id) 
+        where TEntity : class, IAbstractEntity;
+
+    /// <summary>
+    /// Получить сущности из репозитория по Id.
     /// </summary>
     /// <param name="id">Id получаемой сущности.</param>
-    public Task<TEntity?> FindAsync<TEntity>(object id) 
+    /// <param name="navigationProperties"></param>
+    /// <returns>Получаемая сущность.</returns>
+    /// <remarks>
+    /// Отличается от <see cref="FindAsync{TEntity}"/> возможностью задать навигационные свойства,
+    /// но работает медленнее.
+    /// </remarks>
+    /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
+    // ReSharper disable once InvalidXmlDocComment
+    public Task<Result<TEntity?>> GetByIdAsync<TEntity>(int id, params string[] navigationProperties) 
         where TEntity : class, IAbstractEntity;
-    
-    /// <summary>
-    /// Получить из репозитория все сущности типа <typeparamref name="TEntity"/>.
-    /// </summary>
-    /// <param name="navigationProperties">Массив имен навигационных свойств сущности,
-    ///     данные которых включаются в результат (т.е. мы получаем связанные сущности);
-    ///     имя может быть составным (т.е. вторая часть есть навигационное свойство связанной сущности),
-    ///     в этом случае части имени разделяются символом '.'.</param>
-    /// <typeparam name="TEntity">Тип сущности.</typeparam>
-    /// <returns>Коллекция получаемых сущностей.</returns>
-    public Task<IEnumerable<TEntity>> GetAllAsync<TEntity>(params string[] navigationProperties)
-        where TEntity : AbstractEntity;
-
-    /// <param name="personality">Наименование получаемых сущностей.</param>
-    /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
-    public Task<IEnumerable<TEntity>> GetAllAsync<TEntity>(IPersonalityEntity personality, params string[] navigationProperties)
-        where TEntity : AbstractEntity, IPersonalityEntity;
-        
-    /// <summary>
-    /// Получить из репозитория все сущности типа <typeparamref name="TEntity"/> с наименованием <paramref name="name"/>.
-    /// </summary>
-    /// <param name="name">Наименование получаемых сущностей.</param>
-    /// <param name="isUseLike">Использовать оператор 'like' при поиске сущностей по имени.</param>
-    /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
-    public Task<IEnumerable<TEntity>> GetAllFromNameAsync<TEntity>(string? name, bool isUseLike = false,
-        params string[] navigationProperties)
-        where TEntity : AbstractEntity, INamedEntity;
-
-    /// <summary>
-    /// Получить из репозитория все нумерованные сущности типа <typeparamref name="TEntity"/>.
-    /// </summary>
-    /// <param name="navigationProperties">Массив имен навигационных свойств сущности,
-    ///     данные которых включаются в результат (т.е. мы получаем связанные сущности);
-    ///     имя может быть составным (т.е. вторая часть есть навигационное свойство связанной сущности),
-    ///     в этом случае части имени разделяются символом '.'.</param>
-    /// <typeparam name="TEntity">Тип сущности.</typeparam>
-    /// <returns>Коллекция получаемых сущностей.</returns>
-    public Task<IEnumerable<TEntity>> GetNumberedAllAsync<TEntity>(params string[] navigationProperties)
-        where TEntity : AbstractEntity, INumberedEntity;
-    
-    /// <summary>
-    /// Получить из репозитория все сущности типа <typeparamref name="TEntity"/> с номером <paramref name="number"/>.
-    /// </summary>
-    /// <param name="number">Номер получаемых сущностей.</param>
-    /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
-    [SuppressMessage("ReSharper", "InvalidXmlDocComment")]
-    public Task<IEnumerable<TEntity>> GetAllFromNumberAsync<TEntity>(int? number, params string[] navigationProperties)
-        where TEntity : AbstractEntity, INumberedEntity;
 
     /// <summary>
     /// Получить из репозитория первую сущность типа <typeparamref name="TEntity"/>.
     /// </summary>
     /// <returns>Получаемая сущность.</returns>
     /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
-    public Task<TEntity?> GetFirstAsync<TEntity>(params string[] navigationProperties)
-        where TEntity : AbstractEntity;
-
-    /// <summary>
-    /// Получить из репозитория сущность типа <typeparamref name="TEntity"/> по Id.
-    /// </summary>
-    /// <remarks>
-    /// Отличается от <see cref="FindAsync{TEntity}"/> возможностью задать навигационные свойства,
-    /// но работает медленее.
-    /// </remarks>
-    /// <param name="id">Id получаемой сущности.</param>
-    /// <returns>Получаемая сущность.</returns>
-    /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
-    public Task<TEntity?> GetFromIdAsync<TEntity>(int id, params string[] navigationProperties)
-        where TEntity : AbstractEntity;
+    public Task<Result<TEntity?>> GetFirstAsync<TEntity>(params string[] navigationProperties)
+        where TEntity : class, IAbstractEntity;
 
     /// <summary>
     /// Получить из репозитория последнюю сущность типа <typeparamref name="TEntity"/>.
     /// </summary>
     /// <returns>Получаемая сущность.</returns>
     /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
-    public Task<TEntity?> GetLastAsync<TEntity>(params string[] navigationProperties)
-        where TEntity : AbstractEntity;
+    public Task<Result<TEntity?>> GetLastAsync<TEntity>(params string[] navigationProperties)
+        where TEntity : class, IAbstractEntity;
 
     /// <summary>
-    /// Обновить сущность из репозитория.
+    /// Получение всех сущностей из репозитория.
     /// </summary>
-    /// <param name="entity">Обновляемая сущность.</param>
     /// <typeparam name="TEntity">Тип сущности.</typeparam>
-    public Task ReloadAsync<TEntity>(TEntity? entity)
-        where TEntity : AbstractEntity;
+    /// <param name="navigationProperties">Массив имен навигационных свойств сущности,
+    ///     данные которых включаются в результат (т.е. мы получаем связанные сущности);
+    ///     имя может быть составным (т.е. вторая часть есть навигационное свойство связанной сущности),
+    ///     в этом случае части имени разделяются символом '.'.</param>
+    /// <returns>Коллекция получаемых сущностей.</returns>
+    public Task<Result<IList<TEntity>>> GetAllAsync<TEntity>(params string[] navigationProperties) 
+        where TEntity : class;
 
     /// <summary>
-    /// Обновить коллекцию сущностей из репозитория.
+    /// Получение всех нумерованных сущностей из репозитория с возможностью сортировки по номеру.
     /// </summary>
-    /// <param name="entities">Обновляемая коллекция сущностей.</param>
-    /// <typeparam name="TEntity">Тип сущностей.</typeparam>
-    /// <returns>True, если данные коллекции изменены, иначе - false.</returns>
-    public Task<IEnumerable<TEntity>> ReloadRangeAsync<TEntity>(IEnumerable<TEntity> entities)
-        where TEntity : AbstractEntity;
+    /// <param name="ascending">Признак сортировки (True - по возрастанию, False - по убыванию).</param>
+    /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
+    // ReSharper disable once InvalidXmlDocComment
+    public Task<Result<IList<TEntity>>> GetNumberedAllAsync<TEntity>(bool ascending = true, params string[] navigationProperties)
+        where TEntity : class, INumberedEntity;
+
+    /// <summary>
+    /// Получение всех нумерованных сущностей из репозитория с заданным номером.
+    /// </summary>
+    /// <param name="number">Искомый номер.</param>
+    /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
+    // ReSharper disable once InvalidXmlDocComment
+    public Task<Result<IList<TEntity>>> GetAllByNumberAsync<TEntity>(int? number, params string[] navigationProperties)
+        where TEntity : class, INumberedEntity;
+
+    #endregion
+
+    #region [---------- Добавление/обновление ----------]
+
+    /// <summary>
+    /// Добавление новой сущности в репозиторий с "умной" обработкой состояния.
+    /// </summary>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    /// <param name="entity">Добавляемая сущность.</param>
+    /// <remarks>
+    /// - Если сущность новая (Id=0) и не отслеживается → добавляется.<br/>
+    /// - Если сущность с Id=0 уже отслеживается как Unchanged → меняет состояние на Added.<br/>
+    /// - Если сущность с Id>0 пытается добавиться → выбрасывает исключение.<br/>
+    /// </remarks>
+    public Result<int> Add<TEntity>(TEntity? entity) 
+        where TEntity : class, IAbstractEntity;
+
+    /// <summary>
+    /// Добавление списка сущностей в репозиторий с "умной" обработкой состояния для каждой.
+    /// </summary>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    /// <param name="entities">Список добавляемых сущностей.</param>
+    public Result<int> AddRange<TEntity>(IList<TEntity>? entities) 
+        where TEntity : class, IAbstractEntity;
+
+    /// <summary>
+    /// Добавление списка сущностей в репозиторий.
+    /// </summary>
+    /// <inheritdoc cref="AddRange{TEntity}(IList{TEntity})"/>
+    public Result<int> AddRangeQuickly<TEntity>(IList<TEntity>? entities)
+        where TEntity : class;
+
+    /// <summary>
+    /// Обновление сущности в репозитории с "умной" обработкой состояния.
+    /// </summary>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    /// <param name="entity">Добавляемая сущность.</param>
+    /// <remarks>
+    /// ВНИМАНИЕ! Метод помечает ВСЕ свойства как изменённые.<br/>
+    /// - Неотслеживаемая с Id=0 → добавляется.<br/>
+    /// - Неотслеживаемая с Id>0 → присоединяется и помечается Modified.<br/>
+    /// - Отслеживаемая Unchanged → меняет состояние на Modified.<br/>
+    /// </remarks>
+    public Result<int> Update<TEntity>(TEntity? entity) 
+        where TEntity : class, IAbstractEntity;
+
+    /// <summary>
+    /// Обновление списка сущностей в репозитории с умной обработкой состояния для каждой.
+    /// </summary>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    /// <param name="entities">Список изменяемых сущностей.</param>
+    public Result<int> UpdateRange<TEntity>(IList<TEntity>? entities) 
+        where TEntity : class, IAbstractEntity;
+
+    /// <summary>
+    /// Обновление списка сущностей в репозитории.
+    /// </summary>
+    /// <inheritdoc cref="UpdateRange{TEntity}(IList{TEntity})"/>
+    public Result<int> UpdateRangeQuickly<TEntity>(IList<TEntity>? entities)
+        where TEntity : class;
+
+    #endregion
+    
+    #region [---------- Удаление ----------]
     
     /// <summary>
-    /// Признак существования сущности.
+    /// Удаление сущности с "умной" обработкой состояния.
     /// </summary>
-    /// <param name="entity">Проверяемая сущность.</param>
-    /// <param name="cancellationToken">Объект для отмены операции.</param>
     /// <typeparam name="TEntity">Тип сущности.</typeparam>
-    public Task<bool> IsExistingAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) 
-        where TEntity : AbstractEntity;
-
-    /// <summary>
-    /// Признак существования коллекции сущностей.
-    /// </summary>
-    /// <param name="entities">Проверяемая коллекции сущностей.</param>
-    /// <typeparam name="TEntity">Тип сущности.</typeparam>
-    public Task<bool> IsExistingAsync<TEntity>(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
-        where TEntity : AbstractEntity;
-
-    /// <summary>
-    /// Удалить сущность типа <typeparamref name="TEntity"/> из репозитория.
-    /// </summary>
     /// <param name="entity">Удаляемая сущность.</param>
+    /// <remarks>
+    /// - Новая сущность (Id=0) → просто отключается от отслеживания.<br/>
+    /// - Существующая неотслеживаемая → присоединяется и удаляется.<br/>
+    /// - Отслеживаемая существующая → помечается на удаление.<br/>
+    /// </remarks>
+    public Result<int> Remove<TEntity>(TEntity? entity) 
+        where TEntity : class, IAbstractEntity;
+
+    /// <summary>
+    /// Удаление списка сущностей с "умной" обработкой состояния для каждой.
+    /// </summary>
     /// <typeparam name="TEntity">Тип сущности.</typeparam>
-    /// <returns>Количество удаленных сущностей.</returns>
-    public Task<Result<int>> RemoveAsync<TEntity>(TEntity entity)
-        where TEntity : AbstractEntity;
+    /// <param name="entities">Список удаляемых сущностей.</param>
+    public Result<int> RemoveRange<TEntity>(IList<TEntity>? entities) 
+        where TEntity : class, IAbstractEntity;
 
     /// <summary>
-    /// Удалить коллекцию сущностей типа <typeparamref name="TEntity"/> из репозитория.
+    /// Удаление списка сущностей.
     /// </summary>
-    /// <param name="entities">Удаляемая коллекция сущностей.</param>
-    /// <typeparam name="TEntity">Тип сущностей.</typeparam>
-    /// <returns>Количество удаленных сущностей.</returns>
-    public Task<Result<int>> RemoveRangeAsync<TEntity>(IEnumerable<TEntity> entities)
-        where TEntity : AbstractEntity;
+    /// <inheritdoc cref="RemoveRange{TEntity}(IList{TEntity})"/>
+    public Result<int> RemoveRangeQuickly<TEntity>(IList<TEntity>? entities)
+        where TEntity : class;
 
     /// <summary>
-    /// Удалить все сущности типа <typeparamref name="TEntity"/> из репозитория.
+    /// Удаление всех сущностей.
     /// </summary>
-    /// <typeparam name="TEntity">Тип сущностей.</typeparam>
-    /// <returns>Количество удаленных сущностей.</returns>
-    public Task<Result<int>> RemoveAllAsync<TEntity>(bool isSaveChanges = false)
-        where TEntity : AbstractEntity;
+    public Result<int> RemoveAllQuickly<TEntity>()
+        where TEntity : class;
+
+    #endregion
+
+    #region [---------- Присоединение/отсоединение ----------]
+
+    /// <summary>
+    /// Начинает отслеживание указанной сущности.
+    /// </summary>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    /// <param name="entity">Присоединяемая сущность.</param>
+    public Result<int> Attach<TEntity>(TEntity? entity) 
+        where TEntity : class;
+
+    /// <summary>
+    /// Начинает отслеживание нескольких сущностей.
+    /// </summary>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    /// <param name="entities">Список присоединяемых сущностей.</param>
+    public Result<int> AttachRange<TEntity>(IList<TEntity>? entities) 
+        where TEntity : class;
+
+    /// <summary>
+    /// Сбрасывает отслеживание всех сущностей указанного типа.
+    /// </summary>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    public Result<int> DetachAll<TEntity>()
+        where TEntity : class;
+
+    #endregion
+    
+    #region [---------- Состояние и сохранение ----------]
+
+    /// <summary>
+    /// Возвращает текущее состояние сущности.
+    /// </summary>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    public Result<EntityState> GetEntityState<TEntity>(TEntity entity) 
+        where TEntity : class;
+
+    /// <summary>
+    /// Сохранение всех изменений.
+    /// </summary>
+    /// <remarks>
+    /// После вызова временные ID заменяются на реальные.<br/>
+    /// При конфликте выбрасывается DbUpdateConcurrencyException (упакованное в Result).
+    /// </remarks>
+    public Task<Result<int>> SaveChangesAsync();
+
+    /// <summary>
+    /// Откат всех несохранённых изменений.
+    /// </summary>
+    public Task<Result<int>> DiscardChangesAsync();
+
+    #endregion
+
+    #region [---------- Перезагрузки ----------]
+
+    /// <summary>
+    /// Перезагружает сущность из БД.
+    /// </summary>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    /// <param name="entity">Перезагружаемая сущность.</param>
+    public Task<Result<int>> ReloadAsync<TEntity>(TEntity entity) 
+        where TEntity : class;
+
+    /// <summary>
+    /// Перезагружает список сущностей.
+    /// </summary>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    /// <param name="entities">Список перезагружаемых сущностей.</param>
+    public Task<Result<int>> ReloadRangeAsync<TEntity>(IList<TEntity> entities) 
+        where TEntity : class;
+    
+    /// <summary>
+    /// Перезагружает все сущности соответствующего типа.
+    /// </summary>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    public Task<Result<int>> ReloadAllAsync<TEntity>() 
+        where TEntity : class;
+
+    #endregion
 }

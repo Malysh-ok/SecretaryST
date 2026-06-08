@@ -16,8 +16,8 @@ public static class RepositoryPlaceholder
     public static async Task<Result<List<CompetitionsStatus>>> FillCompetitionsStatuses(IRepository repository)
     {
         // Удаляем статусы соревнований
-        var result = await repository.RemoveAllAsync<CompetitionsStatus>(true);
-        if (!result.HasValue)
+        var result = repository.RemoveAllQuickly<CompetitionsStatus>();
+        if (!result)
             return Result<List<CompetitionsStatus>>.Fail(result.Excptn!);
         
         var competitionsStatusLst = new List<CompetitionsStatus>
@@ -27,8 +27,13 @@ public static class RepositoryPlaceholder
             new(CompetitionsStatusEnm.Regional, "Региональный", "Региональные"),
             new(CompetitionsStatusEnm.Municipal, "Муниципальный", "Муниципальные"),
         };
-        
-        await repository.AddRangeAsync(competitionsStatusLst);
+        result = repository.AddRangeQuickly(competitionsStatusLst);
+        if (!result)
+            return Result<List<CompetitionsStatus>>.Fail(result.Excptn!);
+
+        result = await repository.SaveChangesAsync();
+        if (!result)
+            return Result<List<CompetitionsStatus>>.Fail(result.Excptn!);
 
         return Result<List<CompetitionsStatus>>.Done(competitionsStatusLst);
     }
@@ -40,8 +45,8 @@ public static class RepositoryPlaceholder
         List<CompetitionsStatus> competitionsStatusLst)
     {
         // Удаляем статусы и наименования соревнований
-        var result = await repository.RemoveAllAsync<DetailedCompetitionStatus>(true);
-        if (!result.HasValue)
+        var result = repository.RemoveAllQuickly<DetailedCompetitionStatus>();
+        if (!result)
             return Result<List<DetailedCompetitionStatus>>.Fail(result.Excptn!);
 
         var detailedCompetitionsStatusLst = new List<DetailedCompetitionStatus>
@@ -84,7 +89,13 @@ public static class RepositoryPlaceholder
                 competitionsStatusLst.Find(dg => dg.Id == CompetitionsStatusEnm.Municipal)!),
         };
         
-        await repository.AddRangeAsync(detailedCompetitionsStatusLst);
+        result = repository.AddRange(detailedCompetitionsStatusLst);
+        if (!result)
+            return Result<List<DetailedCompetitionStatus>>.Fail(result.Excptn!);
+
+        result = await repository.SaveChangesAsync();
+        if (!result)
+            return Result<List<DetailedCompetitionStatus>>.Fail(result.Excptn!);
 
         return Result<List<DetailedCompetitionStatus>>.Done(detailedCompetitionsStatusLst);
     }
@@ -95,8 +106,8 @@ public static class RepositoryPlaceholder
     public static async Task<Result<List<DisciplineGroup>>> FillDisciplineGroups(IRepository repository)
     {
         // Удаляем группы дисциплин
-        var result = await repository.RemoveAllAsync<DisciplineGroup>(true);
-        if (!result.HasValue)
+        var result = repository.RemoveAllQuickly<DisciplineGroup>();
+        if (!result)
             return Result<List<DisciplineGroup>>.Fail(result.Excptn!);
         
         var disciplineGroupLst = new List<DisciplineGroup>
@@ -106,7 +117,13 @@ public static class RepositoryPlaceholder
             new(DisciplineGroupEnm.NordicWalking, "Северная ходьба")
         };
         
-        await repository.AddRangeAsync(disciplineGroupLst);
+        result = repository.AddRange(disciplineGroupLst);
+        if (!result)
+            return Result<List<DisciplineGroup>>.Fail(result.Excptn!);
+        
+        result = await repository.SaveChangesAsync();
+        if (!result)
+            return Result<List<DisciplineGroup>>.Fail(result.Excptn!);
 
         return Result<List<DisciplineGroup>>.Done(disciplineGroupLst);
     }
@@ -118,8 +135,8 @@ public static class RepositoryPlaceholder
         List<DisciplineGroup> disciplineGroupLst)
     {
         // Удаляем подгруппы дисциплин
-        var result = await repository.RemoveAllAsync<DisciplineSubGroup>(true);
-        if (!result.HasValue)
+        var result = repository.RemoveAllQuickly<DisciplineSubGroup>();
+        if (!result)
             return Result<List<DisciplineSubGroup>>.Fail(result.Excptn!);
         
         var disciplineSubGroupLst = new List<DisciplineSubGroup>
@@ -148,7 +165,13 @@ public static class RepositoryPlaceholder
                 disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.NordicWalking)!),
         };
 
-        await repository.AddRangeAsync(disciplineSubGroupLst);
+        result = repository.AddRange(disciplineSubGroupLst);
+        if (!result)
+            return Result<List<DisciplineSubGroup>>.Fail(result.Excptn!);
+        
+        result = await repository.SaveChangesAsync();
+        if (!result)
+            return Result<List<DisciplineSubGroup>>.Fail(result.Excptn!);
 
         return Result<List<DisciplineSubGroup>>.Done(disciplineSubGroupLst);
     }
@@ -160,8 +183,8 @@ public static class RepositoryPlaceholder
         List<DisciplineGroup> disciplineGroupLst, List<DisciplineSubGroup> disciplineSubGroupLst)
     {
         // Удаляем дисциплины
-        var result = await repository.RemoveAllAsync<Discipline>(true);
-        if (!result.HasValue)
+        var result = repository.RemoveAllQuickly<Discipline>();
+        if (!result)
             return Result<List<Discipline>>.Fail(result.Excptn!);
 
         var disciplineLst = new List<Discipline>
@@ -292,7 +315,13 @@ public static class RepositoryPlaceholder
                 disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.NordicWalking)!),
         };
 
-        await repository.AddRangeAsync(disciplineLst);
+        result = repository.AddRange(disciplineLst);
+        if (!result)
+            return Result<List<Discipline>>.Fail(result.Excptn!);
+        
+        result = await repository.SaveChangesAsync();
+        if (!result)
+            return Result<List<Discipline>>.Fail(result.Excptn!);
 
         return Result<List<Discipline>>.Done(disciplineLst);
     }
@@ -303,8 +332,8 @@ public static class RepositoryPlaceholder
     public static async Task<Result<List<RefereeLevel>>> FillRefereeLevels(IRepository repository)
     {
         // Удаляем судейские категории
-        var result = await repository.RemoveAllAsync<RefereeLevel>(true);
-        if (!result.HasValue)
+        var result = repository.RemoveAllQuickly<RefereeLevel>();
+        if (!result)
             return Result<List<RefereeLevel>>.Fail(result.Excptn!);
 
         var refereeLevelLst = new List<RefereeLevel>
@@ -316,7 +345,13 @@ public static class RepositoryPlaceholder
             new(RefereeLevelEnm.AllRussCategory, "ССВК", "Спортивный судья всероссийской категории"),
         };
 
-        await repository.AddRangeAsync(refereeLevelLst);
+        result = repository.AddRange(refereeLevelLst);
+        if (!result)
+            return Result<List<RefereeLevel>>.Fail(result.Excptn!);
+        
+        result = await repository.SaveChangesAsync();
+        if (!result)
+            return Result<List<RefereeLevel>>.Fail(result.Excptn!);
 
         return Result<List<RefereeLevel>>.Done(refereeLevelLst);
     }
@@ -327,8 +362,8 @@ public static class RepositoryPlaceholder
     public static async Task<Result<List<RefereeJobTitle>>> FillRefereeJobTitles(IRepository repository)
     {
         // Удаляем судейские должности
-        var result = await repository.RemoveAllAsync<RefereeJobTitle>(true);
-        if (!result.HasValue)
+        var result = repository.RemoveAllQuickly<RefereeJobTitle>();
+        if (!result)
             return Result<List<RefereeJobTitle>>.Fail(result.Excptn!);
 
         var refereeJobTitlesLst = new List<RefereeJobTitle>
@@ -349,7 +384,7 @@ public static class RepositoryPlaceholder
             new(RefereeJobTitleEnm.MajorFinishReferee, "Старший судья финиша"),
             new(RefereeJobTitleEnm.StageReferee, "Судья этапа"),
             new(RefereeJobTitleEnm.InstallerReferee, "Судья-постановщик"),
-            new(RefereeJobTitleEnm.Secretary, "Судья-секретарь"),
+            new(RefereeJobTitleEnm.Secretary, "Судья-секретарь"),           // REMARK: в Правилах - "Судья секретарь", что неправильно
             new(RefereeJobTitleEnm.StarterReferee, "Судья-стартер"),
             new(RefereeJobTitleEnm.TimekeeperReferee, "Судья-хронометрист"),
             new(RefereeJobTitleEnm.InformationReferee, "Судья по информации"),
@@ -360,7 +395,13 @@ public static class RepositoryPlaceholder
             new(RefereeJobTitleEnm.TechCommissionChairman, "Предс. техн. комиссии"),
         };
 
-        await repository.AddRangeAsync(refereeJobTitlesLst);
+        result = repository.AddRange(refereeJobTitlesLst);
+        if (!result)
+            return Result<List<RefereeJobTitle>>.Fail(result.Excptn!);
+        
+        result = await repository.SaveChangesAsync();
+        if (!result)
+            return Result<List<RefereeJobTitle>>.Fail(result.Excptn!);
 
         return Result<List<RefereeJobTitle>>.Done(refereeJobTitlesLst);
     }
@@ -371,7 +412,7 @@ public static class RepositoryPlaceholder
     public static async Task<Result<List<Sex>>> FillSexes(IRepository repository)
     {
         // Удаляем подгруппы дисциплин
-        var result = await repository.RemoveAllAsync<Sex>(true);
+        var result = repository.RemoveAllQuickly<Sex>();
         if (!result.HasValue)
             return Result<List<Sex>>.Fail(result.Excptn!);
 
@@ -384,7 +425,13 @@ public static class RepositoryPlaceholder
             new(SexEnm.Mixed, "см", "смешанный", "смешанные"),
         };
 
-        await repository.AddRangeAsync(sexLst);
+        result = repository.AddRange(sexLst);
+        if (!result)
+            return Result<List<Sex>>.Fail(result.Excptn!);
+        
+        result = await repository.SaveChangesAsync();
+        if (!result)
+            return Result<List<Sex>>.Fail(result.Excptn!);
 
         return Result<List<Sex>>.Done(sexLst);
     }
@@ -395,7 +442,7 @@ public static class RepositoryPlaceholder
     public static async Task<Result<List<SportUnitType>>> FillSportUnitType(IRepository repository)
     {
         // Удаляем типы спортивных юнитов
-        var result = await repository.RemoveAllAsync<SportUnitType>(true);
+        var result = repository.RemoveAllQuickly<SportUnitType>();
         if (!result.HasValue)
             return Result<List<SportUnitType>>.Fail(result.Excptn!);
 
@@ -420,7 +467,13 @@ public static class RepositoryPlaceholder
             // TODO: Возможно добавятся экипажи авто-мото
         };
 
-        await repository.AddRangeAsync(sportUnitTypeLst);
+        result = repository.AddRange(sportUnitTypeLst);
+        if (!result)
+            return Result<List<SportUnitType>>.Fail(result.Excptn!);
+        
+        result = await repository.SaveChangesAsync();
+        if (!result)
+            return Result<List<SportUnitType>>.Fail(result.Excptn!);
 
         return Result<List<SportUnitType>>.Done(sportUnitTypeLst);
     }

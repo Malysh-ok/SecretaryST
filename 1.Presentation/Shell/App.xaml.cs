@@ -50,16 +50,16 @@ public partial class App
         var appSettingService = startupItemsFactory.CreateAppSettingService();
         
         services
-            .AddSingleton<MainView>()        // внедряем главное представление
-            .AddSingleton(appSettingService) // внедряем сервис настроек приложения
-            .AddSingleton(dbConfigurator)    // внедряем конфигуратор БД
+            .AddSingleton<MainView>()        // регистрируем главное представление
+            .AddSingleton(appSettingService) // регистрируем сервис настроек приложения
+            .AddSingleton(dbConfigurator)    // регистрируем конфигуратор БД
             
             .AddDbContext<AppDbContext>(options =>
-                dbConfigurator.UseProvider<AppDbContext>(options)) // внедряем контекст БД
+                dbConfigurator.UseProvider<AppDbContext>(options)) // регистрируем контекст БД
             // .AddDbContextFactory<AppDbContext>(options =>
             //     dbConfigurator.UseProvider<AppDbContext>(options))  // !!!!!!!!!!!!!!!!!!!
-            .AddTransient<IRepository, Repository<AppDbContext>>() // внедряем репозиторий
-            .AddTransient<IInitRepository, Repository<AppDbContext>>()
+            .AddScoped<IRepository, Repository<AppDbContext>>() // регистрируем репозиторий
+            .AddScoped<IInitRepository, InitRepository>()
             
             // .AddLogging(builder => builder.AddSerilog(dispose: true))
             .AddSingleton<ILogger>
@@ -85,10 +85,10 @@ public partial class App
     {
         // Создаем каталоги приложения
         var appSettingService = _serviceProvider.GetService<AppSettingService>();
-        var result = appSettingService?.AppDir.CreateAppDirs();     // TODO: обработать result
+        var result = appSettingService?.AppDir.CreateAppDirs();     // TODO: обработать result в App.OnStartup после создания директорий
         
-        AppDbContext dbContext = _serviceProvider.GetService<AppDbContext>()!;
-        IInitRepository initRepository = _serviceProvider.GetService<IInitRepository>()!;
+        var dbContext = _serviceProvider.GetService<AppDbContext>()!;
+        var initRepository = _serviceProvider.GetService<IInitRepository>()!;
         try
         {
             // Применяем последнюю миграцию
@@ -98,7 +98,7 @@ public partial class App
             if (! await initRepository.IsExistLibrary())
             {
                 // Пересоздание репозитория
-                await initRepository.RebuildRepository();
+                result = await initRepository.RebuildRepository();  // TODO: обработать result в App.OnStartup после пересоздания репозитория
 
                 // Пробрасываем исключение "Одна или несколько сущностей Библиотеки отсутствуют..."
                 var exception = new AppException($"{AppPhrases.MissingEntitiesError}\n{AppPhrases.DatabaseRebuilt}");
