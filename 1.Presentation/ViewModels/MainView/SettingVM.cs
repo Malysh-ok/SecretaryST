@@ -35,7 +35,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     private readonly RefereeService _refereeService = null!;
 
     /// <summary>
-    /// Список доступных языков.
+    /// Коллекция доступных языков.
     /// </summary>
     public ObservableCollection<Lang> Languages { get; } = null!;
 
@@ -207,7 +207,8 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         _localizationHelper = new LocalizationHelper(appSetting);
 
         // Подписываемся на получение сообщений
-        Messenger.Register(this);
+        Messenger.Register<LocalizationMessage>(this);
+        Messenger.Register<AllCompetitionsMessage>(this);
         
         // Посылаем сообщение о смене локализации
         Messenger.Send( new LocalizationMessage(_currLang, localization.GetDefaultLang()));
@@ -234,22 +235,25 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// <summary>
     /// Получаем сообщение с экземпляром <see cref="LocalizationMessage"/>.
     /// </summary>
-    public async void Receive(LocalizationMessage message)
+    public void Receive(LocalizationMessage message)
     {
         var localization = _appSetting.AppLocalization;
         
         var lang = message.Lang;            // устанавливаемый язык
         var oldLang = message.OldLang;      // предыдущий язык
         
-        // Перевод всех доступных языков приложения в соответствии с устанавливаемым языком
+        // Перевод наименований всех доступных языков приложения в соответствии с устанавливаемым языком
         localization.Translate(localization.SetCurrentLang(lang).GetCultureInfo());
 
-        if (!await _localizationHelper.LocalizeView(_view, lang))
+        _ = Task.Run(() =>
         {
-            // Если локализовать не получилось - переводим доступные языки обратно,
-            // в соответствии с предыдущим языком
-            localization.Translate(localization.SetCurrentLang(oldLang).GetCultureInfo());
-        }
+            if (! _localizationHelper.LocalizeView(_view, lang))
+            {
+                // Если локализовать не получилось - переводим доступные языки обратно,
+                // в соответствии с предыдущим языком
+                localization.Translate(localization.SetCurrentLang(oldLang).GetCultureInfo());
+            }
+        });
         var currLang = localization.GetCurrentOrDefaultLang();
 
         // Меняем текущую локализацию и локализацию фраз приложения в соответствии с текущим языком

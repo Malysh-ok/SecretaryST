@@ -19,13 +19,12 @@ public class OtherSettingVM : ObservableRecipient, IRecipient<LocalizationMessag
 
     private readonly LocalizationHelper _localizationHelper;
 
-    private Lang _displayMsg = null!;
     // TODO: Временно
     public Lang DisplayMsg
     {
-        get => _displayMsg;
-        set => SetProperty(ref _displayMsg, value);
-    }
+        get;
+        private set => SetProperty(ref field, value);
+    } = null!;
 
     /// <summary>
     /// Конструктор.
@@ -47,14 +46,18 @@ public class OtherSettingVM : ObservableRecipient, IRecipient<LocalizationMessag
     /// <summary>
     /// Получаем сообщение с экземпляром <see cref="LocalizationMessage"/>.
     /// </summary>
-    public async void Receive(LocalizationMessage message)
+    public void Receive(LocalizationMessage message)
     {
         DisplayMsg = message.Lang;
         
         // Локализуем представление
-        if (!await _localizationHelper.LocalizeView(_view, message.Lang))
+        _ = Task.Run(() =>
         {
-            DisplayMsg = message.OldLang;
-        }
+            if (! _localizationHelper.LocalizeView(_view, message.Lang))
+            {
+                DisplayMsg = message.OldLang;
+            }
+        });
+
     }
 }

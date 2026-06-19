@@ -20,7 +20,8 @@ public class LocalizationMessage
     /// <summary>
     /// Конструктор, запрещающий создание экземпляра без параметров.
     /// </summary>
-    public LocalizationMessage()
+    // ReSharper disable once UnusedMember.Local
+    private LocalizationMessage()
     {
         Lang = null!;
         OldLang = null!;

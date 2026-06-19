@@ -35,51 +35,49 @@ public class LocalizationHelper
     }
 
     /// <summary>
-    /// Локализация представления (окна).
+    /// Асинхронно локализует представление (окно), заменяя ResourceDictionary языка.
     /// </summary>
+    /// <param name="view">Представление, которое нужно локализовать.</param>
+    /// <param name="localization">Целевой язык.</param>
+    /// <returns>true - локализация успешна, false - ошибка.</returns>
     /// <remarks>
     /// Если ресурс с локализацией не найден - представление остается в прежней локализации.
     /// </remarks>
-    public async Task<bool> LocalizeView(IViewWithResources view, Lang localization)
+    public bool LocalizeView(IViewWithResources view, Lang localization)
     {
-        return await Task.Run<bool>(() =>
+        // Используем Dispatcher, чтобы получить UI-поток
+        return Application.Current.Dispatcher.Invoke(() =>
         {
-            // Используем Dispatcher, чтобы получить UI-поток
-            var result = Application.Current.Dispatcher.Invoke((Func<bool>)(() =>
+            // Получаем ResourceDictionary локализации из App
+            var regex = new Regex(@"lang\..*xaml", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            var appResources = Application.Current.Resources.MergedDictionaries.FirstOrDefault(r =>
+                regex.IsMatch(r.Source.OriginalString));
+
+            // Если у приложения отсутствует ресурс с локализацией - выходим
+            if (appResources?.Source == null)
+                return false;
+
+            try
             {
-                // Получаем ResourceDictionary локализации из App
-                var regex = new Regex(@"lang\..*xaml", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                var appResources = Application.Current.Resources.MergedDictionaries.FirstOrDefault(r =>
-                    regex.IsMatch(r.Source.OriginalString));
-
-                // Если у приложения отсутствует ресурс с локализацией - выходим
-                if (appResources?.Source == null)
-                    return false;
-                
-                try
+                // Создаем ResourceDictionary для нового языкового стандарта
+                var viewResources = new ResourceDictionary
                 {
-                    //Создаем ResourceDictionary для нового языкового стандарта
-                    var viewResources = new ResourceDictionary
-                    {
-                        Source = new Uri(
-                            regex.Replace(appResources.Source.OriginalString, 
-                                GetLangResourceName(localization)),
-                            UriKind.Relative)
-                    };
+                    Source = new Uri(
+                        regex.Replace(appResources.Source.OriginalString,
+                            GetLangResourceName(localization)),
+                        UriKind.Relative)
+                };
 
-                    // Удаляем текущий ResourceDictionary локализации, добавляем новый
-                    view.Resources.MergedDictionaries.Remove(appResources);
-                    view.Resources.MergedDictionaries.Add(viewResources);
+                // Удаляем текущий ResourceDictionary локализации, добавляем новый
+                view.Resources.MergedDictionaries.Remove(appResources);
+                view.Resources.MergedDictionaries.Add(viewResources);
 
-                    return true;
-                }
-                catch
-                {
-                    return false;   // если ошибка - выходим
-                }
-            }));
-            
-            return result;
+                return true;
+            }
+            catch
+            {
+                return false;   // если ошибка - выходим
+            }
         });
     }
 }
