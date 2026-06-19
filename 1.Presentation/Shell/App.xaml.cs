@@ -56,11 +56,10 @@ public partial class App
             .AddSingleton(dbConfigurator)    // регистрируем конфигуратор БД
             
             .AddDbContext<AppDbContext>(options =>
-                dbConfigurator.UseProvider<AppDbContext>(options)) // регистрируем контекст БД
-            // .AddDbContextFactory<AppDbContext>(options =>
-            //     dbConfigurator.UseProvider<AppDbContext>(options))  // !!!!!!!!!!!!!!!!!!!
-            .AddScoped<IRepository, Repository<AppDbContext>>() // регистрируем репозиторий
-            .AddTransient<IInitRepository, InitRepository>()
+                dbConfigurator.UseProvider<AppDbContext>(options),
+                ServiceLifetime.Transient)                              // регистрируем контекст БД
+            .AddTransient<IRepository, Repository<AppDbContext>>()      // регистрируем репозиторий
+            .AddTransient<IRepositoryHelper, RepositoryHelper>()        // регистрируем "помощник" репозитория
             
             // .AddLogging(builder => builder.AddSerilog(dispose: true))
             .AddSingleton<ILogger>
@@ -89,7 +88,7 @@ public partial class App
         var result = appSettingService?.AppDir.CreateAppDirs();     // TODO: обработать result в App.OnStartup после создания директорий
         
         var dbContext = _serviceProvider.GetService<AppDbContext>()!;
-        var initRepository = _serviceProvider.GetService<IInitRepository>()!;
+        var initRepository = _serviceProvider.GetService<IRepositoryHelper>()!;
         try
         {
             // Применяем последнюю миграцию

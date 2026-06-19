@@ -35,6 +35,10 @@ public class AppSettingService
 
     #endregion
 
+    /// <summary>
+    /// Название программы.
+    /// </summary>
+    public string AppName => "SecretaryST";
 
     /// <summary>
     /// Путь к файлу конфигурации.
@@ -43,7 +47,7 @@ public class AppSettingService
         => PathEx.Combine(AppDir.ConfigPath, SettingFileName);
     
     /// <summary>
-    /// Путь к файлу конфигурации.
+    /// Полный путь к файлу конфигурации.
     /// </summary>
     // ReSharper disable once MemberCanBePrivate.Global
     public string SettingFullFilePath

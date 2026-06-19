@@ -91,7 +91,8 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
         // Создаем ViewModel's. Последовательность создания важна!
         var settingVM = new SettingVM(view, statusBarData, logger, exceptionsProvider, appSetting,
             competitionDataService, refereeService);
-        var backstageVM = new BackstageVM(statusBarData, logger, exceptionsProvider, competitionDataService);
+        var backstageVM = new BackstageVM(statusBarData, logger, exceptionsProvider, appSetting, 
+            competitionDataService);
         var mainVM = new MainVM(backstageVM, settingVM, statusBarData, logger);
 
         return mainVM;

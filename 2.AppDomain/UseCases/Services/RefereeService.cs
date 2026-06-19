@@ -174,12 +174,11 @@ public class RefereeService(IRepository repository)
 
         return Result<int>.Done(index == 0 ? 0 : index - 1);
     }
-    
+
     /// <summary>
     /// Сохранение списка судей.
     /// </summary>
-    /// <param name="referees">Список судей.</param>
-    public async Task<Result<int>> SaveRefereesAsync(IEnumerable<Referee> referees)
+    public async Task<Result<int>> SaveRefereesAsync()
     {
         var intResult = await repository.SaveChangesAsync();
         

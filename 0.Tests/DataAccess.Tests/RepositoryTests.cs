@@ -77,7 +77,7 @@ public class RepositoryTests
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
-        var initRepository = new InitRepository(repository);
+        var initRepository = new RepositoryHelper(repository);
 
         await initRepository.RebuildRepository();
         

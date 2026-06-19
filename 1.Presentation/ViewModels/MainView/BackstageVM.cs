@@ -1,7 +1,9 @@
 ﻿using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Input;
 using AppDomain.AppExceptions;
 using AppDomain.Phrases;
+using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
 using Common.WpfModule.Components.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -21,6 +23,8 @@ namespace Presentation.ViewModels.MainView;
 public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMessage>, IStatusBarDataProvider, IDisposable
 {
     private readonly ILogger _logger = null!;
+    private readonly IExceptionsProvider _exceptionsProvider = null!;
+    private readonly AppSettingService _appSetting = null!;
     private readonly CompetitionDataService _competitionDataService = null!;
     
     /// <summary>
@@ -74,11 +78,13 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
         StatusBarData statusBarData,
         ILogger logger,
         IExceptionsProvider exceptionsProvider,
+        AppSettingService appSetting,
         CompetitionDataService competitionDataService)
     {
-        _logger = logger;
         StatusBarData = statusBarData;
         _logger = logger;
+        _exceptionsProvider = exceptionsProvider;
+        _appSetting = appSetting;
         _competitionDataService = competitionDataService;
 
         GetAllCompetitionsCommand = new AsyncRelayCommand(OnGetAllCompetitionDataAsync);
@@ -169,27 +175,46 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     /// </summary>
     private async Task OnAddCompetitionDataAsync()
     {
-        var competitionResult = await _competitionDataService.AddCompetitionDataAsync(CompetitionDataCollection);
-
-        if (competitionResult)
+        Exception? exception = null;
+        try
         {
-            // Перезаписываем текущее соревнование
+            // Получаем
+            var competitionResult = await _competitionDataService.AddCompetitionDataAsync(CompetitionDataCollection);
+            if (! competitionResult)
+            {
+                // Неудачное получение данных из репозитория
+                exception = competitionResult.Excptn;
+                return;
+            }
+            
+            // Сохраняем изменения
+            var intResult = await _competitionDataService.SaveCompetitionDataAsync();
+            if (! intResult)
+            {
+                // Неудачное сохранение в репозитории
+                exception = competitionResult.Excptn;
+                return;
+            }
+
             CurrentCompetitionData = competitionResult.Value;
             
             // Посылаем сообщение о загрузке соревнований
             Messenger.Send(new AllCompetitionsMessage(CompetitionDataCollection, CurrentCompetitionData));
-
+            
             // TODO: Временно (без ожидания окончания)
-            _ = StatusBarData.SetTextAsync("Добавили соревнование.", StatusBarData.StatusBarTextType.Info);
+            _ = StatusBarData.SetTextAsync("Добавили соревнование.", StatusBarData.StatusBarTextType.Error);
         }
-        else
+        finally
         {
-            // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(competitionResult.Excptn?.Message, 
-                StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(competitionResult.Excptn, 
-                "{class}.{method}.", 
-                typeof(SettingVM), nameof(OnAddCompetitionDataAsync));
+            if (exception != null)
+            {
+                // Пишем в статус-бар и лог об ошибке
+                _ = StatusBarData.SetTextAsync(exception.Message,
+                    StatusBarData.StatusBarTextType.Error, 0);
+                _logger.Error(exception,
+                    "{class}.{method}.",
+                    typeof(SettingVM), nameof(OnAddCompetitionDataAsync));
+            }
         }
     }
     
@@ -198,11 +223,34 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     /// </summary>
     private async Task OnRemoveCompetitionDataAsync()
     {
-        var competitionResult = 
-            await _competitionDataService.RemoveCompetitionDataAsync(CompetitionDataCollection, CurrentCompetitionData);
-        
-        if (competitionResult)
+        Exception? exception = null;
+        try
         {
+            // TODO: Временно, возможно будет отдельное окно
+            var result = MessageBox.Show("Вы уверены, что хотите удалить соревнование?", _appSetting.AppName, 
+                MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
+            if (result == MessageBoxResult.No)
+                return;
+            
+            // Удаляем
+            var competitionResult = 
+                await _competitionDataService.RemoveCompetitionDataAsync(CompetitionDataCollection, CurrentCompetitionData);
+            if (! competitionResult)
+            {
+                // Неудачное удаление данных в репозитории
+                exception = competitionResult.Excptn;
+                return;
+            }
+            
+            // Сохраняем изменения
+            var intResult = await _competitionDataService.SaveCompetitionDataAsync();
+            if (! intResult)
+            {
+                // Неудачное сохранение в репозитории
+                exception = competitionResult.Excptn;
+                return;
+            }
+
             CurrentCompetitionData = competitionResult.Value;
             
             // Посылаем сообщение о загрузке соревнований
@@ -211,14 +259,17 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             // TODO: Временно (без ожидания окончания)
             _ = StatusBarData.SetTextAsync("Удалили соревнование.", StatusBarData.StatusBarTextType.Error);
         }
-        else
+        finally
         {
-            // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(competitionResult.Excptn?.Message, 
-                StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(competitionResult.Excptn, 
-                "{class}.{method}.", 
-                typeof(SettingVM), nameof(OnRemoveCompetitionDataAsync));
+            if (exception != null)
+            {
+                // Пишем в статус-бар и лог об ошибке
+                _ = StatusBarData.SetTextAsync(exception.Message,
+                    StatusBarData.StatusBarTextType.Error, 0);
+                _logger.Error(exception,
+                    "{class}.{method}.",
+                    typeof(SettingVM), nameof(OnRemoveCompetitionDataAsync));
+            }
         }
     }
 

@@ -5,21 +5,24 @@ using ProblemDomain.Entities.LibraryEntities;
 
 namespace DataAccess.Repositories;
 
-public class InitRepository : IInitRepository
+/// <summary>
+/// Методы, помогающие работать с <see cref="IRepository"/>.
+/// </summary>
+public class RepositoryHelper : IRepositoryHelper
 {
     private readonly IRepository _repository = null!;
     
     /// <summary>
     /// Конструктор, запрещающий создание экземпляра без параметров.
     /// </summary>
-    private InitRepository()
+    private RepositoryHelper()
     {
     }
 
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public InitRepository(IRepository repository) : this()
+    public RepositoryHelper(IRepository repository) : this()
     {
         _repository =  repository;
     }

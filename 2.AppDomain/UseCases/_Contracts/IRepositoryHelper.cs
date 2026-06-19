@@ -3,9 +3,9 @@
 namespace AppDomain.UseCases._Contracts;
 
 /// <summary>
-/// Интерфейс, реализующий свойства/методы, необходимые для инициализации.
+/// Интерфейс, реализующий дополнительные свойства/методы для репозитория.
 /// </summary>
-public interface IInitRepository
+public interface IRepositoryHelper
 {
     /// <summary>
     /// Упрощенная проверка наличия библиотечных сущностей.

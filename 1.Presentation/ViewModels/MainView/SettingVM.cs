@@ -423,8 +423,8 @@ public sealed class SettingVM : ObservableRecipient,
         Exception? exception = null;
         try
         {
+            // Получаем
             var competitionDataResult = await _competitionDataService.GetCompetitionDataAsync(id);
-
             if (! competitionDataResult)
             {
                 // Неудачное получение данных из репозитория
@@ -478,8 +478,8 @@ public sealed class SettingVM : ObservableRecipient,
         // Сохраняем проводящие организации
         _competitionDataService.SetConductingOrganizations(CurrentCompetitionData, ConductingOrganizations);
         
-        var intResult = await _competitionDataService.SaveCompetitionDataAsync(CurrentCompetitionData!);
-
+        // Сохраняем изменения
+        var intResult = await _competitionDataService.SaveCompetitionDataAsync();
         if (intResult)
         {
             // Уведомляем UI об изменении
@@ -591,7 +591,6 @@ public sealed class SettingVM : ObservableRecipient,
     private Task OnRemoveReferee()
     {
         var refereesResult = _refereeService.RemoveReferee(Referees, Referees.SelectedIndex);
-        
         if (refereesResult)
         {
             // Перезаписываем индекс
@@ -618,8 +617,8 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private async Task OnSaveReferees()
     {
-        var intResult = await _refereeService.SaveRefereesAsync(Referees);
-
+        // Сохраняем изменения
+        var intResult = await _refereeService.SaveRefereesAsync();
         if (! intResult)
         {
             // Пишем в статус-бар и лог об ошибке

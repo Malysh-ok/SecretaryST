@@ -322,12 +322,11 @@ public class CompetitionDataService(IRepository repository)
 
         return Task.FromResult(Result<CompetitionData>.Done(competitionDataCollection[index]));
     }
-    
+
     /// <summary>
     /// Сохранение соревнования.
     /// </summary>
-    /// <param name="competitionData">Данные о соревнования.</param>
-    public async Task<Result<int>> SaveCompetitionDataAsync(CompetitionData competitionData)
+    public async Task<Result<int>> SaveCompetitionDataAsync()
     {
         var intResult1 = Result<int>.Done(0);
         // var intResult1 = repository.Update(competitionData);
