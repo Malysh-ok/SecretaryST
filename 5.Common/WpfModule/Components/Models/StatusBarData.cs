@@ -4,7 +4,7 @@ using Common.WpfModule.Extensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Brush = System.Windows.Media.Brush;
 
-namespace Presentation.ViewModels.Common;
+namespace Common.WpfModule.Components.Models;
 
 /// <summary>
 /// Данные для статус-бара.

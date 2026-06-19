@@ -66,4 +66,16 @@
     <data name="RefereesSaveError" xml:space="preserve">
         <value>Failed to save the list of referee to the repository.</value>
     </data>
+    <data name="UnknownError" xml:space="preserve">
+        <value>Unknown Error. For more information, see the log file.</value>
+    </data>
+    <data name="CompetitionsStatusFindError" xml:space="preserve">
+        <value>Failed to find the competitions status from the repository.</value>
+    </data>
+    <data name="DetailedCompetitionStatusFindError" xml:space="preserve">
+        <value>Failed to find the detailed competitions status from the repository.</value>
+    </data>
+    <data name="CompetitionDataIsNull" xml:space="preserve">
+        <value>The current competition is missing.</value>
+    </data>
 </root>

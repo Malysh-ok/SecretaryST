@@ -59,4 +59,16 @@
     <data name="RefereesSaveError" xml:space="preserve">
         <value>Не удалось сохранить список судей в репозитории.</value>
     </data>
+    <data name="UnknownError" xml:space="preserve">
+        <value>Неизвестная Ошибка. Для получения подробной информации смотрите log-файл.</value>
+    </data>
+    <data name="CompetitionsStatusFindError" xml:space="preserve">
+        <value>Не удалось найти статус соревнований в репозитории.</value>
+    </data>
+    <data name="DetailedCompetitionStatusFindError" xml:space="preserve">
+        <value>Не удалось найти статус и название соревнования в репозитории.</value>
+    </data>
+    <data name="CompetitionDataIsNull" xml:space="preserve">
+        <value>Отсутствует текущее соревнование.</value>
+    </data>
 </root>

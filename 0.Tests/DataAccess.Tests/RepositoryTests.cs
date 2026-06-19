@@ -72,14 +72,14 @@ public class RepositoryTests
     /// </summary>
     [Test]
     [Category($"{NoAutomatic}")]
-    // [Category($"Other")]
+    // [Category($"OnceAtBeginning")]
     public async Task RebuildDbTest()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
-        var repositoryInit = new InitRepository(repository);
+        var initRepository = new InitRepository(repository);
 
-        await repositoryInit.RebuildRepository();
+        await initRepository.RebuildRepository();
         
         repository.Dispose();
     }
@@ -106,6 +106,22 @@ public class RepositoryTests
         
         repository.Dispose();
     }
+    
+    [Test, Category($"Other")]
+    public async Task TmpTest()
+    {
+        var dbContext = new DbContextFactory().CreateDbContext([]);
+        var repository = new Repository<AppDbContext>(dbContext);
+        const string description = "Проверка";
+
+        var competitionDataResult =
+            (await repository.FindAsync<CompetitionData>(0));
+
+        Assert.That(competitionDataResult.Excptn, Is.Null);
+        
+        repository.Dispose();
+    }
+
     
     [Test, Order(0)]
     public void CreatingDbContextTest()
@@ -380,21 +396,43 @@ public class RepositoryTests
     }
 
     [Test, Order(5)]
+    [RecreateEntities]
     public async Task CompetitionData_Test()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
         var competitionService = new CompetitionDataService(repository);
+        Result<int> result;
         
-        // Создаем данные о соревновании
-        var resultCompetition = await competitionService.CreateAsync("Горные соревы...", "ФСТ ЧР",
+        // Удаляем все сущности при атрибуте RecreateEntities
+        if (_isRecreateEntities)
+        {
+            result = repository.RemoveAllQuickly<CompetitionData>();
+            Assert.That(result.Excptn, Is.Null);
+        }
+
+        // Создаем данные о соревновании 1
+        var resultCompetition = await competitionService.CreateCompetitionDataAsync(
+            "Кубок России по спортивному туризму на горных дистанциях", 
+            new List<string> {"ФСТ ЧР", "Авангард"},
             new DateTime(2023, 2, 23), new DateTime(2023, 2, 26),
-            "Овраг близ этнокомплекса \"Амазония\", г. Чебоксары", 
-            (await repository.FindAsync<CompetitionsStatus>(CompetitionsStatusEnm.Regional)).Value!,
-            (await repository.FindAsync<DetailedCompetitionStatus>(DetailedCompetitionStatusEnm.RegionalChampionship)).Value!
+            "Овраг близ этнокомплекса \"Амазония\", г. Чебоксары", "Горные соревы",
+            (await repository.FindAsync<CompetitionsStatus>(CompetitionsStatusEnm.AllRussian)).Value!,
+            (await repository.FindAsync<DetailedCompetitionStatus>(DetailedCompetitionStatusEnm.RussianCup)).Value!
             );
         Assert.That(resultCompetition.Excptn, Is.Null);
         
+        // Создаем данные о соревновании 2
+        resultCompetition = await competitionService.CreateCompetitionDataAsync(
+            "Чемпионат Чувашской Республики по спортивному туризму на горных дистанциях", 
+            new List<string> {"ФСТ ЧР", "Авангард", "Администрация Ядринского МО"},
+            new DateTime(2026, 4, 10), new DateTime(2026, 4, 12),
+            "р. Юнга, Ядринский МО", "Водные соревы",
+            (await repository.FindAsync<CompetitionsStatus>(CompetitionsStatusEnm.Regional)).Value!,
+            (await repository.FindAsync<DetailedCompetitionStatus>(DetailedCompetitionStatusEnm.RegionalChampionship)).Value!
+        );
+        Assert.That(resultCompetition.Excptn, Is.Null);
+
         // Проверяем
         var competitionsResult = await repository.GetAllAsync<CompetitionData>();
         Assert.That(competitionsResult.Excptn, Is.Null);

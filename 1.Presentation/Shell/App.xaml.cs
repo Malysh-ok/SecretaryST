@@ -7,6 +7,7 @@ using AppDomain.Phrases;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases._Contracts;
 using AppDomain.UseCases.Services;
+using Common.WpfModule.Components.Models;
 using DataAccess.DbContexts;
 using DataAccess.Repositories;
 using DataAccess.Repositories.Exceptions;
@@ -59,7 +60,7 @@ public partial class App
             // .AddDbContextFactory<AppDbContext>(options =>
             //     dbConfigurator.UseProvider<AppDbContext>(options))  // !!!!!!!!!!!!!!!!!!!
             .AddScoped<IRepository, Repository<AppDbContext>>() // регистрируем репозиторий
-            .AddScoped<IInitRepository, InitRepository>()
+            .AddTransient<IInitRepository, InitRepository>()
             
             // .AddLogging(builder => builder.AddSerilog(dispose: true))
             .AddSingleton<ILogger>
@@ -73,8 +74,8 @@ public partial class App
             )
             .AddSingleton<StatusBarData>()
             .AddSingleton<IExceptionsProvider, ExceptionsProvider>()
-            .AddTransient<CompetitionDataService>()
-            .AddTransient<RefereeService>()
+            .AddScoped<CompetitionDataService>()
+            .AddScoped<RefereeService>()
             ;
     }
 
@@ -118,7 +119,7 @@ public partial class App
         }
         
         // Получаем главное представление (окно) и показываем его
-        var mainView = _serviceProvider.GetService<MainView>();
+        var mainView = _serviceProvider.GetRequiredService<MainView>();
         mainView!.Show();
     }
 }

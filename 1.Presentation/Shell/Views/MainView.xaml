@@ -5,28 +5,22 @@
                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                     xmlns:system="clr-namespace:System;assembly=mscorlib"
                      xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
                      xmlns:fluent="urn:fluent-ribbon"
-
                      xmlns:local="clr-namespace:Presentation.Shell.Views"
-                     xmlns:viewModels="clr-namespace:Presentation.ViewModels"
                      xmlns:viewModels.MainView="clr-namespace:Presentation.ViewModels.MainView;assembly=ViewModels"
-                     xmlns:common="clr-namespace:Presentation.ViewModels.Common;assembly=ViewModels"
-                     xmlns:markup="clr-namespace:Common.WpfModule.Ui.Markup;assembly=Ui"
                      xmlns:userControls="clr-namespace:Presentation.Shell.UserControls"
-                     xmlns:converters="clr-namespace:Common.WpfModule.Ui.Converters;assembly=Ui"
-                     xmlns:dataGrids="clr-namespace:Common.WpfModule.Ui.Behaviors.DataGrids;assembly=Ui"
                      d:DataContext="{ d:DesignInstance viewModels.MainView:MainVM }"
                      mc:Ignorable="d"
                      Title="{DynamicResource MainView}"
                      Height="800"
                      Width="1200"
-                     MinHeight="600"
+                     MinHeight="610"
                      MinWidth="700" >
+    <!-- TODO: откорректировать MinHeight -->
 
     <Window.Resources>
-        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Window.Resources>
 
     <Window.CommandBindings>
@@ -64,11 +58,24 @@
                 <fluent:Backstage Header="{DynamicResource MainView_Ribbon_File}"
                                   DataContext="{Binding BackstageVM}">
                     <fluent:BackstageTabControl>
-                        <fluent:BackstageTabItem Header="{DynamicResource MainView_Ribbon_File_Open}" />
-                        <fluent:BackstageTabItem Header="{DynamicResource MainView_Ribbon_File_Save}" />
-                        <fluent:BackstageTabItem Header="{DynamicResource MainView_Ribbon_File_Print}" />
+                        <fluent:Button x:Name="BtnBstgUpdate"
+                                       Icon="{DynamicResource RotateDrawingImage}"
+                                       Header="{DynamicResource MainView_Ribbon_File_Update}"
+                                       Command="{Binding GetAllCompetitionsCommand}" />
+                        <fluent:Button x:Name="BtnBstgCreate"
+                                       Icon="{DynamicResource CirclePlusDrawingImage}"
+                                       Header="{DynamicResource MainView_Ribbon_File_Create}"
+                                       Command="{Binding AddCompetitionCommand}" />
+                        <fluent:Button x:Name="BtnBstgRemove"
+                                       Icon="{DynamicResource CircleXmarkSolidDrawingImage}"
+                                       Header="{DynamicResource MainView_Ribbon_File_Remove}" 
+                                       Command="{Binding RemoveCompetitionCommand}" />
+
+                        <fluent:BackstageTabItem x:Name="BstgTabPrint"
+                                                 Icon="{DynamicResource PrintDrawingImage}"
+                                                 Header="{DynamicResource MainView_Ribbon_File_Print}" /> <!--Может тоже кнопка?-->
                         <!-- Выход -->
-                        <fluent:Button x:Name="BtnExit"
+                        <fluent:Button x:Name="BtnBstgExit"
                                        Icon="{DynamicResource ExitDrawingImage}"
                                        Header="{DynamicResource MainView_Ribbon_File_Exit}"
                                        Command="ApplicationCommands.Close" />
@@ -82,43 +89,90 @@
                 <!-- Соревнования -->
                 <fluent:RibbonGroupBox x:Name="SettingCompetition" 
                                        Header="{DynamicResource MainView_Ribbon_Setting_Competitions}" >
-                    <fluent:Button x:Name="BtnLoadCompetition"
-                                   Icon="{DynamicResource RotateDrawingImage_DarkGreen}"
-                                   Header="{DynamicResource MainView_Ribbon_Setting_UpdateCompetition}" 
-                                   Command="{Binding LoadCompetitionCommand}" />
-                    <fluent:Button x:Name="BtnSaveCompetition"
-                                   Icon="{DynamicResource FloppyDiskDrawingImage_DarkGreen}"
-                                   HorizontalAlignment="Right"
-                                   Header="{DynamicResource MainView_Ribbon_Setting_SaveChanges}"
-                                   Command="{Binding SaveCompetitionDataCommand}" />
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" >
+                            <Label x:Name="LblCurrentCompetition"
+                                        Content="{DynamicResource MainView_Ribbon_Setting_CurrCompetitions}" />
+
+                            <fluent:ComboBox x:Name="CmboxCurrentCompetition"
+                                             Width="200"
+                                             HorizontalAlignment="Left"
+                                             ItemsSource="{Binding CompetitionDataCollection,
+                                                Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                             SelectedItem="{Binding  CurrentCompetitionData,
+                                                Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                        
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <fluent:Button Grid.Column="0" x:Name="BtnUpdateCompetition"
+                                           Icon="{DynamicResource RotateDrawingImage_DarkGreen}"
+                                           Header="{DynamicResource MainView_Ribbon_Setting_UpdateCompetition}" 
+                                           Command="{Binding GetCompetitionCommand}"
+                                           CommandParameter="{Binding CurrentCompetitionData.Id, 
+                                                UpdateSourceTrigger=PropertyChanged}"/>
+                        </Grid>
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <fluent:Button Grid.Column="0" x:Name="BtnSaveCompetition"
+                                           Icon="{DynamicResource FloppyDiskDrawingImage_DarkGreen}"
+                                           Header="{DynamicResource MainView_Ribbon_Setting_SaveChanges}"
+                                           Command="{Binding SaveCompetitionCommand}" />
+                        </Grid>                        
+                    </StackPanel>
                 </fluent:RibbonGroupBox>
 
                 <!-- Судьи -->
                 <fluent:RibbonGroupBox x:Name="SettingReferees" 
                                        Header="{DynamicResource MainView_Ribbon_Setting_Referees}" >
-                    <fluent:Button x:Name="BtnUpdateReferees"
-                                   Icon="{DynamicResource DrawingImage_Olive}"
-                                   Header="{DynamicResource MainView_Ribbon_Setting_UpdateReferees}"
-                                   Command="{Binding LoadRefereesCommand}" />
-                    <fluent:Button x:Name="BtnAddReferee"
-                                   Header="{DynamicResource MainView_Ribbon_Setting_AddReferee}"
-                                   Command="{Binding AddRefereeCommand}" />
-                    <fluent:Button x:Name="BtnDeleteReferee"
-                                   Header="{DynamicResource MainView_Ribbon_Setting_DeleteReferee}"
-                                   Command="{Binding RemoveRefereeCommand}" />
-                    <fluent:Button x:Name="BtnSaveReferees"
-                                   Icon="{DynamicResource FloppyDiskDrawingImage_Olive}"
-                                   HorizontalAlignment="Right"
-                                   Header="{DynamicResource MainView_Ribbon_Setting_SaveChanges}"
-                                   Command="{Binding SaveRefereesCommand}" />
+                    <StackPanel>
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <fluent:Button Grid.Column="0" x:Name="BtnUpdateReferees"
+                                           Icon="{DynamicResource DrawingImage_Olive}"
+                                           Header="{DynamicResource MainView_Ribbon_Setting_UpdateReferees}"
+                                           Command="{Binding GetRefereesCommand}" />
+                            <fluent:Button Grid.Column="1"  x:Name="BtnAddReferee"
+                                           Icon="{DynamicResource CirclePlusDrawingImage_Olive}"
+                                           Header="{DynamicResource MainView_Ribbon_Setting_AddReferee}"
+                                           Command="{Binding AddRefereeCommand}" />
+                        </Grid>
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <fluent:Button Grid.Column="0"  x:Name="BtnSaveReferees"
+                                           Icon="{DynamicResource FloppyDiskDrawingImage_Olive}"
+                                           Header="{DynamicResource MainView_Ribbon_Setting_SaveChanges}"
+                                           Command="{Binding SaveRefereesCommand}" />
+                            <fluent:Button Grid.Column="1"  x:Name="BtnDeleteReferee"
+                                           Icon="{DynamicResource CircleXmarkSolidDrawingImage_Olive}"
+                                           Header="{DynamicResource MainView_Ribbon_Setting_DeleteReferee}"
+                                           Command="{Binding RemoveRefereeCommand}" />
+                        </Grid>
+                    </StackPanel>
                 </fluent:RibbonGroupBox>
                 
                 <!-- Дополнительные -->
                 <fluent:RibbonGroupBox x:Name="SettingOptionally" 
                                        Header="{DynamicResource MainView_Ribbon_Setting_Optionally}">
-                    <fluent:Button x:Name="BtnSetting"
+                    <fluent:Button x:Name="BtnProgramSetting"
                                    Icon="{DynamicResource GearDrawingImage}"
-                                   Header="{DynamicResource MainView_Ribbon_Setting_Setting}"
+                                   Header="{DynamicResource MainView_Ribbon_Setting_ProgramSetting}"
                                    Command="{x:Static local:MainView.ShowOtherSettingViewCommand}" 
                                    />
                     <StackPanel Orientation="Horizontal">
@@ -126,11 +180,53 @@
                                Content="{DynamicResource MainView_Ribbon_Setting_Language}" />
                         <fluent:ComboBox x:Name="CmbBoxLanguage"
                                          ItemsSource="{Binding Languages,
-                                         Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                            Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                          SelectedItem="{Binding  CurrLang,
-                                         Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                 </fluent:RibbonGroupBox>
+                
+                <!-- TODO: Пример группа -->
+                <fluent:RibbonGroupBox Header="Ваша группа">
+                    <StackPanel>
+                        <fluent:ComboBox 
+                            Width="200"
+                            HorizontalAlignment="Left"
+                            ItemsSource="{Binding YourItems}"/>
+
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <fluent:Button Grid.Column="0" Header="Левая 1" Size="Small" 
+                                           Background="Aquamarine" />
+                            <fluent:Button Grid.Column="1" Header="Правая длинная 1" Size="Small"/>
+                        </Grid>
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <fluent:Button Grid.Column="0" Header="Левая длинная 2" Size="Small"
+                                           Background="BurlyWood"/>
+                            <fluent:Button Grid.Column="1" Header="Правая очень длинная 2" Size="Small"/>
+                        </Grid>
+                    </StackPanel>
+                    <fluent:RibbonToolBar>
+                        <fluent:Button 
+                            Icon="{DynamicResource ExitDrawingImage}"
+                            SizeDefinition="Large,Middle"
+                            Header="Кнопка большая" 
+                            Width="80"
+                            HorizontalAlignment="Center"
+                            Size="Large" />
+
+                    </fluent:RibbonToolBar>
+                </fluent:RibbonGroupBox>                
+
             </fluent:RibbonTabItem>
 
             <!-- База данных TODO: заменить VM на необходимую -->

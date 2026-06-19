@@ -7,6 +7,7 @@ using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
 using Common.BaseExtensions;
 using Common.BaseExtensions.ValueTypes;
+using Common.WpfModule.Components.Models;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.Input;
 using Presentation.ViewModels._Contracts;

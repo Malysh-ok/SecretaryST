@@ -3,147 +3,231 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:Presentation.Shell.UserControls"
              xmlns:mainView="clr-namespace:Presentation.ViewModels.MainView;assembly=ViewModels"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:components="clr-namespace:Common.WpfModule.Components;assembly=Components"
-             xmlns:system="clr-namespace:System;assembly=System.Runtime"
-             xmlns:globalization="clr-namespace:System.Globalization;assembly=System.Runtime"
              xmlns:converters="clr-namespace:Common.WpfModule.Ui.Converters;assembly=Ui"
              xmlns:dataGrids="clr-namespace:Common.WpfModule.Ui.Behaviors.DataGrids;assembly=Ui"
              xmlns:datePickers="clr-namespace:Common.WpfModule.Ui.Behaviors.DatePickers;assembly=Ui"
+             xmlns:fluent="urn:fluent-ribbon"
+             xmlns:controls="clr-namespace:Common.WpfModule.Ui.Controls;assembly=Ui"
+             xmlns:markups="clr-namespace:Common.WpfModule.Ui.Markups;assembly=Ui"
              d:DataContext="{ d:DesignInstance mainView:SettingVM }"
              mc:Ignorable="d" >
-    
     <UserControl.Resources>
-        <converters:StrToXmlLangConverter x:Key="StrToXmlLangConverter" />
+        <converters:RowIndexConverter x:Key="RowIndexConverter" />
     </UserControl.Resources>
     
     <Grid >
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" MinHeight="265" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="0.6*" MinHeight="260" /> <!-- TODO: откорректировать MinHeight -->
+            <RowDefinition Height="0.4*" />
         </Grid.RowDefinitions>
 
         <!-- Данные о соревнованиях -->
-        <StackPanel Grid.Row="0"
-                    VerticalAlignment="Center">
-            
-            <!-- Название соревнований -->
-            <Label x:Name="CompetitionName"
-                   Content="{DynamicResource SettingControl_CompetitionName}"
-                   Padding="0 0 0 0"
-                   Style="{DynamicResource BoldLeftAlignedLabel}" />
-            <TextBox Padding="0 5"
-                     MinWidth="200"
-                     HorizontalAlignment="Left"
-                     Text="{Binding CompetitionData.Name}" />
-
-            <!-- Проводящие организации -->
-            <Label x:Name="ConductingOrganizations"
-                   Content="{DynamicResource SettingControl_ConductingOrganizations}"
-                   Padding="0 5 0 0"
-                   Style="{DynamicResource BoldLeftAlignedLabel}" />
-            <TextBox Padding="0 5"
-                     MinWidth="200"
-                     HorizontalAlignment="Left"
-                     Text="{Binding CompetitionData.ConductingOrganizations}">
-            </TextBox>
-
-            <Grid>
+        <Grid Grid.Row="0">
+            <Grid Style="{markups:GridColumnSpacing 10}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
+                    <ColumnDefinition Width="0.2*" MinWidth="230" />
+                    <ColumnDefinition Width="0.8*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <!--
+                    <RowDefinition Height="*" MinHeight="{Binding ElementName=ConductingOrganizationsGrid, 
+                                        Path=Items.Count, 
+                                        Converter={StaticResource RowsToPixelsConverter},
+                                        ConverterParameter=3,
+                                        NotifyOnTargetUpdated=True}"/>
+                    -->
+                    <!--
+                    <RowDefinition Height="*" MinHeight="{Binding Items.Count, 
+                                  Source={x:Reference ConductingOrganizationsGrid}, 
+                                  Converter={StaticResource RowsToPixelsConverter},
+                                  ConverterParameter=3}"/>
+                    -->
+                    <RowDefinition MinHeight="75"/>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <!-- <RowDefinition Height="*" MinHeight="100" /> -->
                 </Grid.RowDefinitions>
 
+                <!-- Краткое название соревнований -->
+                <Label Grid.Row="0" Grid.Column="0" x:Name="CompetitionShortName"
+                       Content="{DynamicResource SettingControl.CompetitionShortName}"
+                       Padding="0 0 0 0"
+                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                <TextBox Grid.Row="1" Grid.Column="0" Padding="0 5"
+                         HorizontalAlignment="Stretch"
+                         Text="{Binding CurrentCompetitionData.ShortName}" />
+                
+                <!-- Название соревнований -->
+                <Label Grid.Row="0" Grid.Column="1" x:Name="CompetitionName"
+                       Content="{DynamicResource SettingControl.CompetitionName}"
+                       Padding="0 0 0 0"
+                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                <TextBox Grid.Row="1" Grid.Column="1" 
+                         Padding="0 5"
+                         HorizontalAlignment="Stretch"
+                         Text="{Binding CurrentCompetitionData.Name}" />
+
+                <!-- Проводящие организации -->
+                <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" x:Name="ConductingOrganizations"
+                       Content="{DynamicResource SettingControl.ConductingOrganizations}"
+                       Padding="0 5 0 0"
+                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                <DataGrid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" 
+                          x:Name="ConductingOrganizationsGrid"
+                          Style="{DynamicResource DataGridDefault}"
+                          ColumnHeaderStyle="{StaticResource DataGridColumnHeaderDefault.ContentRightStyle}"
+                          MinColumnWidth="200"
+                          AlternationCount="2"
+                          AutoGenerateColumns="False"
+                          SelectionUnit="FullRow"
+                          SelectionMode="Single"
+                          ItemsSource="{Binding ConductingOrganizations, 
+                            Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          SelectedIndex="{Binding ConductingOrganizations.SelectedIndex, 
+                            Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          SelectedValuePath=""
+                          AllowDrop="True">
+
+                    <i:Interaction.Behaviors>
+                        <dataGrids:DataGridDragAndDropBehavior 
+                            Items="{Binding ConductingOrganizations}" />
+                    </i:Interaction.Behaviors>
+
+                    <DataGrid.Columns>
+                        <!-- Номер -->
+                        <DataGridTextColumn
+                            Width="Auto"
+                            MinWidth="30">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Center" />
+                                    <Setter Property="Text" 
+                                            Value="{Binding RelativeSource=
+                                                {RelativeSource AncestorType=DataGridRow}, 
+                                                Converter={StaticResource RowIndexConverter}}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        
+                        <!-- Название -->
+                        <DataGridTextColumn Binding="{Binding Value, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
+                                            CanUserSort="False"
+                                            Width="*">
+                            <DataGridTextColumn.Header>
+                                <controls:DataGridColumnHeaderWithButtons
+                                    Content="Действия:"
+                                    IsTextOnRight="False"
+                                    Style="{StaticResource DataGridColumnHeaderWithButtons}" 
+                                    Button1Content="➕"
+                                    Button1Command="{Binding DataContext.AddConductingOrganizationCommand, 
+                                        ElementName=ConductingOrganizationsGrid}"
+                                    Button1ToolTip="{DynamicResource SettingControl.AddConductingOrganization}"
+                                    Button2Content="❌"
+                                    Button2Command="{Binding DataContext.RemoveConductingOrganizationCommand, 
+                                        ElementName=ConductingOrganizationsGrid}"
+                                    Button2ToolTip="{DynamicResource SettingControl.RemoveConductingOrganization}" />
+                                <!-- TODO: Content удалить -->
+                                
+                            </DataGridTextColumn.Header>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                        
+                </DataGrid>
+                
                 <!-- Дата проведения -->
-                <Label Grid.Row="0" Grid.Column="0" 
+                <Label Grid.Row="4" Grid.Column="0" 
                        x:Name="CompetitionDate"
                        Content="{DynamicResource SettingControl_CompetitionDate}"
                        Padding="0 5 0 0"
                        Style="{DynamicResource BoldLeftAlignedLabel}" />
-                <StackPanel Grid.Row="1" Grid.Column="0"
+                <StackPanel Grid.Row="5" Grid.Column="0"
                             Orientation="Horizontal">
                     <DatePicker Width="100" 
                                 Style="{DynamicResource BaseDatePicker}"
-                                SelectedDate="{Binding CompetitionData.InitialDate, Mode=TwoWay}">
+                                SelectedDate="{Binding CurrentCompetitionData.InitialDate, Mode=TwoWay}">
                         <i:Interaction.Behaviors>
                             <datePickers:DatePickerLocalizationBehavior LanguageTag="{Binding CurrLang.Name}" />
                         </i:Interaction.Behaviors>
                     </DatePicker>
-                     <TextBlock Width="20"
+                    <TextBlock Width="20"
                                TextAlignment="Center"
                                VerticalAlignment="Center"
                                Text="-" />
-                     <DatePicker Width="100" 
-                                 Style="{DynamicResource BaseDatePicker}"
-                                 SelectedDate="{Binding CompetitionData.EndDate, Mode=TwoWay}">
-                         <i:Interaction.Behaviors>
-                             <datePickers:DatePickerLocalizationBehavior LanguageTag="{Binding CurrLang.Name}" />
-                         </i:Interaction.Behaviors>
-                     </DatePicker>
+                    <DatePicker Width="100" 
+                                Style="{DynamicResource BaseDatePicker}"
+                                SelectedDate="{Binding CurrentCompetitionData.EndDate, Mode=TwoWay}">
+                        <i:Interaction.Behaviors>
+                            <datePickers:DatePickerLocalizationBehavior LanguageTag="{Binding CurrLang.Name}" />
+                        </i:Interaction.Behaviors>
+                    </DatePicker>
                 </StackPanel>
 
                 <!-- Место проведения -->
-                <Label Grid.Row="0" Grid.Column="1" 
+                <Label Grid.Row="4" Grid.Column="1" 
                        x:Name="CompetitionVenue"
                        Content="{DynamicResource SettingControl_CompetitionVenue}"
                        Padding="0 5 0 0"
                        Style="{DynamicResource BoldLeftAlignedLabel}" />
-                <TextBox Grid.Row="1" Grid.Column="1" 
+                <TextBox Grid.Row="5" Grid.Column="1" 
                          Padding="0 5"
                          MinWidth="200"
-                         HorizontalAlignment="Left"
-                         Text="{Binding CompetitionData.Venue}">
+                         HorizontalAlignment="Stretch"
+                         Text="{Binding CurrentCompetitionData.Venue}">
                 </TextBox>
 
-                <!-- Статус и наименование соревнования -->
-                <Label Grid.Row="2" Grid.Column="0" 
-                       x:Name="DetailedCompetitionStatus"
-                       Content="{DynamicResource SettingControl_DetailedCompetitionStatus}"
-                       Padding="0 5 0 0"
-                       Style="{DynamicResource BoldLeftAlignedLabel}" />
-                <ComboBox Grid.Row="3" Grid.Column="0" 
-                          Padding="3 5"
-                          Width="300"
-                          HorizontalAlignment="Left"
-                          ItemsSource="{Binding Path=DataContext.DetailedCompetitionStatuses, 
-                                        RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                          SelectedItem="{Binding CompetitionData.DetailedCompetitionStatus}" />
-
                 <!-- Статус соревнования (кратко) -->
-                <Label Grid.Row="2" Grid.Column="1" 
+                <Label Grid.Row="6" Grid.Column="0" 
                        x:Name="CompetitionStatus"
                        Content="{DynamicResource SettingControl_CompetitionStatus}"
                        Padding="0 5 0 0"
                        Style="{DynamicResource BoldLeftAlignedLabel}" />
-                <TextBox Grid.Row="3" Grid.Column="1" 
+                <TextBox Grid.Row="7" Grid.Column="0" 
                          Padding="0 5"
                          MinWidth="200"
-                         HorizontalAlignment="Left"
+                         Width="Auto"
+                         HorizontalAlignment="Stretch"
                          IsReadOnly="True"
-                         Text="{Binding CompetitionData.DetailedCompetitionStatus.CompetitionsStatus.Name}">
+                         Text="{Binding CurrentCompetitionData.DetailedCompetitionStatus.CompetitionsStatus.Name}">
                 </TextBox>
+                
+                <!-- Статус и наименование соревнования -->
+                <Label Grid.Row="6" Grid.Column="1" 
+                       x:Name="DetailedCompetitionStatus"
+                       Content="{DynamicResource SettingControl_DetailedCompetitionStatus}"
+                       Padding="0 5 0 0"
+                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                <fluent:ComboBox Grid.Row="7" Grid.Column="1" 
+                          Padding="3 5"
+                          Width="Auto"
+                          HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding Path=DataContext.DetailedCompetitionStatuses, 
+                                        RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                          SelectedItem="{Binding CurrentCompetitionData.DetailedCompetitionStatus}" />
+                
+                <!-- Примечание -->
+                <Label Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
+                       x:Name="CompetitionNote"
+                       Content="{DynamicResource SettingControl_CompetitionNote}"
+                       Padding="0 5 0 0"
+                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                <TextBox Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
+                         Padding="0 5"
+                         MinWidth="200"
+                         HorizontalAlignment="Stretch"
+                         Text="{Binding CurrentCompetitionData.Description}">
+                </TextBox>
+
             </Grid>
-
-            <!-- Примечание -->
-            <Label x:Name="CompetitionNote"
-                   Content="{DynamicResource SettingControl_CompetitionNote}"
-                   Padding="0 5 0 0"
-                   Style="{DynamicResource BoldLeftAlignedLabel}" />
-            <TextBox Padding="0 5"
-                     MinWidth="200"
-                     HorizontalAlignment="Left"
-                     Text="{Binding CompetitionData.Description}">
-            </TextBox>
-
-        </StackPanel>
+        </Grid>
         
         <!-- Судьи -->
         <DockPanel Grid.Row="1">
@@ -154,6 +238,7 @@
                    Style="{DynamicResource BoldLeftAlignedLabel}" />
             <DataGrid x:Name="RefereesGrid"
                       Style="{DynamicResource DataGridDefault}"
+                      ColumnHeaderStyle="{StaticResource DataGridColumnHeaderDefault.Bold}"
                       MinColumnWidth="100"
                       AlternationCount="2"
                       AutoGenerateColumns="False"

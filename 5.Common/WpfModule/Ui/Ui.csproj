@@ -19,7 +19,6 @@
 
     <ItemGroup>
       <Folder Include="Behaviors\Windows\" />
-      <Folder Include="Controls\" />
     </ItemGroup>
 
 </Project>

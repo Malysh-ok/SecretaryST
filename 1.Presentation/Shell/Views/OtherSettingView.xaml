@@ -4,8 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:viewModels="clr-namespace:Presentation.ViewModels;assembly=ViewModels"
-        xmlns:markup="clr-namespace:Common.WpfModule.Ui.Markup;assembly=Ui"
-        
+
         d:DataContext="{ d:DesignInstance viewModels:OtherSettingVM }"
         mc:Ignorable="d"
         Title="{DynamicResource OtherSettingView}"
@@ -33,7 +32,6 @@
                  Height="25" Width="100" 
                  Margin="15"
                  Style="{StaticResource WebButton}"
-                 Command="ApplicationCommands.Close"
-        />
+                 Command="ApplicationCommands.Close"  />
     </Grid>
 </Window>

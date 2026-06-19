@@ -236,8 +236,12 @@ public sealed partial class AppDbContext : ICommonDbContext
             entity.Property(с => с.Id).ValueGeneratedOnAdd();
                 
             entity.Property(c => c.Name).IsRequired().HasMaxLength(500);
+            
+            entity.Property(c => c.ShortName).IsRequired().HasMaxLength(100);
                 
-            entity.Property(c => c.ConductingOrganizations).IsRequired().HasMaxLength(500);
+            entity.Property(c => c.ConductingOrganizations)
+                  .IsRequired()
+                  .HasColumnType("json");
                 
             entity.Property(c => c.InitialDate)
                 .IsRequired()

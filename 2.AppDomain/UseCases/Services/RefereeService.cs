@@ -17,7 +17,7 @@ namespace AppDomain.UseCases.Services;
 public class RefereeService(IRepository repository)
 {
     /// <summary>
-    /// Перенумеровываем коллекцию судей.
+    /// Перенумерация коллекции судей.
     /// </summary>
     public void RenumberRefereesCollection(ObservableCollection<Referee> refereesCollection)
     {
@@ -31,7 +31,7 @@ public class RefereeService(IRepository repository)
     }
     
     /// <summary>
-    /// Получение судейских категорий.
+    /// Получение списка судейских категорий.
     /// </summary>
     public async Task<Result<IList<RefereeLevel>>> GetRefereeLevelsAsync()
     {
@@ -43,7 +43,7 @@ public class RefereeService(IRepository repository)
     }
     
     /// <summary>
-    /// Получение судейских должностей.
+    /// Получение списка судейских должностей.
     /// </summary>
     public async Task<Result<IList<RefereeJobTitle>>> GetRefereeJobTitlesAsync()
     {
@@ -59,40 +59,41 @@ public class RefereeService(IRepository repository)
     /// Обновление коллекции судей.
     /// </summary>
     /// <param name="refereesCollection">Текущая коллекция судей.</param>
-    /// <param name="index">Индекс выбранного судьи.</param>
-    public async Task<Result<int>> GetRefereesAsync(
-        ObservableCollection<Referee> refereesCollection, int index)
+    /// <returns>Индекс нового текущего судьи.</returns>
+    public async Task<Result<bool>> GetRefereesAsync(ObservableCollection<Referee> refereesCollection)
     {
         // Сбрасываем отслеживание сущностей
         var result = repository.DetachAll<Referee>();
         if (! result)
-            return Result<int>.Fail(new AppException(AppPhrases.RefereesLoadError, result.Excptn));
+            return Result<bool>.Fail(new AppException(AppPhrases.RefereesLoadError, result.Excptn));
         
         // Загружаем данные из репозитория
         var refereesResult = await repository.GetNumberedAllAsync<Referee>(
             true, nameof(RefereeLevel));
         if (! refereesResult)
-            return Result<int>.Fail(new AppException(AppPhrases.RefereesLoadError, result.Excptn));
+            return Result<bool>.Fail(new AppException(AppPhrases.RefereesLoadError, result.Excptn));
         
         // Перезаписываем коллекцию судей новыми данными
         refereesCollection.Clear();
         refereesResult.Value.ForEach(refereesCollection.Add);
 
-        return Result<int>.Done(index);
+        return Result<bool>.Done(true);
     }
     
     /// <summary>
-    /// Добавление нового судьи на указанную позицию.
+    /// Добавление нового судьи после текущего.
     /// </summary>
-    public async Task<Result<int>> AddRefereeAsync(
-        ObservableCollection<Referee> refereesCollection, int index)
+    /// <param name="refereesCollection">Текущая коллекция судей.</param>
+    /// <param name="index">Индекс текущего судьи.</param>
+    /// <returns>Индекс нового текущего судьи.</returns>
+    public async Task<Result<int>> AddRefereeAsync(ObservableCollection<Referee> refereesCollection, int index)
     {
         AppException innerException;
         var newIndex = (index >= refereesCollection.Count || index < 0)
             ? refereesCollection.Count
             : index + 1;
 
-        // Получаем судейские категории
+        // Получаем судейскую категорию
         var refereeLevelResult = await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category3);
         if (! refereeLevelResult)
         {
@@ -102,7 +103,7 @@ public class RefereeService(IRepository repository)
             );
         }
         
-        // Получаем судейские должности
+        // Получаем судейскую должность
         var refereeJobTitleResult = await repository.FindAsync<RefereeJobTitle>(RefereeJobTitleEnm.StageReferee);
         if (! refereeJobTitleResult)
         {
@@ -138,6 +139,9 @@ public class RefereeService(IRepository repository)
     /// <summary>
     /// Удаление судьи.
     /// </summary>
+    /// <param name="refereesCollection">Текущая коллекция судей.</param>
+    /// <param name="index">Индекс удаляемого судьи.</param>
+    /// <returns>Индекс нового текущего судьи.</returns>
     public Result<int> RemoveReferee(ObservableCollection<Referee> refereesCollection, int index)
     {
         if (index >= refereesCollection.Count || index < 0)

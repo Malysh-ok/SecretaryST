@@ -2,8 +2,7 @@
 
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:system="clr-namespace:System;assembly=mscorlib"
-                    xmlns:markup="clr-namespace:Common.WpfModule.Ui.Markup;assembly=Ui">
+                    xmlns:markups="clr-namespace:Common.WpfModule.Ui.Markups;assembly=Ui">
     
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/CommonResources;component/Styles/DefaultColorsAndBrushes.xaml" />
@@ -11,23 +10,23 @@
     </ResourceDictionary.MergedDictionaries>
     
     <!-- Расширяем разметку для цвета -->
-    <markup:Color x:Key="Colors" />
+    <markups:Color x:Key="Colors" />
     
     <!-- Кисть границы нажатой кнопки -->
     <SolidColorBrush x:Key="PressedBorderBrush" 
-            Color="{markup:Color BaseColor=
+            Color="{markups:Color BaseColor=
                 {StaticResource HighlightColor}, DeltaBrightness=-0.2, DeltaSaturation=-0.2}" />
     
     <!-- _______________ БАЗОВАЯ КНОПКА _______________ -->
     
     <!-- Кисть фона кнопки, при наведении мыши -->
     <SolidColorBrush x:Key="BaseButtonMouseOverBackgroundBrush"
-            Color="{markup:Color BaseColor=
+            Color="{markups:Color BaseColor=
                 {StaticResource HighlightColor}, DeltaBrightness=0.5, DeltaSaturation=-0.4}" />
     
     <!-- Кисть фона нажатой кнопки -->
     <SolidColorBrush x:Key="BaseButtonPressedBackgroundBrush"
-            Color="{markup:Color BaseColor=
+            Color="{markups:Color BaseColor=
                 {StaticResource HighlightColor}, DeltaBrightness=0.2, DeltaSaturation=-0.4}" />
 
     <!-- Шаблон -->
@@ -70,7 +69,7 @@
         </ControlTemplate.Triggers>    
     </ControlTemplate>
     
-    <!-- Стиль -->
+    <!-- Стиль - БАЗОВАЯ КНОПКА -->
     <Style x:Key="BaseButton" 
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource DefaultControl}">
@@ -79,8 +78,7 @@
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Height" Value="25"/>
-        <Setter Property="Width" Value="25"/>
-        <Setter Property="Padding" Value="0,0"/>
+        <Setter Property="Padding" Value="8,0"/>
         <Setter Property="Margin" Value="0,0"/>
         <Setter Property="Foreground" Value="{StaticResource DefaultForegroundBrush}" />
         <Setter Property="Background" Value="{StaticResource DefaultBackgroundBrush}" />
@@ -109,7 +107,7 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
     
-    <!-- Стиль -->
+    <!-- Стиль - КНОПКА В ВИДЕ ГИПЕРССЫЛКИ -->
     <Style x:Key="HyperlinkedButton" 
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource BaseButton}">
@@ -123,39 +121,39 @@
     <!-- Кисть фона кнопки -->
     <LinearGradientBrush x:Key="WebButtonBackgroundBrush"
             StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="{markup:Color BaseColor=
+        <GradientStop Color="{markups:Color BaseColor=
                 {StaticResource DefaultBackgroundColor}, DeltaBrightness=-0.05}" Offset="0" />
-        <GradientStop Color="{markup:Color BaseColor= 
+        <GradientStop Color="{markups:Color BaseColor= 
                 {StaticResource DefaultBackgroundColor}, DeltaBrightness=0.6}" Offset="0.2" />
-        <GradientStop Color="{markup:Color BaseColor= 
+        <GradientStop Color="{markups:Color BaseColor= 
                 {StaticResource DefaultBackgroundColor}, DeltaBrightness=0.8}" Offset="0.45" />
-        <GradientStop Color="{markup:Color BaseColor= 
+        <GradientStop Color="{markups:Color BaseColor= 
                 {StaticResource DefaultBackgroundColor}, DeltaBrightness=-0.1}" Offset="1" />
     </LinearGradientBrush>
     
     <!-- Кисть фона кнопки, при наведении мыши -->
     <LinearGradientBrush x:Key="WebButtonMouseOverBackgroundBrush"
             StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="{markup:Color BaseColor=
+        <GradientStop Color="{markups:Color BaseColor=
                 {StaticResource HighlightColor}, DeltaBrightness=0.15, DeltaSaturation=-0.5}" Offset="0" />
-        <GradientStop Color="{markup:Color BaseColor= 
+        <GradientStop Color="{markups:Color BaseColor= 
                 {StaticResource HighlightColor}, DeltaBrightness=0.65, DeltaSaturation=-0.6}" Offset="0.2" />
-        <GradientStop Color="{markup:Color BaseColor=
+        <GradientStop Color="{markups:Color BaseColor=
                 {StaticResource HighlightColor}, DeltaBrightness=0.65, DeltaSaturation=-0.6}" Offset="0.45" />
-        <GradientStop Color="{markup:Color BaseColor=
+        <GradientStop Color="{markups:Color BaseColor=
                 {StaticResource HighlightColor}, DeltaBrightness=0.15, DeltaSaturation=-0.4}" Offset="1" />
     </LinearGradientBrush>
     
     <!-- Кисть фона нажатой кнопки -->
     <LinearGradientBrush x:Key="WebButtonPressedBackgroundBrush"
             StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="{markup:Color BaseColor=
+        <GradientStop Color="{markups:Color BaseColor=
                 {StaticResource HighlightColor}, DeltaBrightness=0.05, DeltaSaturation=-0.5}" Offset="0" />
-        <GradientStop Color="{markup:Color BaseColor= 
+        <GradientStop Color="{markups:Color BaseColor= 
                 {StaticResource HighlightColor}, DeltaBrightness=0.45, DeltaSaturation=-0.5}" Offset="0.2" />
-        <GradientStop Color="{markup:Color BaseColor=
+        <GradientStop Color="{markups:Color BaseColor=
                 {StaticResource HighlightColor}, DeltaBrightness=0.45, DeltaSaturation=-0.5}" Offset="0.45" />
-        <GradientStop Color="{markup:Color BaseColor=
+        <GradientStop Color="{markups:Color BaseColor=
                 {StaticResource HighlightColor}, DeltaBrightness=0.05, DeltaSaturation=-0.4}" Offset="1" />
     </LinearGradientBrush>
 
@@ -200,11 +198,20 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
     
-    <!-- Стиль -->
+    <!-- Стиль ВЕБ-КНОПКА -->
     <Style x:Key="WebButton" 
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource BaseButton}">
         <Setter Property="Template" Value="{StaticResource WebButtonTemplate}" />
     </Style>
+    
+    <!-- Стиль ВЕБ-КНОПКА, квадратная -->
+    <Style x:Key="WebButton.Square"
+           TargetType="{x:Type Button}"
+           BasedOn="{StaticResource WebButton}">
+            <Setter Property="Width" Value="25" />
+            <Setter Property="Padding" Value="0,0" />
+    </Style>
+
 
 </ResourceDictionary>

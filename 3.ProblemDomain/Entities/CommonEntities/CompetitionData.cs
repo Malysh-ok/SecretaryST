@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
@@ -8,11 +9,8 @@ using ProblemDomain.Entities.LibraryEntities.Enums;
 namespace ProblemDomain.Entities.CommonEntities;
 
 /// <summary>
-/// Данные о соревнования.
+/// Соревнование (данные о соревновании).
 /// </summary>
-/// <remarks>
-/// Соревнования могут быть только в единственном экземпляре!
-/// </remarks>
 public sealed class CompetitionData
     : AbstractEntity, ICloneable, ICopyEntity
 {
@@ -25,7 +23,7 @@ public sealed class CompetitionData
     /// <param name="endDate">Конечная дата проведения.</param>
     /// <param name="venue">Место проведения.</param>
     private CompetitionData(string name, 
-        string conductingOrganizations, DateTime initialDate, DateTime endDate, string venue, 
+        IList<string> conductingOrganizations, DateTime initialDate, DateTime endDate, string venue, string shortName,
         string? description = null) 
         : base(name, description)
     {
@@ -33,6 +31,7 @@ public sealed class CompetitionData
         Venue = venue;
         InitialDate = initialDate;
         EndDate = endDate;
+        ShortName = shortName;
     }
     
     /// <summary>
@@ -45,6 +44,7 @@ public sealed class CompetitionData
             competitionData.InitialDate,
             competitionData.EndDate,
             competitionData.Venue,
+            competitionData.ShortName,
             competitionData.CompetitionsStatus,
             competitionData.DetailedCompetitionStatus,
             competitionData.Description
@@ -57,22 +57,19 @@ public sealed class CompetitionData
     /// </summary>
     /// <inheritdoc />
     public CompetitionData(string name,
-        string conductingOrganizations, DateTime initialDate, DateTime endDate, string venue,
+        IList<string> conductingOrganizations, DateTime initialDate, DateTime endDate, string venue, string shortName,
         CompetitionsStatus competitionsStatus, DetailedCompetitionStatus detailedCompetitionStatus,
         string? description = null)
-        : this(name, conductingOrganizations, initialDate, endDate, venue, description)
+        : this(name, conductingOrganizations, initialDate, endDate, venue, shortName, description)
     {
         CompetitionsStatus = competitionsStatus;
         DetailedCompetitionStatus = detailedCompetitionStatus;
     }
-    
-    // TODO: Name переделать в список?
 
     /// <summary>
     /// Проводящие организации.
     /// </summary>
-    // TODO: Переделать в список?
-    public string ConductingOrganizations { get; set; }
+    public IList<string> ConductingOrganizations { get; set; }
     
     /// <summary>
     /// Начальная дата проведения.
@@ -89,6 +86,11 @@ public sealed class CompetitionData
     /// </summary>
     public string Venue { get; set; }
     
+    /// <summary>
+    /// Краткое название соревнований.
+    /// </summary>
+    public string ShortName { get; set; }
+
     /// <summary>
     /// Статус соревнований.
     /// </summary>
@@ -125,6 +127,7 @@ public sealed class CompetitionData
     public void Copy(CompetitionData destination)
     {
         destination.Name = Name;
+        destination.ShortName = ShortName;
         destination.Description = Description;
         destination.ConductingOrganizations = ConductingOrganizations;
         destination.InitialDate = InitialDate;
@@ -142,5 +145,5 @@ public sealed class CompetitionData
     
     /// <inheritdoc />
     public override string ToString()
-        => Name;
+        => ShortName;
 }

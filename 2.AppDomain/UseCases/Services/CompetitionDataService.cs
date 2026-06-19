@@ -1,9 +1,13 @@
-﻿using AppDomain.AppExceptions;
+﻿using System.Collections.ObjectModel;
+using AppDomain.AppExceptions;
 using AppDomain.Phrases;
 using AppDomain.UseCases._Contracts;
 using Common.BaseComponents.Components;
+using Common.BaseComponents.Wrappers;
+using Common.BaseExtensions.Collections;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities;
+using ProblemDomain.Entities.LibraryEntities.Enums;
 
 namespace AppDomain.UseCases.Services;
 
@@ -14,7 +18,101 @@ namespace AppDomain.UseCases.Services;
 public class CompetitionDataService(IRepository repository)
 {
     /// <summary>
-    /// Получение статусов соревнований.
+    /// Получаем (обновляем) коллекцию проводящих организаций.
+    /// </summary>
+    /// <param name="competitionData">Данные о соревнованиях, откуда получаем проводящие организации.</param>
+    /// <param name="conductingOrganizations">Коллекция проводящих организаций, которую обновляем</param>
+    public Result<int> GetConductingOrganizations(CompetitionData? competitionData, ObservableCollection<StringItem> conductingOrganizations)
+    {
+        try
+        {
+            conductingOrganizations.Clear();
+            competitionData?.ConductingOrganizations.ForEach(item => conductingOrganizations.Add(new StringItem(item)));
+            
+            return Result<int>.Done(conductingOrganizations.Count);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+    
+    /// <summary>
+    /// Задаем проводящие организации.
+    /// </summary>
+    /// <param name="competitionData">Данные о соревнованиях, в которой устанавливаем проводящие организации.</param>
+    /// <param name="conductingOrganizations">Коллекция проводящих организаций - источник данных.</param>
+    public Result<int> SetConductingOrganizations(CompetitionData? competitionData, ObservableCollection<StringItem> conductingOrganizations)
+    {
+        try
+        {
+            if (competitionData != null)
+            {
+                competitionData.ConductingOrganizations.Clear();
+                conductingOrganizations.ForEach(item => competitionData.ConductingOrganizations.Add(item.Value));
+            }
+            
+            return Result<int>.Done(competitionData!.ConductingOrganizations.Count);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+    
+    /// <summary>
+    /// Создаем новую проводящую организацию.
+    /// </summary>
+    /// <param name="conductingOrganizations">Текущая коллекция проводящих организаций.</param>
+    /// <param name="index">Индекс текущей проводящей организации.</param>
+    /// <returns>Индекс новой текущей проводящей организации.</returns>
+    public Result<int> AddConductingOrganization(ObservableCollection<StringItem> conductingOrganizations, int index)
+    {
+        try
+        {
+            var newIndex = (index >= conductingOrganizations.Count || index < 0)
+                ? conductingOrganizations.Count
+                : index + 1;
+
+            var newConductingOrganization = new StringItem("НОВАЯ ПРОВОДЯЩАЯ ОРГАНИЗАЦИЯ");
+        
+            // Добавляем в коллекцию организацию
+            conductingOrganizations.Insert(newIndex, newConductingOrganization);
+        
+            return Result<int>.Done(newIndex);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+    
+    /// <summary>
+    /// Удаляем проводящую организацию.
+    /// </summary>
+    /// <param name="conductingOrganizations">Текущая коллекция проводящих организаций.</param>
+    /// <param name="index">Индекс удаляемой проводящей организации.</param>
+    /// <returns>Индекс новой текущей проводящей организации.</returns>
+    public Result<int> RemoveConductingOrganization(ObservableCollection<StringItem> conductingOrganizations, int index)
+    {
+        try
+        {
+            if (index >= conductingOrganizations.Count || index < 0)
+                return Result<int>.Done(index);
+        
+            // Удаляем их коллекции организацию
+            conductingOrganizations.RemoveAt(index);
+        
+            return Result<int>.Done(index == 0 ? 0 : index - 1);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+
+    /// <summary>
+    /// Получаем список статусов соревнований.
     /// </summary>
     public async Task<Result<IList<CompetitionsStatus>>> GetCompetitionsStatusesAsync()
     {
@@ -26,7 +124,7 @@ public class CompetitionDataService(IRepository repository)
     }
 
     /// <summary>
-    /// Получение статусов и обобщенных наименований соревнований.
+    /// Получаем список статусов и обобщенных наименований соревнований.
     /// </summary>
     /// <remarks>
     /// Включая навигационное свойство <see cref="CompetitionsStatus"/>.
@@ -49,29 +147,21 @@ public class CompetitionDataService(IRepository repository)
     /// <param name="initialDate">Начальная дата проведения.</param>
     /// <param name="endDate">Конечная дата проведения.</param>
     /// <param name="venue">Место проведения.</param>
+    /// <param name="shortName">Краткое название соревнований.</param>
     /// <param name="competitionsStatus">Статус соревнования.</param>
     /// <param name="detailedCompetitionStatus">Статус и обобщенное наименование соревнования.</param>
-    /// <param name="description">Описание.</param>
-    public async Task<Result<CompetitionData>> CreateAsync(string name, 
-        string conductingOrganizations, DateTime initialDate, DateTime endDate, string venue,
+    /// <param name="description">Создаем и сохраняем в репозитории.</param>
+    public async Task<Result<CompetitionData>> CreateCompetitionDataAsync(string name, 
+        IList<string> conductingOrganizations, DateTime initialDate, DateTime endDate, string venue, string shortName,
         CompetitionsStatus competitionsStatus, DetailedCompetitionStatus detailedCompetitionStatus,
         string? description = null)
     {
-        // Удаляем данные о соревнованиях из репозитория
-        var intResult = repository.RemoveAllQuickly<CompetitionData>();
-        if (!intResult)
-        {
-            return Result<CompetitionData>.Fail(
-                new AppException(AppPhrases.CompetitionDataCreateError, intResult.Excptn)
-            );
-        }
-
         // Создаем данные о соревновании и добавляем в репозиторий
         var competition =
-            new CompetitionData(name, conductingOrganizations, initialDate, endDate, venue,
+            new CompetitionData(name, conductingOrganizations, initialDate, endDate, venue, shortName,
                 competitionsStatus, detailedCompetitionStatus,
                 description);
-        intResult = repository.Add(competition);
+        var intResult = repository.Add(competition);
         if (!intResult)
         {
             return Result<CompetitionData>.Fail(
@@ -92,32 +182,155 @@ public class CompetitionDataService(IRepository repository)
     }
     
     /// <summary>
-    /// Получение данных о соревнованиях.
+    /// Получение всех соревнований.
     /// </summary>
-    public async Task<Result<CompetitionData?>> GetCompetitionDataAsync()
+    /// <remarks>
+    /// Без навигационных свойств ("легкий" список).
+    /// </remarks>
+    public async Task<Result<int>> GetAllCompetitionsDataAsync(ObservableCollection<CompetitionData> competitionDataCollection)
     {
         // Сбрасываем отслеживание сущностей
         var result = repository.DetachAll<CompetitionData>();
         if (!result)
-            return Result<CompetitionData?>.Fail(new AppException(AppPhrases.CompetitionDataLoadError));
-
+            return Result<int>.Fail(new AppException(AppPhrases.CompetitionDataLoadError));
+        
         // Загружаем данные из репозитория
-        var competitionDataResult = await repository.GetFirstAsync<CompetitionData>(
-            nameof(CompetitionsStatus),
-            nameof(DetailedCompetitionStatus));
+        var competitionsDataResult = await repository.GetAllAsync<CompetitionData>();
+        
+        if (!competitionsDataResult)
+            return Result<int>.Fail(new AppException(AppPhrases.CompetitionDataLoadError, result.Excptn));
 
-        return competitionDataResult
-            ? Result<CompetitionData?>.Done(competitionDataResult.Value)
-            : Result<CompetitionData?>.Fail(new AppException(AppPhrases.CompetitionDataLoadError));
+        // Перезаписываем коллекцию соревнований новыми данными
+        competitionDataCollection.Clear();
+        competitionsDataResult.Value.ForEach(competitionDataCollection.Add);
+
+        return Result<int>.Done(competitionsDataResult.Value!.Count);
     }
     
     /// <summary>
-    /// Сохранение данных о соревнованиях.
+    /// Получение соревнования.
+    /// </summary>
+    /// <remarks>
+    /// С навигационными свойствами ("тяжелый" объект).
+    /// </remarks>
+    public async Task<Result<CompetitionData?>> GetCompetitionDataAsync(int competitionId)
+    {
+        // Загружаем данные из репозитория
+        var competitionDataResult = await repository.GetByIdAsync<CompetitionData>(competitionId,
+            nameof(CompetitionsStatus),
+            nameof(DetailedCompetitionStatus));
+
+        return competitionDataResult /*&& competitionDataResult.Value != null*/
+            ? Result<CompetitionData?>.Done(competitionDataResult.Value)
+            : Result<CompetitionData?>.Fail(new AppException(AppPhrases.CompetitionDataLoadError));
+    }
+
+    /// <summary>
+    /// Добавление нового соревнования после текущего.
+    /// </summary>
+    /// <param name="competitionDataCollection">Текущая коллекция соревнований.</param>
+    /// <returns>Индекс нового соревнования.</returns>
+    public async Task<Result<CompetitionData>> AddCompetitionDataAsync(
+        ObservableCollection<CompetitionData> competitionDataCollection)
+    {
+        AppException innerException;
+        
+        // Получаем статус соревнований
+        var competitionsStatusResult = await repository.FindAsync<CompetitionsStatus>(
+            CompetitionsStatusEnm.Regional);
+        if (! competitionsStatusResult)
+        {
+            innerException = new AppException(AppPhrases.CompetitionsStatusFindError, competitionsStatusResult.Excptn);
+            return Result<CompetitionData>.Fail(
+                new AppException(AppPhrases.CompetitionDataCreateError, innerException)
+            );
+        }
+        
+        // Получаем статус и обобщенное наименование соревнования
+        var detailedCompetitionStatusResult = await repository.FindAsync<DetailedCompetitionStatus>(
+            DetailedCompetitionStatusEnm.RegionalJuniorChampionship);
+        if (! detailedCompetitionStatusResult)
+        {
+            innerException = new AppException(AppPhrases.DetailedCompetitionStatusFindError, detailedCompetitionStatusResult.Excptn);
+            return Result<CompetitionData>.Fail(
+                new AppException(AppPhrases.CompetitionDataCreateError, innerException)
+            );
+        }
+        
+        // Создаем данные о соревновании
+        var newCompetition = new CompetitionData(
+            "НАЗВАНИЕ СОРЕВНОВАНИЙ",
+            ["ПРОВОДЯЩАЯ ОРГАНИЗАЦИЯ"],
+            DateTime.Now, DateTime.Now,
+            "МЕСТО ПРОВЕДЕНИЯ", "СОРЕВЫ",
+            competitionsStatusResult.Value!,
+            detailedCompetitionStatusResult.Value!
+        );
+        
+        // Добавляем в коллекцию соревнование
+        competitionDataCollection.Add(newCompetition);
+        
+        // Обновляем судей в репозитории
+        var intResult = repository.UpdateRange(competitionDataCollection);
+        if (! intResult)
+        {
+            return Result<CompetitionData>.Fail(
+                new AppException(AppPhrases.CompetitionDataCreateError, intResult.Excptn)
+            );
+        }
+
+        return Result<CompetitionData>.Done(newCompetition);
+    }
+
+    /// <summary>
+    /// Удаление текущего соревнования.
+    /// </summary>
+    /// <param name="competitionDataCollection">Текущая коллекция соревнований.</param>
+    /// <param name="competition">Удаляемое соревнование</param>
+    /// <returns>Новое текущее соревнование.</returns>
+    public Task<Result<CompetitionData>> RemoveCompetitionDataAsync(
+        ObservableCollection<CompetitionData> competitionDataCollection, CompetitionData? competition)
+    {
+        if (competition == null)
+            return Task.FromResult(Result<CompetitionData>.Fail(
+                new AppException(AppPhrases.CompetitionDataRemoveError, new AppException("Соревнование отсутствует!"))
+            ));
+        
+        // Удаляем из коллекции соревнование
+        var index = competitionDataCollection.IndexOf(competition);
+        competitionDataCollection.Remove(competition);
+        if (index >= competitionDataCollection.Count)
+            index = competitionDataCollection.Count - 1;
+        
+        // Удаляем из репозитория
+        var intResult = repository.Remove(competition);
+        if (! intResult)
+        {
+            return Task.FromResult(Result<CompetitionData>.Fail(
+                new AppException(AppPhrases.CompetitionDataRemoveError, intResult.Excptn)
+            ));
+        }
+        
+        // Обновляем соревнования в репозитории
+        intResult = repository.UpdateRange(competitionDataCollection);
+        if (! intResult)
+        {
+            return Task.FromResult(Result<CompetitionData>.Fail(
+                new AppException(AppPhrases.CompetitionDataRemoveError, intResult.Excptn)
+            ));
+        }
+
+        return Task.FromResult(Result<CompetitionData>.Done(competitionDataCollection[index]));
+    }
+    
+    /// <summary>
+    /// Сохранение соревнования.
     /// </summary>
     /// <param name="competitionData">Данные о соревнования.</param>
     public async Task<Result<int>> SaveCompetitionDataAsync(CompetitionData competitionData)
     {
-        var intResult1 = repository.Update(competitionData);
+        var intResult1 = Result<int>.Done(0);
+        // var intResult1 = repository.Update(competitionData);
         var intResult2 = await repository.SaveChangesAsync();
         return intResult1 && intResult2 
             ? intResult2

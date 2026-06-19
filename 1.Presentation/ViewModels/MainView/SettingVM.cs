@@ -1,14 +1,16 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows.Controls;
 using System.Windows.Input;
+using AppDomain.AppExceptions;
 using AppDomain.Phrases;
 using AppDomain.Setting.Entities;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
+using Common.BaseComponents.Wrappers;
 using Common.BaseExtensions.Collections;
 using Common.WpfModule.Components.Collections;
+using Common.WpfModule.Components.Models;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -24,8 +26,9 @@ namespace Presentation.ViewModels.MainView;
 /// <summary>
 /// ViewModel для меню ленты "Настройки".
 /// </summary>
-[SuppressMessage("ReSharper", "InconsistentNaming")]
-public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMessage>, IStatusBarDataProvider, IDisposable
+// ReSharper disable once InconsistentNaming
+public sealed class SettingVM : ObservableRecipient, 
+    IRecipient<LocalizationMessage>, IRecipient<AllCompetitionsMessage>, IStatusBarDataProvider, IDisposable
 {
     private readonly LocalizationHelper _localizationHelper = null!;
     private readonly IViewWithResources _view = null!;
@@ -76,22 +79,38 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     #region [---------- Данные о соревнованиях ----------]
 
     /// <summary>
-    /// Список статусов соревнований.
-    /// </summary>
-    public ObservableCollectionEx<CompetitionsStatus> CompetitionsStatuses { get; set; } = [];
-    
-    /// <summary>
-    /// Список статусов и обобщенных наименований соревнований.
+    /// Коллекция статусов и обобщенных наименований соревнований.
     /// </summary>
     public ObservableCollectionEx<DetailedCompetitionStatus> DetailedCompetitionStatuses { get; set; } = [];
 
     /// <summary>
-    /// Данные о соревнования.
+    /// Коллекция проводящих организаций.
     /// </summary>
-    public CompetitionData? CompetitionData
+    public ObservableCollectionEx<StringItem> ConductingOrganizations { get; set; } = [];
+        
+    /// <summary>
+    /// Коллекция соревнований.
+    /// </summary>
+    public ObservableCollection<CompetitionData> CompetitionDataCollection { get; set; } = [];
+
+    /// <summary>
+    /// Данные о текущем соревновании.
+    /// </summary>
+    public CompetitionData? CurrentCompetitionData
     {
         get;
-        private set => SetProperty(ref field, value);
+        set
+        {
+            if (SetProperty(ref field, value) && value != null /*&& value.Id != 0*/)
+            {
+                // При смене выбранного соревнования подгружаем навигационные свойства
+                _ = OnGetCompetitionDataAsync(value.Id);
+
+                if (CurrentCompetitionData != null) 
+                    // Посылаем сообщение об изменении текущего соревнования
+                    Messenger.Send(new CompetitionMessage(CurrentCompetitionData));
+            }
+        }
     }
 
     #endregion
@@ -117,26 +136,35 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     
 
     #region [---------- Команды ― Данные о соревн. ----------]
-
-    /// <summary>
-    /// Команда загрузки данных о соревнованиях.
-    /// </summary>
-    public ICommand LoadCompetitionCommand { get; } = null!;
     
     /// <summary>
-    /// Команда сохранения изменений, связанных с соревнованиями.
+    /// Команда получения соревнования.
     /// </summary>
-    public ICommand SaveCompetitionDataCommand { get; } = null!;
+    public IAsyncRelayCommand<int> GetCompetitionCommand { get; } = null!;
+    
+    /// <summary>
+    /// Команда сохранения изменений, связанных с соревнованием.
+    /// </summary>
+    public ICommand SaveCompetitionCommand { get; } = null!;
+    
+    /// <summary>
+    /// Команда добавления проводящей организации.
+    /// </summary>
+    public ICommand AddConductingOrganizationCommand { get; } = null!;
+
+    /// <summary>
+    /// Команда удаления проводящей организации.
+    /// </summary>
+    public ICommand RemoveConductingOrganizationCommand { get; } = null!;
 
     #endregion
-    
 
     #region [---------- Команды ― Судьи ----------]
 
     /// <summary>
     /// Команда загрузки списка судей.
     /// </summary>
-    public ICommand LoadRefereesCommand { get; } = null!;
+    public ICommand GetRefereesCommand { get; } = null!;
     
     /// <summary>
     /// Команда добавления судьи.
@@ -164,7 +192,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// <summary>
     /// Конструктор, запрещающий создания экземпляра без параметров.
     /// </summary>
-    [SuppressMessage("ReSharper", "UnusedMember.Local")]
+    // ReSharper disable once UnusedMember.Local
     private SettingVM()
     {
     }
@@ -187,12 +215,19 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         _competitionDataService = competitionDataService;
         _refereeService = refereeService;
         var localization = appSetting.AppLocalization;
+
+        // Соревнования
+        AddConductingOrganizationCommand = new AsyncRelayCommand(OnAddConductingOrganization);
+        RemoveConductingOrganizationCommand = new AsyncRelayCommand(OnRemoveConductingOrganization);
+        GetCompetitionCommand = new AsyncRelayCommand<int>(
+            OnGetCompetitionDataAsync,
+            id => id > 0 // CanExecute: только если Id корректный);
+        );
+        SaveCompetitionCommand = new AsyncRelayCommand(OnSaveCompetitionDataAsync);
         
-        LoadCompetitionCommand = new AsyncRelayCommand(OnGetCompetitionData);
-        SaveCompetitionDataCommand = new AsyncRelayCommand(OnSaveCompetitionData);
-        
-        LoadRefereesCommand = new AsyncRelayCommand(OnGetReferees);
-        AddRefereeCommand = new AsyncRelayCommand(OnAddReferee);
+        // Судьи
+        GetRefereesCommand = new AsyncRelayCommand(OnGetRefereesAsync);
+        AddRefereeCommand = new AsyncRelayCommand(OnAddRefereeAsync);
         RemoveRefereeCommand = new AsyncRelayCommand(OnRemoveReferee);
         SaveRefereesCommand = new AsyncRelayCommand(OnSaveReferees);
         
@@ -222,13 +257,24 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
             // Исключение прислали - отображаем его в статус-баре и пишем в лог
             _ = StatusBarData.SetTextAsync(exceptionsProvider.Exception.Message, 
                 StatusBarData.StatusBarTextType.Error, 0);
-            _logger.Error(exceptionsProvider.Exception, "");
+            _logger.Error(exceptionsProvider.Exception, "{class}.{method}",
+                typeof(SettingVM), "CTOR");
         }
         
         if (exceptionsProvider.Exception is null || exceptionsProvider is {Exception: not null, IsFatal: false})
         {
-            // Исключения нет (или оно есть, не не фатально) - получаем синхронно данные
-            Init().GetAwaiter().GetResult();
+            // Исключения нет (или оно есть, но не фатально) - получаем асинхронно данные с обработкой ошибки
+            _ = InitAsync().ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    var exception = new AppException(AppPhrases.UnknownError, t.Exception);
+                    _ = StatusBarData.SetTextAsync(exception.Message, 
+                        StatusBarData.StatusBarTextType.Error, 0);
+                    _logger.Error(exception, "{class}.{method}",
+                        typeof(SettingVM), "CTOR");
+                }
+            });
         }
     }
     
@@ -267,17 +313,29 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
         localization.Languages.ForEach(item => Languages.Add(item.Value));
         SetProperty(ref _currLang, currLang, nameof(CurrLang));     // вновь привязываем
     }
+
+    /// <summary>
+    /// Получаем сообщение с экземпляром <see cref="AllCompetitionsMessage"/>.
+    /// </summary>
+    public void Receive(AllCompetitionsMessage message)
+    {
+        CompetitionDataCollection = message.CompetitionDataCollection;
+        CurrentCompetitionData = message.CurrentCompetitionData;
+        
+        // Уведомляем UI об изменении
+        OnPropertyChanged(nameof(CompetitionDataCollection));
+    }
         
     /// <summary>
     /// Инициализация - получение всех необходимых данных.
     /// </summary>
-    private async Task Init()
+    private async Task InitAsync()
     {
-        await OnGetDetailedCompetitionStatuses();
-        await OnGetCompetitionData();
+        // TODO: Возможно нужно сделать проверку результатов вызовов, и если false - делать выход
+        await OnGetDetailedCompetitionStatusesAsync();
         await OnGetRefereeLevels();
         await OnGetRefereeJobTitles();
-        await OnGetReferees();
+        await OnGetRefereesAsync();
     }
 
     #region [---------- Функции для команд ― Данные о соревн. ----------]
@@ -285,7 +343,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// <summary>
     /// Получение статусов и наименований соревнований.
     /// </summary>
-    private async Task OnGetDetailedCompetitionStatuses()
+    private async Task OnGetDetailedCompetitionStatusesAsync()
     {
         var detailedCompetitionsStatusesResult = await _competitionDataService.GetDetailedCompetitionsStatusesAsync();
 
@@ -302,53 +360,143 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
                 StatusBarData.StatusBarTextType.Error, 0);            
             _logger.Error(detailedCompetitionsStatusesResult.Excptn, 
                 "{class}.{method}.", 
-                typeof(SettingVM), nameof(OnGetDetailedCompetitionStatuses));
+                typeof(SettingVM), nameof(OnGetDetailedCompetitionStatusesAsync));
         }
     }
 
     /// <summary>
-    /// Получение данных о соревнованиях.
+    /// Добавление проводящей организации.
     /// </summary>
-    private async Task OnGetCompetitionData()
+    private Task OnAddConductingOrganization()
     {
-        var competitionDataResult = await _competitionDataService.GetCompetitionDataAsync();
-        if (competitionDataResult)
+        // Создаем новую организацию
+        var newIndexResult = _competitionDataService.AddConductingOrganization(ConductingOrganizations, 
+            ConductingOrganizations.SelectedIndex);
+        if (newIndexResult)
         {
-            // Обновляем свойство с данными о соревнованиях
-            CompetitionData = null;
-            CompetitionData = competitionDataResult.Value;
+            // Перезаписываем индекс
+            ConductingOrganizations.SelectedIndex = newIndexResult.Value;
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(competitionDataResult.Excptn?.Message, 
-                StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(competitionDataResult.Excptn, 
-                "{class}.{method}.", 
-                typeof(SettingVM), nameof(OnGetCompetitionData));
+            _ = StatusBarData.SetTextAsync(newIndexResult.Excptn?.Message,
+                StatusBarData.StatusBarTextType.Error, 0);
+            _logger.Error(newIndexResult.Excptn, "{class}.{method}",
+                typeof(SettingVM), nameof(OnAddConductingOrganization));
+        }
+
+        return Task.CompletedTask;
+    }
+    
+    /// <summary>
+    /// Удаление проводящей организации.
+    /// </summary>
+    private Task OnRemoveConductingOrganization()
+    {
+        // Удаляем организацию
+        var newIndexResult = _competitionDataService.RemoveConductingOrganization(ConductingOrganizations, 
+            ConductingOrganizations.SelectedIndex);
+
+        if (newIndexResult)
+        {
+            // Перезаписываем индекс
+            ConductingOrganizations.SelectedIndex = newIndexResult.Value;
+        }
+        else
+        {
+            // Пишем в статус-бар и лог об ошибке
+            _ = StatusBarData.SetTextAsync(newIndexResult.Excptn?.Message,
+                StatusBarData.StatusBarTextType.Error, 0);
+            _logger.Error(newIndexResult.Excptn, "{class}.{method}",
+                typeof(SettingVM), nameof(OnRemoveConductingOrganization));
+        }
+
+        return Task.CompletedTask;
+    }
+    
+    /// <summary>
+    /// Получение полных данных о соревновании.
+    /// </summary>
+    private async Task OnGetCompetitionDataAsync(int id)
+    {
+        Exception? exception = null;
+        try
+        {
+            var competitionDataResult = await _competitionDataService.GetCompetitionDataAsync(id);
+
+            if (! competitionDataResult)
+            {
+                // Неудачное получение данных из репозитория
+                exception = competitionDataResult.Excptn;
+                return;
+            }
+
+            if (CurrentCompetitionData == null)
+            {
+                // Отсутствуют соревнования
+                exception = new AppException(AppPhrases.CompetitionDataLoadError,
+                    new AppException(AppPhrases.CompetitionDataIsNull));
+                return;
+            }
+            
+            // Копируем полученные из сервиса данные в соревнование (CurrentCompetitionData);
+            // по сути - заполняем навигационные свойства
+            competitionDataResult.Value?.Copy(CurrentCompetitionData);
+            
+            // Заполняем проводящие организации
+            var intResult = _competitionDataService.GetConductingOrganizations(
+                CurrentCompetitionData, ConductingOrganizations);
+            if (! intResult)
+            {
+                exception = intResult.Excptn;
+                return;
+            }
+            
+            // Уведомляем UI об изменении
+            OnPropertyChanged(nameof(CurrentCompetitionData));
+        }
+        finally
+        {
+            if (exception != null)
+            {
+                // Пишем в статус-бар и лог об ошибке
+                _ = StatusBarData.SetTextAsync(exception.Message,
+                    StatusBarData.StatusBarTextType.Error, 0);
+                _logger.Error(exception,
+                    "{class}.{method}.",
+                    typeof(SettingVM), nameof(OnGetCompetitionDataAsync));
+            }
         }
     }
 
     /// <summary>
-    /// Сохранение данных о соревнованиях.
+    /// Сохранение соревнования.
     /// </summary>
-    private async Task OnSaveCompetitionData()
+    private async Task OnSaveCompetitionDataAsync()
     {
-        var intResult = await _competitionDataService.SaveCompetitionDataAsync(CompetitionData!);
+        // Сохраняем проводящие организации
+        _competitionDataService.SetConductingOrganizations(CurrentCompetitionData, ConductingOrganizations);
+        
+        var intResult = await _competitionDataService.SaveCompetitionDataAsync(CurrentCompetitionData!);
 
-        if (! intResult)
+        if (intResult)
+        {
+            // Уведомляем UI об изменении
+            OnPropertyChanged(nameof(CurrentCompetitionData));
+        }
+        else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(intResult.Excptn?.Message, 
-                StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(intResult.Excptn, 
-                "{class}.{method}.", 
-                typeof(SettingVM), nameof(OnSaveCompetitionData));
+            _ = StatusBarData.SetTextAsync(intResult.Excptn?.Message,
+                StatusBarData.StatusBarTextType.Error, 0);
+            _logger.Error(intResult.Excptn,
+                "{class}.{method}.",
+                typeof(SettingVM), nameof(OnSaveCompetitionDataAsync));
         }
     }
     
     #endregion
-    
     
     #region [---------- Функции для команд ― Судьи ----------]
 
@@ -400,28 +548,23 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
     /// <summary>
     /// Получение списка судей.
     /// </summary>
-    private async Task OnGetReferees()
+    private async Task OnGetRefereesAsync()
     {
-        var refereesResult = await _refereeService.GetRefereesAsync(Referees, Referees.SelectedIndex);
-        if (refereesResult)
-        {
-            // Перезаписываем индекс
-            Referees.SelectedIndex = refereesResult.Value;
-        }
-        else
+        var refereesResult = await _refereeService.GetRefereesAsync(Referees);
+        if (! refereesResult)
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(refereesResult.Excptn?.Message, 
-                StatusBarData.StatusBarTextType.Error, 0);            
-            _logger.Error(refereesResult.Excptn, "{class}.{method}", 
-                typeof(SettingVM), nameof(OnGetReferees));
+            _ = StatusBarData.SetTextAsync(refereesResult.Excptn?.Message,
+                StatusBarData.StatusBarTextType.Error, 0);
+            _logger.Error(refereesResult.Excptn, "{class}.{method}",
+                typeof(SettingVM), nameof(OnGetRefereesAsync));
         }
     }
 
     /// <summary>
     /// Добавление судьи.
     /// </summary>
-    private async Task OnAddReferee()
+    private async Task OnAddRefereeAsync()
     {
         var refereesResult = await _refereeService.AddRefereeAsync(Referees, Referees.SelectedIndex);
         if (refereesResult)
@@ -438,7 +581,7 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
             _ = StatusBarData.SetTextAsync(refereesResult.Excptn?.Message, 
                 StatusBarData.StatusBarTextType.Error, 0);
             _logger.Error(refereesResult.Excptn, "{class}.{method}", 
-                typeof(SettingVM), nameof(OnAddReferee));
+                typeof(SettingVM), nameof(OnAddRefereeAsync));
         }
     }
 
@@ -484,6 +627,11 @@ public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMess
                 StatusBarData.StatusBarTextType.Error, 0);            
             _logger.Error(intResult.Excptn, "{class}.{method}", 
                 typeof(SettingVM), nameof(OnSaveReferees));
+        }
+        else
+        {
+            // Уведомляем UI об изменении
+            OnPropertyChanged(nameof(Referees));
         }
     }
 

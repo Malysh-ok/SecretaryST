@@ -1,4 +1,4 @@
-﻿using Presentation.ViewModels.Common;
+﻿using Common.WpfModule.Components.Models;
 
 namespace Presentation.ViewModels._Contracts;
 

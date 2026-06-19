@@ -1,15 +1,24 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" >
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:Common.WpfModule.Ui.Converters;assembly=Ui"
+                    xmlns:controls="clr-namespace:Common.WpfModule.Ui.Controls;assembly=Ui"
+                    xmlns:markups="clr-namespace:Common.WpfModule.Ui.Markups;assembly=Ui"
+                    >
     
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/CommonResources;component/Styles/DefaultColorsAndBrushes.xaml" />
         <ResourceDictionary Source="/CommonResources;component/Styles/Buttons.xaml" />
         
         <ResourceDictionary>
-            <!-- <converters:PercentageConverter x:Key="PercentageConverter"/> -->
+            <converters:BoolToFlowDirectionConverter x:Key="BoolToFlowDirectionConverter"/>
+            <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         </ResourceDictionary>
     </ResourceDictionary.MergedDictionaries>
 
+    
+    <!-- _______________ БАЗОВЫЕ СТИЛИ _______________ -->
+    
     <!-- БАЗОВЫЙ DATAGRID -->
     <!-- Стиль -->
     <Style x:Key="DataGridDefault" TargetType="{x:Type DataGrid}">
@@ -22,6 +31,8 @@
         <Setter Property="GridLinesVisibility" Value="All" />
         <Setter Property="VerticalGridLinesBrush" Value="{StaticResource DefaultDarkBackgroundBrush}" />
         <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource DefaultDarkBackgroundBrush}" />
+        <Setter Property="CanUserAddRows" Value="False" />
+        <Setter Property="CanUserDeleteRows" Value="False" />
     </Style>
     
     <!-- БАЗОВЫЙ ЗАГОЛОВОК СТОЛБЦА -->
@@ -34,11 +45,11 @@
             ConverterParameter=5.0,
             Path=FontSize}"/>
         -->
+        <!-- <Setter Property="Height" Value="35"/> -->
         <!-- <Setter Property="FontSize" Value="20"/> -->
-        <Setter Property="Padding" Value="0 10 0  10"/>
+        <Setter Property="Padding" Value="7 7 7 7"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
-        <Setter Property="FontWeight" Value="Bold"/>
     </Style>
     
     <!-- БАЗОВЫЙ ЗАГОЛОВОК СТРОКИ -->
@@ -51,6 +62,7 @@
     <!-- БАЗОВАЯ СТРОКА -->
     <!-- Стиль -->
     <Style x:Key="RowDefault" TargetType="DataGridRow" >
+        <Setter Property="Height" Value="25" />
     </Style>    
 
     <!-- БАЗОВАЯ ЯЧЕЙКА -->
@@ -66,6 +78,116 @@
                 </ControlTemplate>
             </Setter.Value>
 
+        </Setter>
+    </Style>
+    
+    
+    <!-- _______________ СТИЛИ ЗАГОЛОВКОВ СТОЛБЦОВ _______________ -->
+
+    <!-- Стиль заголовка столбца с жирным шрифтом -->
+    <Style x:Key="DataGridColumnHeaderDefault.Bold"
+           TargetType="{x:Type DataGridColumnHeader}"
+           BasedOn="{StaticResource ColumnHeaderDefault}">
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    
+    <!-- Стиль заголовка столбца с контентом справа -->
+    <Style x:Key="DataGridColumnHeaderDefault.ContentRightStyle" 
+           TargetType="{x:Type DataGridColumnHeader}"
+           BasedOn="{StaticResource ColumnHeaderDefault}">
+        <Setter Property="HorizontalContentAlignment" Value="Right"/>
+        <Setter Property="Padding" Value="7 7"/>
+    </Style>
+    
+    <!-- Стиль заголовка столбца с контентом справа и жирным шрифтом -->
+    <Style x:Key="DataGridColumnHeaderDefault.ContentRightStyle.Bold" 
+           TargetType="{x:Type DataGridColumnHeader}"
+           BasedOn="{StaticResource DataGridColumnHeaderDefault.ContentRightStyle}">
+        <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+
+   
+    <!-- _______________ СТОЛБЕЦ С КНОПКАМИ В ЗАГОЛОВКЕ (контент прижат вправо) _______________ -->
+    
+    <!-- Стиль кнопки заголовка -->
+    <Style x:Key="DataGridColumnHeaderWithButtons.Button" TargetType="Button"
+           BasedOn="{StaticResource WebButton.Square}">
+        <Setter Property="Height" Value="25" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Margin" Value="{markups:FirstLastItemMargin 
+            LeftFirst={StaticResource DefaultMarginBetweenElements}, RightLast=0, MiddleLeft=4, MiddleRight=0}"/>
+    </Style>
+
+    <!-- Стиль заголовка столбца с кнопками -->
+    <Style x:Key="DataGridColumnHeaderWithButtons" 
+           TargetType="controls:DataGridColumnHeaderWithButtons" 
+           BasedOn="{StaticResource DataGridColumnHeaderDefault.ContentRightStyle}">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:DataGridColumnHeaderWithButtons">
+                    
+                    <!-- Основной StackPanel – меняет порядок через FlowDirection -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+                                HorizontalAlignment="Right"
+                                Margin="8 4"
+                                FlowDirection="{Binding RelativeSource={RelativeSource TemplatedParent},
+                                                     Path=IsTextOnRight,
+                                                     Converter={StaticResource BoolToFlowDirectionConverter}}">
+
+                        <!-- Вложенный StackPanel с кнопками (порядок всегда слева направо) -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+                                        FlowDirection="LeftToRight">
+                            <Button Style="{StaticResource DataGridColumnHeaderWithButtons.Button}"
+                                    Command="{TemplateBinding Button1Command}"
+                                    Content="{TemplateBinding Button1Content}"
+                                    ToolTip="{TemplateBinding Button1ToolTip}"
+                                    Visibility="{Binding RelativeSource={RelativeSource TemplatedParent},
+                                                      Path=Button1Content,
+                                                      Converter={StaticResource NullToVisibilityConverter}}" />
+                            <Button Style="{StaticResource DataGridColumnHeaderWithButtons.Button}"
+                                    Command="{TemplateBinding Button2Command}"
+                                    Content="{TemplateBinding Button2Content}"
+                                    ToolTip="{TemplateBinding Button2ToolTip}"
+                                    Visibility="{Binding RelativeSource={RelativeSource TemplatedParent},
+                                                      Path=Button2Content,
+                                                      Converter={StaticResource NullToVisibilityConverter}}" />
+                            <Button Style="{StaticResource DataGridColumnHeaderWithButtons.Button}"
+                                    Command="{TemplateBinding Button3Command}"
+                                    Content="{TemplateBinding Button3Content}"
+                                    ToolTip="{TemplateBinding Button3ToolTip}"
+                                    Visibility="{Binding RelativeSource={RelativeSource TemplatedParent},
+                                                      Path=Button3Content,
+                                                      Converter={StaticResource NullToVisibilityConverter}}" />
+                            <Button Style="{StaticResource DataGridColumnHeaderWithButtons.Button}"
+                                    Command="{TemplateBinding Button4Command}"
+                                    Content="{TemplateBinding Button4Content}"
+                                    ToolTip="{TemplateBinding Button4ToolTip}"
+                                    Visibility="{Binding RelativeSource={RelativeSource TemplatedParent},
+                                                      Path=Button4Content,
+                                                      Converter={StaticResource NullToVisibilityConverter}}" />
+                            <Button Style="{StaticResource DataGridColumnHeaderWithButtons.Button}"
+                                    Command="{TemplateBinding Button5Command}"
+                                    Content="{TemplateBinding Button5Content}"
+                                    ToolTip="{TemplateBinding Button5ToolTip}"
+                                    Visibility="{Binding RelativeSource={RelativeSource TemplatedParent},
+                                                      Path=Button5Content,
+                                                      Converter={StaticResource NullToVisibilityConverter}}" />
+                        </StackPanel>
+
+                        <!-- Текст заголовка -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+                                    FlowDirection="LeftToRight">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              VerticalAlignment="Center"
+                                              FlowDirection="LeftToRight"
+                                              Margin="{markups:Thickness Left={StaticResource DefaultMarginBetweenElements}}">
+                            </ContentPresenter>
+                        </StackPanel>
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter.Value>
         </Setter>
     </Style>    
     

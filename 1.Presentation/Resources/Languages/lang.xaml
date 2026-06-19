@@ -16,20 +16,25 @@
     <v:String x:Key="MainView">SecretaryST</v:String>
     
     <!-- Главное представление - Лента ============================= -->
-    <v:String x:Key="MainView_Ribbon">Ribbon</v:String>
+    <v:String x:Key="MainView.Ribbon">Ribbon</v:String>
     
     <!-- Главное представление - Лента - Backstage -->
     <v:String x:Key="MainView_Ribbon_File">File</v:String>
-    <v:String x:Key="MainView_Ribbon_File_Open">Open</v:String>
+    <v:String x:Key="MainView_Ribbon_File_Create">Create competition</v:String>
+    <v:String x:Key="MainView_Ribbon_File_Remove">Remove competition</v:String>
+    <v:String x:Key="MainView_Ribbon_File_Update">Update all competition</v:String>
     <v:String x:Key="MainView_Ribbon_File_Save">Save</v:String>
     <v:String x:Key="MainView_Ribbon_File_Print">Print</v:String>
     <v:String x:Key="MainView_Ribbon_File_Exit">Exit</v:String>
     <!-- Главное представление - Лента - Настройки -->
     <v:String x:Key="MainView_Ribbon_Setting">Setting</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_SaveChanges">Save changes</v:String>
     <!--            Соревнования -->
     <v:String x:Key="MainView_Ribbon_Setting_Competitions">Competitions</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_CurrCompetitions">Competitions:</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_UpdateCompetition">Update data of competition</v:String>
-    <v:String x:Key="MainView_Ribbon_Setting_SaveChanges">Save changes</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_AddCompetition">Add competition</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_DeleteCompetition">Delete competition</v:String>
     <!--            Судьи -->
     <v:String x:Key="MainView_Ribbon_Setting_Referees">Referees</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_UpdateReferees">Update list of referees</v:String>
@@ -37,7 +42,7 @@
     <v:String x:Key="MainView_Ribbon_Setting_DeleteReferee">Delete referee</v:String>
     <!--            Дополнительно -->
     <v:String x:Key="MainView_Ribbon_Setting_Optionally">Optionally</v:String>
-    <v:String x:Key="MainView_Ribbon_Setting_Setting">Setting</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_ProgramSetting">Program setting</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_Language">Language:</v:String>
     
     <!-- Главное представление - Лента - База данных -->
@@ -50,10 +55,14 @@
     <!-- Главное представление - UserControls ============================= -->
     
     <!-- Главное представление - UserControls - SettingControl (Настройки) -->
-    <v:String x:Key="SettingControl_CompetitionName">Competition Name:</v:String>
-    <v:String x:Key="SettingControl_ConductingOrganizations">Conducting Organizations:</v:String>
-    <v:String x:Key="SettingControl_CompetitionDate">Competition Date:</v:String>
-    <v:String x:Key="SettingControl_CompetitionVenue">Competition Venue:</v:String>
+    <v:String x:Key="SettingControl.CompetitionName">Competition name:</v:String>
+    <v:String x:Key="SettingControl.CompetitionShortName">Competition short name:</v:String>
+    <v:String x:Key="SettingControl.ConductingOrganizations">Conducting organizations:</v:String>
+    <v:String x:Key="SettingControl.AddConductingOrganization">Add event organizer</v:String>
+    <v:String x:Key="SettingControl.RemoveConductingOrganization">Remove event organizer</v:String>
+    
+    <v:String x:Key="SettingControl_CompetitionDate">Competition date:</v:String>
+    <v:String x:Key="SettingControl_CompetitionVenue">Competition venue:</v:String>
     <v:String x:Key="SettingControl_DetailedCompetitionStatus">Status and name of the competition:</v:String>
     <v:String x:Key="SettingControl_CompetitionStatus">Brief Status of the competition:</v:String>
     <v:String x:Key="SettingControl_CompetitionNote">Note:</v:String>

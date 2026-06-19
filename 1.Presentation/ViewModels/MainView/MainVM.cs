@@ -3,11 +3,11 @@ using System.Windows.Input;
 using System.Windows.Media;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
+using Common.WpfModule.Components.Models;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Presentation.ViewModels._Contracts;
-using Presentation.ViewModels.Common;
 using Serilog;
 
 namespace Presentation.ViewModels.MainView;
@@ -45,7 +45,7 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     /// <summary>
     /// Конструктор, запрещающий создания экземпляра без параметров.
     /// </summary>
-    [SuppressMessage("ReSharper", "UnusedMember.Local")]
+    // ReSharper disable once UnusedMember.Local
     private MainVM()
     {
     }
@@ -88,15 +88,11 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
             // new SolidColorBrush(Color.FromRgb(0xE6, 0x5C, 0x00)));
             Brushes.LightSalmon);
 
-        var mainVM = new MainVM(
-            new BackstageVM(logger),
-            new SettingVM(view, statusBarData, logger, exceptionsProvider,
-                appSetting,
-                competitionDataService,
-                refereeService),
-            statusBarData,
-            logger
-        );
+        // Создаем ViewModel's. Последовательность создания важна!
+        var settingVM = new SettingVM(view, statusBarData, logger, exceptionsProvider, appSetting,
+            competitionDataService, refereeService);
+        var backstageVM = new BackstageVM(statusBarData, logger, exceptionsProvider, competitionDataService);
+        var mainVM = new MainVM(backstageVM, settingVM, statusBarData, logger);
 
         return mainVM;
     }

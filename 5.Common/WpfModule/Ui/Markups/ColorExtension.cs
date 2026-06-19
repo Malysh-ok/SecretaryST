@@ -2,9 +2,10 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using Common.BaseComponents.Components.Colors;
 using Common.WpfModule.Extensions;
+
 // ReSharper disable MemberCanBePrivate.Global
 
-namespace Common.WpfModule.Ui.Markup;
+namespace Common.WpfModule.Ui.Markups;
 
 /// <summary>
 /// Расширение разметки для цвета.

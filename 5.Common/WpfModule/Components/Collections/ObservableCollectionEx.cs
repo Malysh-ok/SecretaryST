@@ -9,28 +9,44 @@ namespace Common.WpfModule.Components.Collections;
 /// </summary>
 public class ObservableCollectionEx<T>: ObservableCollection<T>
 {
-    private int _selectedIndex = -1;
+    public ObservableCollectionEx()
+    {
+    }
+
+    public ObservableCollectionEx(IEnumerable<T> collection) 
+        : base([..collection ?? throw new ArgumentNullException(nameof(collection))])
+    {
+    }
+    
+    public ObservableCollectionEx(List<T> list) 
+        : base([..list ?? throw new ArgumentNullException(nameof(list))])
+    {
+    }
+    
     /// <summary>
-    /// Индекс выделенного элемента коллекции.
+    /// Индекс активного элемента коллекции.
     /// </summary>
+    /// <remarks>
+    /// Нумерация начинается с 0.
+    /// </remarks>
     public int SelectedIndex
     {
-        get => _selectedIndex;
+        get;
         set
         {
-            if (_selectedIndex == value)
+            if (field == value)
                 return;
-            
+
             // Проверяем на возможность изменения
             CheckReentrancy();
 
-            _selectedIndex = -1;
+            field = -1;
             if (value >= 0 && value < Items.Count)
-                _selectedIndex = value;
-            
+                field = value;
+
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(SelectedIndex)));
         }
-    }
+    } = -1;
 
     /// <summary>
     /// Добавление коллекции элементов.
@@ -98,6 +114,18 @@ public class ObservableCollectionEx<T>: ObservableCollection<T>
         {
             InternalSort(Items.OrderBy(key, comparer));
         }
+        
+        /// <summary>
+        /// Сортирует элементы коллекции в порядке убывания по ключу.
+        /// </summary>
+        /// <typeparam name="TKey">Тип ключа, возвращаемого <paramref name="key"/>.</typeparam>
+        /// <param name="key">Функция, извлекающая ключ из элемента.</param>
+        /// <param name="comparer">An <see cref="IComparer{T}"/> to compare keys.</param>
+        public void SortDescending<TKey>(Func<T, TKey> key, IComparer<TKey> comparer)
+        {
+            InternalSort(Items.OrderByDescending(key, comparer));
+        }
+
 
         #endregion // [---------- Сортировка ----------]
 }

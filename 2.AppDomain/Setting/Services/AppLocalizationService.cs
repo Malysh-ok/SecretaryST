@@ -90,7 +90,7 @@ public class AppLocalizationService
     }
 
     /// <summary>
-    /// Перевод всех доступных языков приложения в соответствии с локализацией <paramref name="cultureInfo"/>.
+    /// Перевод наименований всех доступных языков приложения в соответствии с локализацией <paramref name="cultureInfo"/>.
     /// </summary>
     /// <remarks>
     /// По сути - локализация свойства <see cref="Lang.DisplayName"/> доступных языков в соответствии с заданной локализацией.

@@ -1,0 +1,31 @@
+﻿using ProblemDomain.Entities.CommonEntities;
+
+namespace Presentation.ViewModels.Common;
+
+/// <summary>
+/// Сообщение, рассылаемое представлениям (окнам) при изменении соревнования.
+/// </summary>
+public class CompetitionMessage
+{
+    /// <summary>
+    /// Данные о текущем соревновании.
+    /// </summary>
+    public CompetitionData? CurrentCompetitionData { get; set; }
+
+    /// <summary>
+    /// Конструктор, запрещающий создания экземпляра без параметров.
+    /// </summary>
+    // ReSharper disable once UnusedMember.Local
+    private CompetitionMessage()
+    {
+    }
+
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="currentCompetitionData">Данные о текущем соревновании.</param>
+    public CompetitionMessage(CompetitionData? currentCompetitionData)
+    {
+        CurrentCompetitionData = currentCompetitionData;
+    }
+}

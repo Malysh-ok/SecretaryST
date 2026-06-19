@@ -69,6 +69,15 @@ namespace AppDomain.Phrases {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The current competition is missing..
+        /// </summary>
+        public static string CompetitionDataIsNull {
+            get {
+                return ResourceManager.GetString("CompetitionDataIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to get a data of competition from the repository..
         /// </summary>
         public static string CompetitionDataLoadError {
@@ -105,6 +114,15 @@ namespace AppDomain.Phrases {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to find the competitions status from the repository..
+        /// </summary>
+        public static string CompetitionsStatusFindError {
+            get {
+                return ResourceManager.GetString("CompetitionsStatusFindError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The database is rebuilt again..
         /// </summary>
         public static string DatabaseRebuilt {
@@ -119,6 +137,15 @@ namespace AppDomain.Phrases {
         public static string DetailedCompetitionStatusesLoadError {
             get {
                 return ResourceManager.GetString("DetailedCompetitionStatusesLoadError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to find the detailed competitions status from the repository..
+        /// </summary>
+        public static string DetailedCompetitionStatusFindError {
+            get {
+                return ResourceManager.GetString("DetailedCompetitionStatusFindError", resourceCulture);
             }
         }
         
@@ -200,6 +227,15 @@ namespace AppDomain.Phrases {
         public static string RefereesSaveError {
             get {
                 return ResourceManager.GetString("RefereesSaveError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown Error. For more information, see the log file..
+        /// </summary>
+        public static string UnknownError {
+            get {
+                return ResourceManager.GetString("UnknownError", resourceCulture);
             }
         }
     }

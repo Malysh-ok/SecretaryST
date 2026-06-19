@@ -5,13 +5,25 @@
                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                     xmlns:fluent="urn:fluent-ribbon"
-                    xmlns:markup="clr-namespace:Common.WpfModule.Ui.Markup;assembly=Ui"
                     xmlns:converters="clr-namespace:Common.WpfModule.Ui.Converters;assembly=Ui"
+                    xmlns:markups="clr-namespace:Common.WpfModule.Ui.Markups;assembly=Ui"
                     mc:Ignorable="options d">
     
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/CommonResources;component/Styles/DefaultColorsAndBrushes.xaml" />
     </ResourceDictionary.MergedDictionaries>
+    
+    <!-- _______________ ШАБЛОНЫ _______________ -->
+    
+    <!-- Шаблон заголовка кнопки с увеличенным отступом слева перед текстом -->
+    <DataTemplate x:Key="ButtonHeaderWithMarginLeft">
+        <TextBlock Text="{Binding}" 
+                   Margin="3,0,0,0" 
+                   VerticalAlignment="Center"
+                   TextWrapping="Wrap" />
+    </DataTemplate>
+
+    <!-- _______________ ЦВЕТА, КИСТИ _______________ -->
 
     <!-- TODO: Синие акцентные цвета, возможно надо переместить в настройки Fluent-темы -->
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.RibbonTabControl.Background" 
@@ -32,43 +44,86 @@
                      Color="{StaticResource DefaultBackgroundColor}" options:Freeze="True" />
 
     <!-- Backstage -->
+    
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Foreground" 
                      Color="{StaticResource DefaultDarkBackgroundColor}" options:Freeze="True" />
     <!--
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Background" 
                      Color="{StaticResource AccentColor}" options:Freeze="True" />
     -->
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.ItemsPanelBackground" 
+    <!-- Фон Backstage -->
+    <!--
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.ItemsPanelBackground"
                      Color="{StaticResource Fluent.Ribbon.Colors.Accent80}" options:Freeze="True" />
+    -->
+    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.ItemsPanelBackground"
+                     Color="{markups:Color BaseColor={StaticResource HighlightColor}, 
+                     DeltaBrightness=0.1, DeltaSaturation=-0.4}" />
     <!--
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.ItemsPanelBackground" 
-                     Color="{markup:Color BaseColor={StaticResource Fluent.Ribbon.Colors.AccentBase}, 
+                     Color="{markups:Color BaseColor={StaticResource Fluent.Ribbon.Colors.AccentBase}, 
                      DeltaBrightness=0.05, DeltaSaturation=-0.2}" />
                      -->
+
+    <!-- _______________ ПОТОМКИ ЛЕНТЫ _______________ -->
     
-    <Style TargetType="fluent:RibbonTabItem">
-        <!-- Убираем рамку фокуса -->
-        <Setter Property="Focusable" Value="False"/>
+    <Style TargetType="fluent:Ribbon">
+        <Style.Resources>
+            <!-- Стиль будет применяться ко всем элементам внутри этой группы -->
+        
+            <!-- Кнопки -->
+            <Style TargetType="fluent:Button">
+                <!-- Делаем маленькую иконку + текст -->
+                <Setter Property="SizeDefinition" Value="Middle" />
+        
+                <!-- Увеличиваем отступ текста от иконки -->
+                <Setter Property="HeaderTemplate" Value="{StaticResource ButtonHeaderWithMarginLeft}"/>
+            </Style>
+    
+            <!-- Комбобоксы -->
+            <Style TargetType="fluent:ComboBox">
+                <!-- Ширина комбобокса и отсутствие фокуса -->
+                <Setter Property="Width" Value="150" />
+                <Setter Property="Focusable" Value="False" />
+        
+                <!-- Устанавливаем оптимальный margin -->
+                <Setter Property="Margin" Value="-8, 0,0, 0" />
+            </Style>
+        </Style.Resources>
     </Style>
+
+    <!-- _______________ ПОТОМКИ ЛЕНТЫ - ГРУППЫ И Т.П. _______________ -->
     
     <Style TargetType="fluent:RibbonGroupBox">
         <!-- Убираем сжатие группы -->
         <Setter Property="IsCollapsedHeaderContentPresenter" Value="False" />
         <Setter Property="State" Value="Large"/>
+        
+        <!-- Устанавливаем оптимальный padding -->
+        <Setter Property="Padding" Value="5, 5, 5, 0"/>
+
+        <Style.Resources>
+            <!-- Стиль будет применяться ко всем TextBlock внутри этой группы -->
+            <Style TargetType="TextBlock">
+                <Setter Property="Margin" Value="5,0,5,0" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+           
+            <!-- Стиль будет применяться ко всем Label внутри этой группы -->
+            <Style TargetType="Label">
+                <Setter Property="Padding" Value="5,0,5,0" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+        </Style.Resources>
     </Style>
-    
-    <Style TargetType="fluent:Button">
-        <!-- Делаем маленькую иконку + текст -->
-        <Setter Property="SizeDefinition" Value="Middle" />
-    </Style>
-    
-    <Style TargetType="fluent:ComboBox">
-        <!-- Ширина комбобокса и отсутствие фокуса -->
-        <Setter Property="Width" Value="120" />
-        <Setter Property="Focusable" Value="False" />
+        
+    <Style TargetType="fluent:RibbonTabItem">
+        <!-- Убираем рамку фокуса -->
+        <Setter Property="Focusable" Value="False"/>
     </Style>
 
-    <!-- Статус-бар -->
+    <!-- _______________ СТАТУС-БАР _______________ -->
+    
     <Style TargetType="fluent:StatusBarItem">
         <!-- Общие отступы -->
         <Setter Property="Padding" Value="5, 0, 5, 0" />
@@ -87,4 +142,5 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
+    
 </ResourceDictionary>
