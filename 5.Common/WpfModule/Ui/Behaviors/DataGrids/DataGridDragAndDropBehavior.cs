@@ -12,48 +12,62 @@ using Microsoft.Xaml.Behaviors;
 namespace Common.WpfModule.Ui.Behaviors.DataGrids;
 
 /// <summary>
-/// Бихейвер. Реализует перемещение строк (drag and drop) в DataGrid.
+/// Бихейвер, реализующий перемещение строк (Drag-and-Drop) в DataGrid.
+/// Позволяет пользователю перетаскивать строки мышью для изменения их порядка.
 /// </summary>
 public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehavior
 {
-    // Список строк DataGrid
-    public static readonly DependencyProperty ItemsProperty = DependencyProperty.Register(
-        nameof(Items), typeof(IList), typeof(DataGridDragAndDropBehavior), 
-        new PropertyMetadata(default(IList)));
-    
-    // Команда, выполняемая после перемещения строки
-    public static readonly DependencyProperty AfterItemMovedCommandProperty = 
-        DependencyProperty.Register(nameof(AfterItemMovedCommand), typeof(ICommand), 
-            typeof(DataGridDragAndDropBehavior));
-
+    /// <summary>
+    /// Коллекция элементов (строк), с которой работает бихейвер.
+    /// Обычно это ItemsSource DataGrid.
+    /// </summary>
     public IList? Items
     {
         get => (IList)GetValue(ItemsProperty);
         set => SetValue(ItemsProperty, value);
     }
+    /// <inheritdoc cref="Items"/>
+    public static readonly DependencyProperty ItemsProperty = DependencyProperty.Register(
+        nameof(Items), typeof(IList), typeof(DataGridDragAndDropBehavior), 
+        new PropertyMetadata(default(IList)));
     
+    /// <summary>
+    /// Команда, выполняемая после успешного перемещения строки.
+    /// Удобно для обновления нумерации или пересчёта зависимых данных.
+    /// </summary>
     public ICommand? AfterItemMovedCommand
     {
         get => (ICommand)GetValue(AfterItemMovedCommandProperty);
         set => SetValue(AfterItemMovedCommandProperty, value);
     }
+    /// <inheritdoc cref="AfterItemMovedCommand"/>
+    public static readonly DependencyProperty AfterItemMovedCommandProperty = 
+        DependencyProperty.Register(nameof(AfterItemMovedCommand), typeof(ICommand), 
+            typeof(DataGridDragAndDropBehavior));
 
     #region Fields
 
-    private bool _mouseDown;
-    private bool _isDragging;
-    private Point _startPosition;
-    private bool _isMovePerformed;
+    private bool _mouseDown;           // Флаг: зажата ли левая кнопка мыши на элементе DataGrid
+    private bool _isDragging;          // Флаг: выполняется ли в данный момент перетаскивание
+    private Point _startPosition;      // Позиция мыши в момент нажатия (в экранных координатах)
+    private bool _isMovePerformed;     // Флаг: было ли совершено перемещение (используется для вызова команды)
 
     #endregion Fields
 
     #region Properties
 
     /// <inheritdoc />
-    public bool IsAllowDrop { get; set; }
+    public bool IsAllowDrop { get; set; }  // Разрешён ли сброс в текущей позиции (управляет курсором)
 
+    /// <summary>
+    /// Расстояние от края DataGrid до начала автопрокрутки (в пикселях).
+    /// При перетаскивании вблизи верхней или нижней границы начинается скроллинг.
+    /// </summary>
     public double Tolerance { get; set; } = 20;
 
+    /// <summary>
+    /// Шаг автопрокрутки (в пикселях) при приближении к границе.
+    /// </summary>
     public double Offset { get; set; } = 5;
 
     #endregion Properties
@@ -63,6 +77,7 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
     protected override void OnAttached()
     {
         base.OnAttached();
+        // Подписка на события мыши и drag-drop
         AssociatedObject.PreviewMouseDown += OnPreviewMouseDown;
         AssociatedObject.PreviewMouseUp += OnPreviewMouseUp;
         AssociatedObject.DragEnter += OnDragMoving;
@@ -76,6 +91,7 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
     protected override void OnDetaching()
     {
         base.OnDetaching();
+        // Отписка от событий
         AssociatedObject.PreviewMouseDown -= OnPreviewMouseDown;
         AssociatedObject.PreviewMouseUp -= OnPreviewMouseUp;
         AssociatedObject.DragEnter -= OnDragMoving;
@@ -86,19 +102,26 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
         AssociatedObject.GiveFeedback -= OnGiveFeedback;
     }
     
+    /// <summary>
+    /// Обработчик завершения перетаскивания (Drop).
+    /// Выполняет перемещение элемента в коллекции и обновляет UI.
+    /// </summary>
     private void Drop(object sender, DragEventArgs e)
     {
         if (Items != null && Items.Count > 0)
         {
+            // Получаем перетаскиваемый элемент по его типу (первый элемент коллекции)
             var droppedItem = e.Data.GetData(Items[0]!.GetType());
 
             if (e.OriginalSource is DependencyObject dependencyObject)
             {
+                // Находим родительский ContentControl (строка DataGrid)
                 var contentControl = dependencyObject.TryFindParent<ContentControl>();
 
                 if (droppedItem != null)
                 {
                     var destinationItem = contentControl?.DataContext;
+                    // Проверяем, что целевой элемент существует, того же типа и не равен источнику
                     if (destinationItem != null 
                         && destinationItem.GetType() == droppedItem.GetType() 
                         && !droppedItem.Equals(destinationItem))
@@ -110,7 +133,7 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
                         _isMovePerformed = true; // перемещение выполнено
                         
                         var view = CollectionViewSource.GetDefaultView(Items);
-                        view.Refresh();
+                        view.Refresh(); // обновляем UI
                     }
                 }
             }
@@ -127,6 +150,10 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
 
     #region Handlers
 
+    /// <summary>
+    /// Обработчик GiveFeedback – определяет вид курсора во время перетаскивания.
+    /// Если сброс запрещён, показывает курсор "Нет".
+    /// </summary>
     private void OnGiveFeedback(object sender, GiveFeedbackEventArgs e)
     {
         if (!IsAllowDrop)
@@ -141,6 +168,9 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
         e.Handled = true;
     }
 
+    /// <summary>
+    /// Обработчик DragOver – обеспечивает автопрокрутку при перетаскивании к краям DataGrid.
+    /// </summary>
     private void OnDragOver(object sender, DragEventArgs e)
     {
         var control = sender as ItemsControl;
@@ -159,9 +189,12 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
         }
     }
 
+    /// <summary>
+    /// Обработчик DragEnter/DragLeave – определяет, можно ли сбросить элемент в текущую позицию.
+    /// Анализирует тип элемента под курсором и устанавливает IsAllowDrop.
+    /// </summary>
     private void OnDragMoving(object sender, DragEventArgs e)
     {
-    
         if (Items != null && Items.Count > 0)
         {
             var itemType = Items[0]!.GetType();
@@ -172,11 +205,13 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
             {
                 if (e.OriginalSource is FrameworkElement element)
                 {
+                    // Находим строку DataGrid под мышью
                     var row = element.TryFindParent<DataGridRow>();
                     var destinationItem = row?.Item;
                 
                     if (destinationItem != null && destinationItem.GetType() == droppedItem.GetType())
                     {
+                        // Разрешаем сброс, если элементы разные
                         if (!droppedItem.Equals(destinationItem))
                         {
                             IsAllowDrop = true;
@@ -189,6 +224,9 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
         IsAllowDrop = false;
     }
     
+    /// <summary>
+    /// Проверяет, превысило ли перемещение мыши порог, чтобы начать перетаскивание.
+    /// </summary>
     private bool IsDragStart(Point position)
     {
         if (_mouseDown)
@@ -199,6 +237,10 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
         return false;
     }
 
+    /// <summary>
+    /// Обработчик PreviewMouseDown – запоминает начальную позицию мыши.
+    /// Игнорирует нажатие на полосе прокрутки.
+    /// </summary>
     private void OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.OriginalSource is DependencyObject original)
@@ -227,6 +269,7 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
     // ReSharper disable once UnusedParameter.Local
     private void MouseMove(object sender, MouseEventArgs e)
     {
+        // Если кнопка зажата, перемещение превысило порог и перетаскивание ещё не начато
         if (e.LeftButton == MouseButtonState.Pressed && !_isDragging && IsDragStart(e.GetPosition(null)))
         {
             _isDragging = true;
@@ -237,6 +280,7 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
             {
                 if (frameworkElement.DataContext != null)
                 {
+                    // Инициируем операцию drag-drop
                     DragDrop.DoDragDrop(AssociatedObject, frameworkElement.DataContext, DragDropEffects.Move);
                 }
             }

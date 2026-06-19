@@ -3,271 +3,287 @@ using System.Windows.Data;
 using System.Windows.Media;
 using Common.BaseExtensions;
 
-namespace Common.WpfModule.Extensions
+namespace Common.WpfModule.Extensions;
+
+/// <summary>
+/// Набор вспомогательных методов для работы с DependencyObject (визуальное и логическое дерево WPF).
+/// </summary>
+public static class DependencyObjectExtensions
 {
-    // TODO: закомментировать DependencyObjectExtensions
-    public static class DependencyObjectExtensions
+    /// <summary>
+    /// Рекурсивно ищет первого потомка указанного типа в визуальном дереве (обход в глубину).
+    /// </summary>
+    /// <typeparam name="T">Тип искомого дочернего элемента.</typeparam>
+    /// <param name="depObj">Родительский элемент, с которого начинается поиск.</param>
+    /// <returns>Первый найденный элемент типа T, либо null, если ничего не найдено.</returns>
+    public static T? FindVisualChild<T>(this DependencyObject depObj) where T : DependencyObject
     {
-        public static T? FindVisualChild<T>(this DependencyObject depObj) where T : DependencyObject
+        // Сначала проверяем непосредственных детей (обход в ширину на первом уровне)
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
         {
-            // Search immediate children first (breadth-first)
-            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            var child = VisualTreeHelper.GetChild(depObj, i);
+
+            if (child is T visualChild)
+                return visualChild;
+
+            var childOfChild = FindVisualChild<T>(child);
+            if (childOfChild != null)
+                return childOfChild;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Возвращает всех потомков указанного типа в визуальном дереве (итератор).
+    /// </summary>
+    /// <typeparam name="T">Тип искомых дочерних элементов.</typeparam>
+    /// <param name="depObj">Родительский элемент, с которого начинается поиск (может быть null).</param>
+    /// <returns>Последовательность элементов типа T.</returns>
+    public static IEnumerable<T> FindVisualChildren<T>(this DependencyObject? depObj) where T : DependencyObject
+    {
+        if (depObj != null)
+        {
+            for (int i = 0, count = VisualTreeHelper.GetChildrenCount(depObj); i < count; i++)
             {
                 var child = VisualTreeHelper.GetChild(depObj, i);
-
-                if (child is T visualChild)
-                    return visualChild;
-                var childOfChild = FindVisualChild<T>(child);
-
-                if (childOfChild != null)
-                    return childOfChild;
-            }
-            return null;
-        }
-
-        public static IEnumerable<T> FindVisualChildren<T>(this DependencyObject? depObj) where T : DependencyObject
-        {
-            if (depObj != null)
-            {
-                for (int i = 0, count = VisualTreeHelper.GetChildrenCount(depObj); i < count; i++)
+                if (child is T children)
                 {
-                    var child = VisualTreeHelper.GetChild(depObj, i);
-                    if (child is T children)
-                    {
-                        yield return children;
-                    }
+                    yield return children;
+                }
 
-                    foreach (var childOfChild in FindVisualChildren<T>(child))
-                    {
-                        yield return childOfChild;
-                    }
+                foreach (var childOfChild in FindVisualChildren<T>(child))
+                {
+                    yield return childOfChild;
                 }
             }
         }
+    }
 
-        public static void UpdateSource(this DependencyObject dependencyObject, DependencyProperty property)
-        {
-            var be = BindingOperations.GetBindingExpression(dependencyObject, property);
-            be?.UpdateSource();
-        }
+    /// <summary>
+    /// Принудительно обновляет источник привязки для указанного свойства зависимостей.
+    /// </summary>
+    /// <param name="dependencyObject">Элемент, у которого есть привязка.</param>
+    /// <param name="property">Свойство, для которого нужно обновить источник.</param>
+    public static void UpdateSource(this DependencyObject dependencyObject, DependencyProperty property)
+    {
+        var be = BindingOperations.GetBindingExpression(dependencyObject, property);
+        be?.UpdateSource();
+    }
 
-        public static void UpdateTarget(this DependencyObject dependencyObject, DependencyProperty property)
-        {
-            var be = BindingOperations.GetBindingExpression(dependencyObject, property);
-            be?.UpdateTarget();
-        }
+    /// <summary>
+    /// Принудительно обновляет целевое значение (UI) для указанного свойства зависимостей.
+    /// </summary>
+    /// <param name="dependencyObject">Элемент, у которого есть привязка.</param>
+    /// <param name="property">Свойство, для которого нужно обновить цель.</param>
+    public static void UpdateTarget(this DependencyObject dependencyObject, DependencyProperty property)
+    {
+        var be = BindingOperations.GetBindingExpression(dependencyObject, property);
+        be?.UpdateTarget();
+    }
 
-        public static void ClearAllBindings(this DependencyObject dependencyObject)
-        {
-            BindingOperations.ClearAllBindings(dependencyObject);
-        }
+    /// <summary>
+    /// Очищает все привязки для указанного элемента.
+    /// </summary>
+    /// <param name="dependencyObject">Элемент, у которого нужно удалить привязки.</param>
+    public static void ClearAllBindings(this DependencyObject dependencyObject)
+    {
+        BindingOperations.ClearAllBindings(dependencyObject);
+    }
 
-        /// <summary>
-        /// Получает центральную точку элемента относительно предка указанного типа с нужными отступами
-        /// </summary>
-        /// <typeparam name="TElement"></typeparam>
-        /// <typeparam name="TParentContext"></typeparam>
-        /// <param name="dependencyObject"></param>
-        /// <param name="offsetX"></param>
-        /// <param name="offsetY"></param>
-        /// <returns></returns>
-        public static Point GetCenterPositionOnParent<TElement, TParentContext>(this DependencyObject dependencyObject,
-            double offsetX = 0.0, double offsetY = 0.0) where TElement : FrameworkElement
+    /// <summary>
+    /// Вычисляет центральную точку текущего элемента относительно родительского элемента,
+    /// у которого DataContext имеет заданный тип, с возможностью смещения.
+    /// </summary>
+    /// <typeparam name="TElement">Тип текущего элемента (должен быть FrameworkElement).</typeparam>
+    /// <typeparam name="TParentContext">Тип DataContext искомого родительского элемента.</typeparam>
+    /// <param name="dependencyObject">Текущий элемент.</param>
+    /// <param name="offsetX">Смещение по X (вычитается из итоговой координаты).</param>
+    /// <param name="offsetY">Смещение по Y.</param>
+    /// <returns>Точка (X,Y) относительно найденного родителя.</returns>
+    public static Point GetCenterPositionOnParent<TElement, TParentContext>(this DependencyObject dependencyObject,
+        double offsetX = 0.0, double offsetY = 0.0) where TElement : FrameworkElement
+    {
+        double x = 0.0, y = 0.0;
+        if (dependencyObject is FrameworkElement frameworkElement)
         {
-            double x = 0.0, y = 0.0;
-            if (dependencyObject is FrameworkElement frameworkElement)
+            var findedElement = frameworkElement.GetParentByDataContextType<TElement, TParentContext>();
+            if (findedElement != null)
             {
-                var findedElement = frameworkElement.GetParentByDataContextType<TElement, TParentContext>();
-                if (findedElement != null)
+                if (PresentationSource.FromVisual(frameworkElement) != null)
                 {
-                    if (PresentationSource.FromVisual(frameworkElement) != null)
-                    {
-                        var point = frameworkElement.PointToScreen(new Point(frameworkElement.ActualWidth / 2.0, frameworkElement.ActualHeight / 2.0));
-                        var pointOnParent = findedElement.PointFromScreen(point);
-                        x = pointOnParent.X - offsetX;
-                        y = pointOnParent.Y - offsetY;
-                    }
+                    var point = frameworkElement.PointToScreen(new Point(frameworkElement.ActualWidth / 2.0, frameworkElement.ActualHeight / 2.0));
+                    var pointOnParent = findedElement.PointFromScreen(point);
+                    x = pointOnParent.X - offsetX;
+                    y = pointOnParent.Y - offsetY;
                 }
             }
-            return new Point(x, y);
         }
+        return new Point(x, y);
+    }
 
-        /// <summary>
-        /// Finds a parent of a given item on the visual tree.
-        /// </summary>
-        /// <typeparam name="T">The type of the queried item.</typeparam>
-        /// <param name="child">A direct or indirect child of the
-        /// queried item.</param>
-        /// <returns>The first parent item that matches the submitted
-        /// type parameter. If not matching item can be found, a null
-        /// reference is being returned.</returns>
-        public static T? TryFindParent<T>(this DependencyObject? child) where T : DependencyObject
+    /// <summary>
+    /// Находит первого родителя указанного типа в визуальном/логическом дереве.
+    /// </summary>
+    /// <typeparam name="T">Тип искомого родительского элемента.</typeparam>
+    /// <param name="child">Дочерний элемент, с которого начинается поиск.</param>
+    /// <returns>Найденный родитель или null, если ничего не найдено.</returns>
+    public static T? TryFindParent<T>(this DependencyObject? child) where T : DependencyObject
+    {
+        DependencyObject? parentObject;
+        T? castedParentObject;
+        do
         {
-            DependencyObject? parentObject;
-            T? castedParentObject;
-            do
-            {
-                parentObject = GetParentObject(child);
+            parentObject = GetParentObject(child);
 
-                if (parentObject == null)
-                    return null;
+            if (parentObject == null)
+                return null;
 
-                child = parentObject;
-            } while ((castedParentObject = parentObject as T) == null);
+            child = parentObject;
+        } while ((castedParentObject = parentObject as T) == null);
 
-            return castedParentObject;
-        }
+        return castedParentObject;
+    }
 
-        /// <summary>
-        /// Finds a parent of a given item on the visual tree.
-        /// </summary>
-        /// <typeparam name="T">The type of the queried item.</typeparam>
-        /// <param name="child">A direct or indirect child of the
-        /// queried item.</param>
-        /// <param name="parentName">Specified element name</param>
-        /// <returns>The first parent item that matches the submitted
-        /// type parameter. If not matching item can be found, a null
-        /// reference is being returned.</returns>
-        public static T? TryFindParent<T>(this DependencyObject? child, string parentName) where T : DependencyObject
+    /// <summary>
+    /// Находит первого родителя указанного типа с заданным именем.
+    /// </summary>
+    /// <typeparam name="T">Тип искомого родительского элемента.</typeparam>
+    /// <param name="child">Дочерний элемент, с которого начинается поиск.</param>
+    /// <param name="parentName">Имя родительского элемента (свойство Name).</param>
+    /// <returns>Найденный родитель или null, если ничего не найдено.</returns>
+    public static T? TryFindParent<T>(this DependencyObject? child, string parentName) where T : DependencyObject
+    {
+        DependencyObject? parentObject;
+        T? castedParentObject;
+        var equalName = false;
+        do
         {
-            DependencyObject? parentObject;
-            T? castedParentObject;
-            var equalName = false;
-            do
-            {
-                parentObject = GetParentObject(child);
+            parentObject = GetParentObject(child);
                 
-                switch (parentObject)
-                {
-                    case null:
-                        return null;
-                    case FrameworkElement frameworkElement:
-                        equalName = frameworkElement.Name.IsEquals(parentName);
-                        break;
-                }
-
-                child = parentObject;
-            } while ((castedParentObject = parentObject as T) == null && !equalName);
-
-            return castedParentObject;
-        }
-
-        /// <summary>
-        /// Найти предка конкретного типа, по типу его датаконтекста
-        /// </summary>
-        /// <typeparam name="TElement">Тип искомого предка</typeparam>
-        /// <typeparam name="TDataContext">Тип искомого датаконтекста</typeparam>
-        /// <param name="childElement"></param>
-        /// <returns>Если не найден вернут null</returns>
-        public static FrameworkElement? GetParentByDataContextType<TElement, TDataContext>(this FrameworkElement? childElement)
-            where TElement : FrameworkElement
-        {
-            var findedElement = childElement;
-            while (findedElement != null && !(findedElement.DataContext is TDataContext))
+            switch (parentObject)
             {
-                findedElement = findedElement.TryFindParent<TElement>();
+                case null:
+                    return null;
+                case FrameworkElement frameworkElement:
+                    equalName = frameworkElement.Name.IsEquals(parentName);
+                    break;
             }
-            return findedElement;
-        }
 
-        /// <summary>
-        /// Найти датаконтекст по его типу
-        /// </summary>
-        /// <typeparam name="TDataContext">Тип искомого датаконтекста</typeparam>
-        /// <param name="childElement"></param>
-        /// <returns>Если не найден вернут null</returns>
-        public static TDataContext? GetParentDataContextByType<TDataContext>(this FrameworkElement childElement)
+            child = parentObject;
+        } while ((castedParentObject = parentObject as T) == null && !equalName);
+
+        return castedParentObject;
+    }
+
+    /// <summary>
+    /// Ищет среди родителей элемент типа TElement, у которого DataContext имеет тип TDataContext.
+    /// </summary>
+    /// <typeparam name="TElement">Тип искомого родительского элемента (должен быть FrameworkElement).</typeparam>
+    /// <typeparam name="TDataContext">Тип DataContext, который должен быть у родителя.</typeparam>
+    /// <param name="childElement">Дочерний элемент, с которого начинается поиск.</param>
+    /// <returns>Найденный элемент или null.</returns>
+    public static FrameworkElement? GetParentByDataContextType<TElement, TDataContext>(this FrameworkElement? childElement)
+        where TElement : FrameworkElement
+    {
+        var findedElement = childElement;
+        while (findedElement != null && !(findedElement.DataContext is TDataContext))
         {
-            var findedElement = childElement;
-            while (findedElement != null && !(findedElement.DataContext is TDataContext))
-            {
-                findedElement = (FrameworkElement)findedElement.Parent;
-            }
+            findedElement = findedElement.TryFindParent<TElement>();
+        }
+        return findedElement;
+    }
+
+    /// <summary>
+    /// Возвращает DataContext родителя, который имеет указанный тип.
+    /// </summary>
+    /// <typeparam name="TDataContext">Тип искомого DataContext.</typeparam>
+    /// <param name="childElement">Дочерний элемент, с которого начинается поиск.</param>
+    /// <returns>DataContext найденного родителя или null.</returns>
+    public static TDataContext? GetParentDataContextByType<TDataContext>(this FrameworkElement childElement)
+    {
+        var findedElement = childElement;
+        while (findedElement != null && !(findedElement.DataContext is TDataContext))
+        {
+            findedElement = (FrameworkElement)findedElement.Parent;
+        }
             
-            return (TDataContext?)findedElement?.DataContext;
-        }
+        return (TDataContext?)findedElement?.DataContext;
+    }
 
-        /// <summary>
-        /// This method is an alternative to WPF's
-        /// <see cref="VisualTreeHelper.GetParent"/> method, which also
-        /// supports content elements. Keep in mind that for content element,
-        /// this method falls back to the logical tree of the element!
-        /// </summary>
-        /// <param name="child">The item to be processed.</param>
-        /// <returns>The submitted item's parent, if available. Otherwise
-        /// null.</returns>
-        public static DependencyObject? GetParentObject(this DependencyObject? child)
+    /// <summary>
+    /// Универсальный метод получения родительского элемента (работает с визуальным и логическим деревом).
+    /// Альтернатива VisualTreeHelper.GetParent, поддерживающая ContentElement и FrameworkElement.
+    /// </summary>
+    /// <param name="child">Дочерний элемент.</param>
+    /// <returns>Родительский элемент или null.</returns>
+    public static DependencyObject? GetParentObject(this DependencyObject? child)
+    {
+        if (child == null) return null;
+
+        // Обрабатываем ContentElement отдельно (логическое дерево)
+        if (child is ContentElement contentElement)
         {
-            if (child == null) return null;
+            var parent = ContentOperations.GetParent(contentElement);
+            if (parent != null) return parent;
 
-            //handle content elements separately
-            if (child is ContentElement contentElement)
-            {
-                var parent = ContentOperations.GetParent(contentElement);
-                if (parent != null) return parent;
-
-                var fce = contentElement as FrameworkContentElement;
-                return fce?.Parent;
-            }
-
-            //also try searching for parent in framework elements (such as DockPanel, etc)
-            if (child is FrameworkElement frameworkElement)
-            {
-                var parent = frameworkElement.Parent;
-                if (parent != null) return parent;
-            }
-
-            if (child is Window window)
-            {
-                var parent = window.Owner;
-                if (parent != null) return parent;
-            }
-
-            //if it's not a ContentElement/FrameworkElement, rely on VisualTreeHelper
-            return VisualTreeHelper.GetParent(child);
+            var fce = contentElement as FrameworkContentElement;
+            return fce?.Parent;
         }
 
-        /// <summary>
-        /// Tries to locate a given item within the visual tree,
-        /// starting with the dependency object at a given position. 
-        /// </summary>
-        /// <typeparam name="T">The type of the element to be found
-        /// on the visual tree of the element at the given location.</typeparam>
-        /// <param name="reference">The main element which is used to perform
-        /// hit testing.</param>
-        /// <param name="point">The position to be evaluated on the origin.</param>
-        public static T? TryFindFromPoint<T>(this UIElement reference, Point point) where T : DependencyObject
+        // Для FrameworkElement используем свойство Parent (логическое дерево)
+        if (child is FrameworkElement frameworkElement)
         {
-            if (reference.InputHitTest(point) is DependencyObject element)
-                return element as T ?? TryFindParent<T>(element); 
-
-            return null;
+            var parent = frameworkElement.Parent;
+            if (parent != null) return parent;
         }
 
-        /// <summary>
-        /// Tries to locate a given item within the visual tree,
-        /// starting with the dependency object at a given position. 
-        /// </summary>
-        /// <typeparam name="T">The type of the element to be found
-        /// on the visual tree of the element at the given location.</typeparam>
-        /// <param name="reference">The main element which is used to perform
-        /// hit testing.</param>
-        /// <param name="point">The position to be evaluated on the origin.</param>
-        /// <param name="elementName">Specified element name</param>
-        public static T? TryFindFromPoint<T>(this UIElement reference, Point point, string elementName) where T : DependencyObject
+        // Для Window проверяем Owner
+        if (child is Window window)
         {
-            if (reference.InputHitTest(point) is DependencyObject element and FrameworkElement frameworkElement)
-            {
-                if (frameworkElement.Name.IsEquals(elementName))
-                {
-                    if (element is T dependencyObject)
-                        return dependencyObject;
-                }
+            var parent = window.Owner;
+            if (parent != null) return parent;
+        }
 
-                return TryFindParent<T>(element, elementName);
+        // Во всех остальных случаях используем VisualTreeHelper
+        return VisualTreeHelper.GetParent(child);
+    }
+
+    /// <summary>
+    /// Находит элемент указанного типа в точке относительно reference.
+    /// </summary>
+    /// <typeparam name="T">Тип искомого элемента.</typeparam>
+    /// <param name="reference">Элемент, относительно которого задана точка.</param>
+    /// <param name="point">Точка в координатах reference.</param>
+    /// <returns>Найденный элемент или null.</returns>
+    public static T? TryFindFromPoint<T>(this UIElement reference, Point point) where T : DependencyObject
+    {
+        if (reference.InputHitTest(point) is DependencyObject element)
+            return element as T ?? TryFindParent<T>(element); 
+
+        return null;
+    }
+
+    /// <summary>
+    /// Находит элемент указанного типа и имени в заданной точке.
+    /// </summary>
+    /// <typeparam name="T">Тип искомого элемента.</typeparam>
+    /// <param name="reference">Элемент, относительно которого задана точка.</param>
+    /// <param name="point">Точка в координатах reference.</param>
+    /// <param name="elementName">Имя элемента, которое должен иметь найденный элемент или его родитель.</param>
+    /// <returns>Найденный элемент или null.</returns>
+    public static T? TryFindFromPoint<T>(this UIElement reference, Point point, string elementName) where T : DependencyObject
+    {
+        if (reference.InputHitTest(point) is DependencyObject element and FrameworkElement frameworkElement)
+        {
+            if (frameworkElement.Name.IsEquals(elementName))
+            {
+                if (element is T dependencyObject)
+                    return dependencyObject;
             }
 
-            return null;
+            return TryFindParent<T>(element, elementName);
         }
+
+        return null;
     }
 }
