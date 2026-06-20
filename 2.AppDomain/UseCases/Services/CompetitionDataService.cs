@@ -328,12 +328,9 @@ public class CompetitionDataService(IRepository repository)
     /// </summary>
     public async Task<Result<int>> SaveCompetitionDataAsync()
     {
-        var intResult1 = Result<int>.Done(0);
-        // var intResult1 = repository.Update(competitionData);
-        var intResult2 = await repository.SaveChangesAsync();
-        return intResult1 && intResult2 
-            ? intResult2
-            : Result<int>.Fail(new AppException(AppPhrases.CompetitionDataSaveError, 
-                !intResult1 ? intResult1.Excptn : intResult2.Excptn));
+        var intResult = await repository.SaveChangesAsync();
+        return intResult 
+            ? intResult
+            : Result<int>.Fail(new AppException(AppPhrases.CompetitionDataSaveError, intResult.Excptn));
     }
 }

@@ -5,10 +5,10 @@
         <Nullable>enable</Nullable>
         <UseWPF>true</UseWPF>
         <RootNamespace>Presentation.Shell</RootNamespace>
-        <Company>@ Malysh S. V.</Company>
         <AssemblyName>SecretaryST</AssemblyName>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
         <FileVersion>2.0.0.0</FileVersion>
+        <Company>@ Malysh S. V.</Company>
         <ApplicationIcon>..\Resources\Images\Человек на навеске.ico</ApplicationIcon>
         <TargetFramework>net10.0-windows</TargetFramework>
         <LangVersion>latest</LangVersion>
@@ -39,6 +39,7 @@
 
     <ItemGroup>
       <PackageReference Include="Fluent.Ribbon" Version="11.0.2" />
+      <PackageReference Include="LinkDotNet.BuildInformation" Version="2.1.4" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

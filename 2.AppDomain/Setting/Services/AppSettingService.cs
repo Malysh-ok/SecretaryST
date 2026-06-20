@@ -38,7 +38,17 @@ public class AppSettingService
     /// <summary>
     /// Название программы.
     /// </summary>
-    public string AppName => "SecretaryST";
+    public string AppName { get; }
+    
+    /// <summary>
+    /// Версия программы.
+    /// </summary>
+    public Version AppVersion { get; } 
+    
+    /// <summary>
+    /// Дата сборки программы.
+    /// </summary>
+    public DateTime AppBuildDate { get; }
 
     /// <summary>
     /// Путь к файлу конфигурации.
@@ -66,12 +76,13 @@ public class AppSettingService
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public AppSettingService()
+    public AppSettingService(string? appName = null, Version? appVersion = null, DateTime? appBuildDate = null)
     {
+        AppName = appName ?? "Unknown";
+        AppVersion = appVersion ?? new Version(0, 0, 0, 0);
+        AppBuildDate = appBuildDate  ?? DateTime.MinValue;
         AppDir = new AppDirService();
-        
         AppLocalization = new AppLocalizationService(GetLangConfigItem, SetOrUpdateLangConfigItem);
-
         var configurationFileMap = new ExeConfigurationFileMap
         {
             ExeConfigFilename = SettingFullFilePath
