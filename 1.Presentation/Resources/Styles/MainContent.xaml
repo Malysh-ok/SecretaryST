@@ -6,7 +6,6 @@
                     xmlns:local="clr-namespace:Common.WpfModule.Ui.DependencyObjects;assembly=Ui"
                     xmlns:converters="clr-namespace:Common.WpfModule.Ui.Converters;assembly=Ui">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="/CommonResources;component/Styles/DefaultStyles.xaml" />
         
         <ResourceDictionary>
             <!-- Конвертеры -->
@@ -14,5 +13,5 @@
     </ResourceDictionary.MergedDictionaries>
 
     <!-- Возможно не понадобится -->
-    
+   
 </ResourceDictionary>
