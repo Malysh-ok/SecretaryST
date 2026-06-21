@@ -33,7 +33,7 @@ public class CompetitionDataService(IRepository repository)
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(new AppException(AppPhrases.ConductingOrganizationsGetError, ex));
         }
     }
     
@@ -56,7 +56,7 @@ public class CompetitionDataService(IRepository repository)
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(new AppException(AppPhrases.ConductingOrganizationsSetError, ex));
         }
     }
     
@@ -83,7 +83,7 @@ public class CompetitionDataService(IRepository repository)
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(new AppException(AppPhrases.ConductingOrganizationsAddError, ex));
         }
     }
     
@@ -107,7 +107,7 @@ public class CompetitionDataService(IRepository repository)
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(new AppException(AppPhrases.ConductingOrganizationsRemoveError, ex));
         }
     }
 
@@ -192,11 +192,10 @@ public class CompetitionDataService(IRepository repository)
         // Сбрасываем отслеживание сущностей
         var result = repository.DetachAll<CompetitionData>();
         if (!result)
-            return Result<int>.Fail(new AppException(AppPhrases.CompetitionDataLoadError));
+            return Result<int>.Fail(new AppException(AppPhrases.CompetitionDataLoadError, result.Excptn));
         
         // Загружаем данные из репозитория
         var competitionsDataResult = await repository.GetAllAsync<CompetitionData>();
-        
         if (!competitionsDataResult)
             return Result<int>.Fail(new AppException(AppPhrases.CompetitionDataLoadError, result.Excptn));
 
@@ -213,16 +212,28 @@ public class CompetitionDataService(IRepository repository)
     /// <remarks>
     /// С навигационными свойствами ("тяжелый" объект).
     /// </remarks>
-    public async Task<Result<CompetitionData?>> GetCompetitionDataAsync(int competitionId)
+    public async Task<Result<CompetitionData?>> GetCompetitionDataAsync(int competitionId, bool isCheckForNull = false)
     {
+        // Сбрасываем отслеживание сущностей
+        var result = repository.DetachAll<CompetitionData>();
+        if (! result)
+            return Result<CompetitionData?>.Fail(
+                new AppException(AppPhrases.CompetitionDataLoadError, result.Excptn));
+
         // Загружаем данные из репозитория
         var competitionDataResult = await repository.GetByIdAsync<CompetitionData>(competitionId,
             nameof(CompetitionsStatus),
             nameof(DetailedCompetitionStatus));
+        if (! competitionDataResult)
+            return Result<CompetitionData?>.Fail(
+                new AppException(AppPhrases.CompetitionDataLoadError, competitionDataResult.Excptn));
+        
+        if (isCheckForNull && competitionDataResult.Value == null)
+            return Result<CompetitionData?>.Fail(
+                new AppException(AppPhrases.CompetitionDataLoadError, 
+                    new AppException(AppPhrases.CompetitionDataNotFound)));
 
-        return competitionDataResult /*&& competitionDataResult.Value != null*/
-            ? Result<CompetitionData?>.Done(competitionDataResult.Value)
-            : Result<CompetitionData?>.Fail(new AppException(AppPhrases.CompetitionDataLoadError));
+        return Result<CompetitionData?>.Done(competitionDataResult.Value);
     }
 
     /// <summary>
@@ -293,7 +304,8 @@ public class CompetitionDataService(IRepository repository)
     {
         if (competition == null)
             return Task.FromResult(Result<CompetitionData>.Fail(
-                new AppException(AppPhrases.CompetitionDataRemoveError, new AppException("Соревнование отсутствует!"))
+                new AppException(AppPhrases.CompetitionDataRemoveError, 
+                    new AppException(AppPhrases.CompetitionDataIsNull))
             ));
         
         // Удаляем из коллекции соревнование
@@ -301,6 +313,8 @@ public class CompetitionDataService(IRepository repository)
         competitionDataCollection.Remove(competition);
         if (index >= competitionDataCollection.Count)
             index = competitionDataCollection.Count - 1;
+        else if (index < 0)
+            index = 0;
         
         // Удаляем из репозитория
         var intResult = repository.Remove(competition);

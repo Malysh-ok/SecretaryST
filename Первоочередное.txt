@@ -23,3 +23,4 @@
 + BooleanToVisibilityConverter возможно удалить, т.к. есть стандартный.
 - Протестировать биндинг команды в HeaderButtonColumnBehavior.
 + Исключить сортировку при нажатии на Content в DataGridHeaderWithButtonsStyle.
++ В сервисах добавить InnerException в Result<...>. 

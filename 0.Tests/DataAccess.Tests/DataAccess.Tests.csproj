@@ -43,7 +43,6 @@
       <ProjectReference Include="..\..\1.Presentation\Shell\Shell.csproj" />
       <ProjectReference Include="..\..\2.AppDomain\Setting\Setting.csproj" />
       <ProjectReference Include="..\..\4.DataAccess\DbContexts\DbContexts.csproj" />
-      <ProjectReference Include="..\..\4.DataAccess\Services\Services.csproj" />
     </ItemGroup>
 
 </Project>

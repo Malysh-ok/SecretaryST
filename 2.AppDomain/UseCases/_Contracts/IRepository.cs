@@ -239,6 +239,14 @@ public interface IRepository : IDisposable
         where TEntity : class;
 
     /// <summary>
+    /// Сбрасывает отслеживание сущности.
+    /// </summary>
+    /// <typeparam name="TEntity">Тип сущности.</typeparam>
+    /// <param name="entity">Присоединяемая сущность.</param>
+    public Result<int> Detach<TEntity>(TEntity? entity) 
+        where TEntity : class;
+    
+    /// <summary>
     /// Сбрасывает отслеживание всех сущностей указанного типа.
     /// </summary>
     /// <typeparam name="TEntity">Тип сущности.</typeparam>

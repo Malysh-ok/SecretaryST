@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Windows.Controls;
 using System.Windows.Input;
 using AppDomain.AppExceptions;
 using AppDomain.Phrases;
@@ -65,17 +64,6 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     public StatusBarData StatusBarData { get; } = null!;
 
-    // TODO: Разобраться, зачем нам понадобилось свойство (DataGridCellInfo)CellInfo.
-    public DataGridCellInfo CellInfo
-    {
-        get;
-        set
-        {
-            if (value.IsValid)
-                SetProperty(ref field, value);
-        }
-    }
-
     #region [---------- Данные о соревнованиях ----------]
 
     /// <summary>
@@ -93,19 +81,20 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     public ObservableCollection<CompetitionData> CompetitionDataCollection { get; set; } = [];
 
+    private CompetitionData? _currentCompetitionData;
     /// <summary>
     /// Данные о текущем соревновании.
     /// </summary>
     public CompetitionData? CurrentCompetitionData
     {
-        get;
+        get => _currentCompetitionData;
         set
         {
-            if (SetProperty(ref field, value) && value != null /*&& value.Id != 0*/)
+            if (SetProperty(ref _currentCompetitionData, value) && value != null)
             {
                 // При смене выбранного соревнования подгружаем навигационные свойства
                 _ = OnGetCompetitionDataAsync(value.Id);
-
+                
                 if (CurrentCompetitionData != null) 
                     // Посылаем сообщение об изменении текущего соревнования
                     Messenger.Send(new CompetitionMessage(CurrentCompetitionData));
@@ -321,9 +310,6 @@ public sealed class SettingVM : ObservableRecipient,
     {
         CompetitionDataCollection = message.CompetitionDataCollection;
         CurrentCompetitionData = message.CurrentCompetitionData;
-        
-        // Уведомляем UI об изменении
-        OnPropertyChanged(nameof(CompetitionDataCollection));
     }
         
     /// <summary>
@@ -424,7 +410,7 @@ public sealed class SettingVM : ObservableRecipient,
         try
         {
             // Получаем
-            var competitionDataResult = await _competitionDataService.GetCompetitionDataAsync(id);
+            var competitionDataResult = await _competitionDataService.GetCompetitionDataAsync(id, true);
             if (! competitionDataResult)
             {
                 // Неудачное получение данных из репозитория
@@ -432,17 +418,23 @@ public sealed class SettingVM : ObservableRecipient,
                 return;
             }
 
-            if (CurrentCompetitionData == null)
+            // Заменяем объект в коллекции
+            var existing = CompetitionDataCollection.FirstOrDefault(c => c.Id == id);
+            if (existing != null)
             {
-                // Отсутствуют соревнования
-                exception = new AppException(AppPhrases.CompetitionDataLoadError,
-                    new AppException(AppPhrases.CompetitionDataIsNull));
-                return;
+                var index = CompetitionDataCollection.IndexOf(existing);
+                CompetitionDataCollection[index] = competitionDataResult.Value!;    // замена
+            }
+            else
+            {
+                CompetitionDataCollection.Add(competitionDataResult.Value!);        // добавление
             }
             
-            // Копируем полученные из сервиса данные в соревнование (CurrentCompetitionData);
-            // по сути - заполняем навигационные свойства
-            competitionDataResult.Value?.Copy(CurrentCompetitionData);
+            // Заменяем текущие соревнования (меняем через поле, чтобы не вызвать данный метод повторно)
+            SetProperty(ref _currentCompetitionData, competitionDataResult.Value, nameof(CurrentCompetitionData));
+            
+            // Посылаем сообщение об изменении текущего соревнования
+            Messenger.Send(new CompetitionMessage(CurrentCompetitionData));
             
             // Заполняем проводящие организации
             var intResult = _competitionDataService.GetConductingOrganizations(
@@ -450,11 +442,7 @@ public sealed class SettingVM : ObservableRecipient,
             if (! intResult)
             {
                 exception = intResult.Excptn;
-                return;
             }
-            
-            // Уведомляем UI об изменении
-            OnPropertyChanged(nameof(CurrentCompetitionData));
         }
         finally
         {

@@ -60,7 +60,6 @@
     <v:String x:Key="SettingControl.ConductingOrganizations">Проводящие организации:</v:String>
     <v:String x:Key="SettingControl.AddConductingOrganization">Добавить проводящую организацию</v:String>
     <v:String x:Key="SettingControl.RemoveConductingOrganization">Удалить проводящую организацию</v:String>
-    
     <v:String x:Key="SettingControl_CompetitionDate">Дата проведения:</v:String>
     <v:String x:Key="SettingControl_CompetitionVenue">Место проведения:</v:String>
     <v:String x:Key="SettingControl_DetailedCompetitionStatus">Статус и наименование соревнования:</v:String>

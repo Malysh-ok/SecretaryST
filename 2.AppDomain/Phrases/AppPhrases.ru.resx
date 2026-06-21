@@ -15,7 +15,7 @@
         <value>Не удалось получить список судей из репозитория.</value>
     </data>
     <data name="CompetitionDataLoadError" xml:space="preserve">
-        <value>Не удалось получить данные о соревнованиях из репозитория.</value>
+        <value>Не удалось получить соревнование из репозитория.</value>
     </data>
     <data name="MissingEntitiesError" xml:space="preserve">
         <value>Одна или несколько сущностей Библиотеки отсутствуют.</value>
@@ -36,10 +36,10 @@
         <value>Не удалось получить статусы и названия соревнований из репозитория.</value>
     </data>
     <data name="CompetitionDataSaveError" xml:space="preserve">
-        <value>Не удалось сохранить данные о соревновании в репозитории.</value>
+        <value>Не удалось сохранить соревнование в репозитории.</value>
     </data>
     <data name="CompetitionDataCreateError" xml:space="preserve">
-        <value>Не удалось создать новые данные о соревновании в репозитории.</value>
+        <value>Не удалось создать новое соревнование в репозитории.</value>
     </data>
     <data name="CompetitionDataRemoveError" xml:space="preserve">
         <value>Не удалось удалить данные о соревновании из репозитория.</value>
@@ -69,6 +69,21 @@
         <value>Не удалось найти статус и название соревнования в репозитории.</value>
     </data>
     <data name="CompetitionDataIsNull" xml:space="preserve">
-        <value>Отсутствует текущее соревнование.</value>
+        <value>Отсутствует соревнование.</value>
+    </data>
+    <data name="CompetitionDataNotFound" xml:space="preserve">
+        <value>Соревнование в репозитории не найдено.</value>
+    </data>
+    <data name="ConductingOrganizationsGetError" xml:space="preserve">
+        <value>Не удалось получить проводящие организации.</value>
+    </data>
+    <data name="ConductingOrganizationsSetError" xml:space="preserve">
+        <value>Не удалось задать проводящие организации.</value>
+    </data>
+    <data name="ConductingOrganizationsAddError" xml:space="preserve">
+        <value>Не удалось добавить проводящую организацию.</value>
+    </data>
+    <data name="ConductingOrganizationsRemoveError" xml:space="preserve">
+        <value>Не удалось удалить проводящую организацию.</value>
     </data>
 </root>

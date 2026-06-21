@@ -60,7 +60,6 @@
     <v:String x:Key="SettingControl.ConductingOrganizations">Conducting organizations:</v:String>
     <v:String x:Key="SettingControl.AddConductingOrganization">Add event organizer</v:String>
     <v:String x:Key="SettingControl.RemoveConductingOrganization">Remove event organizer</v:String>
-    
     <v:String x:Key="SettingControl_CompetitionDate">Competition date:</v:String>
     <v:String x:Key="SettingControl_CompetitionVenue">Competition venue:</v:String>
     <v:String x:Key="SettingControl_DetailedCompetitionStatus">Status and name of the competition:</v:String>

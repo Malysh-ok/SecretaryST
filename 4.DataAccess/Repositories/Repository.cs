@@ -614,8 +614,26 @@ public class Repository<TDbContext> : IRepository
     }
     
     /// <inheritdoc />
-    public Result<int> DetachAll<TEntity>()
-        where TEntity : class
+    public Result<int> Detach<TEntity>(TEntity? entity) where TEntity : class
+    {
+        try
+        {
+            if (entity == null)
+                return Result<int>.Done(0);
+
+            var entry = DbContext.Entry(entity);
+            entry.State = EntityState.Detached;
+        
+            return Result<int>.Done(1);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ex);
+        }
+    }
+    
+    /// <inheritdoc />
+    public Result<int> DetachAll<TEntity>() where TEntity : class
     {
         try
         {
