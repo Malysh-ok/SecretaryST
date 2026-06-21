@@ -9,7 +9,8 @@ namespace Common.WpfModule.Ui.Markups;
 /// Позволяет задавать отступы в XAML без использования конструктора Thickness с параметрами.
 /// </summary>
 /// <remarks>
-/// Поддерживает как позиционный синтаксис (5,10,5,10), так и именованные параметры (Left=5, Top=10, Right=5, Bottom=10).
+/// Поддерживает как позиционный синтаксис (5,10,5,10), так и именованные параметры (Left=5, Top=10, Right=5, Bottom=10).<br/>
+/// Если один из параметров не задан, будет подставлен 0.
 /// </remarks>
 /// <example>
 /// <code>
@@ -25,19 +26,19 @@ public class ThicknessExtension : MarkupExtension
     public double Bottom { get; set; }
 
     /// <summary>
-    /// Конструктор.
+    /// Конструктор без параметров (обязателен для использования в XAML).
     /// </summary>
     public ThicknessExtension() { }
 
     /// <summary>
     /// Конструктор с параметрами.
     /// </summary>
-    public ThicknessExtension(double left, double top, double right, double bottom)
+    public ThicknessExtension(double? left, double? top, double? right, double? bottom)
     {
-        Left = left;
-        Top = top;
-        Right = right;
-        Bottom = bottom;
+        Left = left ?? 0;
+        Top = top ?? 0;
+        Right = right ?? 0;
+        Bottom = bottom ?? 0;
     }
 
     public override object ProvideValue(IServiceProvider serviceProvider)

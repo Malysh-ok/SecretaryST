@@ -8,9 +8,9 @@
              xmlns:converters="clr-namespace:Common.WpfModule.Ui.Converters;assembly=Ui"
              xmlns:dataGrids="clr-namespace:Common.WpfModule.Ui.Behaviors.DataGrids;assembly=Ui"
              xmlns:datePickers="clr-namespace:Common.WpfModule.Ui.Behaviors.DatePickers;assembly=Ui"
-             xmlns:fluent="urn:fluent-ribbon"
              xmlns:controls="clr-namespace:Common.WpfModule.Ui.Controls;assembly=Ui"
              xmlns:markups="clr-namespace:Common.WpfModule.Ui.Markups;assembly=Ui"
+             xmlns:attachedProperties="clr-namespace:Common.WpfModule.Ui.AttachedProperties;assembly=Ui"
              d:DataContext="{ d:DesignInstance mainView:SettingVM }"
              mc:Ignorable="d" >
     <UserControl.Resources>
@@ -58,33 +58,37 @@
                 </Grid.RowDefinitions>
 
                 <!-- Краткое название соревнований -->
-                <Label Grid.Row="0" Grid.Column="0" x:Name="CompetitionShortName"
-                       Content="{DynamicResource SettingControl.CompetitionShortName}"
-                       Padding="0 0 0 0"
-                       Style="{DynamicResource BoldLeftAlignedLabel}" />
-                <TextBox Grid.Row="1" Grid.Column="0" Padding="0 5"
+                <Label Grid.Row="0" Grid.Column="0" 
+                       x:Name="CompetitionShortName"
+                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                       attachedProperties:ElementProperties.IsFirst="True"
+                       Content="{DynamicResource SettingControl.CompetitionShortName}" />
+                <TextBox Grid.Row="1" Grid.Column="0" 
+                         Style="{DynamicResource BaseTextBox}"
                          HorizontalAlignment="Stretch"
                          Text="{Binding CurrentCompetitionData.ShortName}" />
                 
                 <!-- Название соревнований -->
-                <Label Grid.Row="0" Grid.Column="1" x:Name="CompetitionName"
-                       Content="{DynamicResource SettingControl.CompetitionName}"
-                       Padding="0 0 0 0"
-                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                <Label Grid.Row="0" Grid.Column="1" 
+                       x:Name="CompetitionName"
+                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                       attachedProperties:ElementProperties.IsFirst="True"
+
+                       Content="{DynamicResource SettingControl.CompetitionName}" />
                 <TextBox Grid.Row="1" Grid.Column="1" 
-                         Padding="0 5"
+                         Style="{DynamicResource BaseTextBox}"
                          HorizontalAlignment="Stretch"
                          Text="{Binding CurrentCompetitionData.Name}" />
 
                 <!-- Проводящие организации -->
-                <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" x:Name="ConductingOrganizations"
-                       Content="{DynamicResource SettingControl.ConductingOrganizations}"
-                       Padding="0 5 0 0"
-                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" 
+                       x:Name="ConductingOrganizations"
+                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                       Content="{DynamicResource SettingControl.ConductingOrganizations}" />
                 <DataGrid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" 
                           x:Name="ConductingOrganizationsGrid"
                           Style="{DynamicResource DataGridDefault}"
-                          ColumnHeaderStyle="{StaticResource DataGridColumnHeaderDefault.ContentRightStyle}"
+                          ColumnHeaderStyle="{StaticResource DataGridColumnHeaderDefault.ContentRight}"
                           MinColumnWidth="200"
                           AlternationCount="2"
                           AutoGenerateColumns="False"
@@ -146,9 +150,8 @@
                 <!-- Дата проведения -->
                 <Label Grid.Row="4" Grid.Column="0" 
                        x:Name="CompetitionDate"
-                       Content="{DynamicResource SettingControl_CompetitionDate}"
-                       Padding="0 5 0 0"
-                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                       Content="{DynamicResource SettingControl_CompetitionDate}" />
                 <StackPanel Grid.Row="5" Grid.Column="0"
                             Orientation="Horizontal">
                     <DatePicker Width="100" 
@@ -174,11 +177,10 @@
                 <!-- Место проведения -->
                 <Label Grid.Row="4" Grid.Column="1" 
                        x:Name="CompetitionVenue"
-                       Content="{DynamicResource SettingControl_CompetitionVenue}"
-                       Padding="0 5 0 0"
-                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                       Content="{DynamicResource SettingControl_CompetitionVenue}" />
                 <TextBox Grid.Row="5" Grid.Column="1" 
-                         Padding="0 5"
+                         Style="{DynamicResource BaseTextBox}"
                          MinWidth="200"
                          HorizontalAlignment="Stretch"
                          Text="{Binding CurrentCompetitionData.Venue}">
@@ -187,11 +189,10 @@
                 <!-- Статус соревнования (кратко) -->
                 <Label Grid.Row="6" Grid.Column="0" 
                        x:Name="CompetitionStatus"
-                       Content="{DynamicResource SettingControl_CompetitionStatus}"
-                       Padding="0 5 0 0"
-                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                       Content="{DynamicResource SettingControl_CompetitionStatus}" />
                 <TextBox Grid.Row="7" Grid.Column="0" 
-                         Padding="0 5"
+                         Style="{DynamicResource BaseTextBox}"
                          MinWidth="200"
                          Width="Auto"
                          HorizontalAlignment="Stretch"
@@ -202,13 +203,12 @@
                 <!-- Статус и наименование соревнования -->
                 <Label Grid.Row="6" Grid.Column="1" 
                        x:Name="DetailedCompetitionStatus"
-                       Content="{DynamicResource SettingControl_DetailedCompetitionStatus}"
-                       Padding="0 5 0 0"
-                       Style="{DynamicResource BoldLeftAlignedLabel}" />
-                <fluent:ComboBox Grid.Row="7" Grid.Column="1" 
-                          Padding="3 5"
+                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                       Content="{DynamicResource SettingControl_DetailedCompetitionStatus}" />
+                <ComboBox Grid.Row="7" Grid.Column="1" 
                           Width="Auto"
                           HorizontalAlignment="Stretch"
+                          Style="{DynamicResource BaseComboBox}"
                           ItemsSource="{Binding Path=DataContext.DetailedCompetitionStatuses, 
                                         RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                           SelectedItem="{Binding CurrentCompetitionData.DetailedCompetitionStatus}" />
@@ -216,11 +216,10 @@
                 <!-- Примечание -->
                 <Label Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
                        x:Name="CompetitionNote"
-                       Content="{DynamicResource SettingControl_CompetitionNote}"
-                       Padding="0 5 0 0"
-                       Style="{DynamicResource BoldLeftAlignedLabel}" />
+                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                       Content="{DynamicResource SettingControl_CompetitionNote}" />
                 <TextBox Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
-                         Padding="0 5"
+                         Style="{DynamicResource BaseTextBox}"
                          MinWidth="200"
                          HorizontalAlignment="Stretch"
                          Text="{Binding CurrentCompetitionData.Description}">
@@ -233,9 +232,8 @@
         <DockPanel Grid.Row="1">
             <Label DockPanel.Dock="Top" 
                    x:Name="JudgesList"
-                   Content="{DynamicResource SettingControl_JudgesList}"
-                   Padding="0 10 0 0"
-                   Style="{DynamicResource BoldLeftAlignedLabel}" />
+                   Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                   Content="{DynamicResource SettingControl_JudgesList}" />
             <DataGrid x:Name="RefereesGrid"
                       Style="{DynamicResource DataGridDefault}"
                       ColumnHeaderStyle="{StaticResource DataGridColumnHeaderDefault.Bold}"
@@ -302,11 +300,12 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <ComboBox
+                                    Style="{DynamicResource ComboBoxForDataGrid}"
+                                    BorderThickness="0"
                                     ItemsSource="{Binding Path=DataContext.RefereeJobTitles, 
                                         RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                                     SelectedItem="{Binding RefereeJobTitle,
-                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    BorderThickness="0" />
+                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                         <!--

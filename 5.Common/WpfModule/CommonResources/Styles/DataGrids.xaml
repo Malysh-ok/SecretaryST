@@ -92,7 +92,7 @@
     </Style>
     
     <!-- Стиль заголовка столбца с контентом справа -->
-    <Style x:Key="DataGridColumnHeaderDefault.ContentRightStyle" 
+    <Style x:Key="DataGridColumnHeaderDefault.ContentRight" 
            TargetType="{x:Type DataGridColumnHeader}"
            BasedOn="{StaticResource ColumnHeaderDefault}">
         <Setter Property="HorizontalContentAlignment" Value="Right"/>
@@ -100,9 +100,9 @@
     </Style>
     
     <!-- Стиль заголовка столбца с контентом справа и жирным шрифтом -->
-    <Style x:Key="DataGridColumnHeaderDefault.ContentRightStyle.Bold" 
+    <Style x:Key="DataGridColumnHeaderDefault.ContentRight.Bold" 
            TargetType="{x:Type DataGridColumnHeader}"
-           BasedOn="{StaticResource DataGridColumnHeaderDefault.ContentRightStyle}">
+           BasedOn="{StaticResource DataGridColumnHeaderDefault.ContentRight}">
         <Setter Property="FontWeight" Value="Bold" />
     </Style>
 
@@ -122,7 +122,7 @@
     <!-- Стиль заголовка столбца с кнопками -->
     <Style x:Key="DataGridColumnHeaderWithButtons" 
            TargetType="controls:DataGridColumnHeaderWithButtons" 
-           BasedOn="{StaticResource DataGridColumnHeaderDefault.ContentRightStyle}">
+           BasedOn="{StaticResource DataGridColumnHeaderDefault.ContentRight}">
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="Template">
             <Setter.Value>

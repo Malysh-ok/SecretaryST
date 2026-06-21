@@ -6,11 +6,22 @@
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/CommonResources;component/Styles/Buttons.xaml" />
+        <ResourceDictionary Source="/CommonResources;component/Styles/DataGrids.xaml" />
+        <ResourceDictionary Source="/CommonResources;component/Styles/DatePickers.xaml" />
         <ResourceDictionary Source="/CommonResources;component/Styles/Labels.xaml" />
         <ResourceDictionary Source="/CommonResources;component/Styles/Menus.xaml" />
         <ResourceDictionary Source="/CommonResources;component/Styles/StatusBars.xaml" />
-        <ResourceDictionary Source="/CommonResources;component/Styles/DataGrids.xaml" />
-        <ResourceDictionary Source="/CommonResources;component/Styles/DatePickers.xaml" />
+        <ResourceDictionary Source="/CommonResources;component/Styles/TextBoxes.xaml" />
+        <ResourceDictionary Source="/CommonResources;component/Styles/ComboBoxes.xaml" />
     </ResourceDictionary.MergedDictionaries>
+    
+    <!-- Неявный стиль для всех FrameworkElement в приложении -->
+    <Style TargetType="FrameworkElement">
+        <!-- TODO: Настройки чёткости текста и рендеринга (проверить) -->
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+        <Setter Property="TextOptions.TextHintingMode" Value="Fixed"/>
+        <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
+    </Style>
     
 </ResourceDictionary>

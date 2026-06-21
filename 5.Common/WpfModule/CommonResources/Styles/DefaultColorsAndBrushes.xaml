@@ -9,6 +9,7 @@
     <Color x:Key="DefaultDarkBackgroundColor">#FFD0D0D0</Color>
     <Color x:Key="DefaultBorderColor">#FF8D8D8D</Color>
     <Color x:Key="DefaultDarkBorderColor">#FF6D6D6D</Color>
+    <Color x:Key="DefaultLightBorderColor">#FFABAdB3</Color>
     <Color x:Key="GrayTextColor">#FF6D6D6D</Color>
     <Color x:Key="HighlightColor">#FF3C7FB1</Color>             <!--FF0078D7-->
     <Color x:Key="InactiveSelectionHighlightColor">#FF7797ae</Color>
@@ -21,7 +22,8 @@
     <SolidColorBrush x:Key="DefaultBackgroundBrush" Color="{StaticResource DefaultBackgroundColor}"/>
     <SolidColorBrush x:Key="DefaultDarkBackgroundBrush" Color="{StaticResource DefaultDarkBackgroundColor}"/>
     <SolidColorBrush x:Key="DefaultBorderBrush" Color="{StaticResource DefaultBorderColor}"/>
-    <SolidColorBrush x:Key="DefaultDarkBorderBrush" Color="{StaticResource DefaultDarkBorderColor}"/>
+    <SolidColorBrush x:Key="DefaultDarkBorderBrush" Color="{StaticResource DefaultLightBorderColor}"/>
+    <SolidColorBrush x:Key="DefaultLightBorderBrush" Color="{StaticResource DefaultLightBorderColor}"/>
     <SolidColorBrush x:Key="GrayTextBrush" Color="{StaticResource GrayTextColor}"/>
     <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}"/>
     <SolidColorBrush x:Key="HyperlinkBrush" Color="{StaticResource HyperlinkColor}"/>
@@ -59,6 +61,31 @@
     <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="White"/>   
     <SolidColorBrush x:Key="MenuItemSelectedBackground" Color="#FFEDF4FC"/>
     <SolidColorBrush x:Key="MenuItemSelectedBorderBrush" Color="#FFA8DAFD"/>
+    
+    <!-- ============================================= -->
+    <!--            Стандартные в Microsoft            -->
+    <!-- ============================================= -->
+
+    <!-- Сплошные кисти (SolidColorBrush) -->
+    <SolidColorBrush x:Key="NormalBorderBrush" Color="#FF9B9999" />
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="GlyphBrush" Color="#FF4C4C4C" />
+    <!-- <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="#FFEEEEEE" /> -->
+    <SolidColorBrush x:Key="DisabledBorderBrush" Color="#FFAAAAAA" />
+    <SolidColorBrush x:Key="SolidBorderBrush" Color="#FF516799" />
+    <!-- Градиентные кисти (LinearGradientBrush) -->
+    <LinearGradientBrush x:Key="NormalBrush" EndPoint="0,1" StartPoint="0,0">
+        <GradientStop Color="#FFF" Offset="0"/>
+        <GradientStop Color="#CCC" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="DarkBrush" EndPoint="0,1" StartPoint="0,0">
+        <GradientStop Color="#FFF" Offset="0"/>
+        <GradientStop Color="#AAA" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="PressedBrush" EndPoint="0,1" StartPoint="0,0">
+        <GradientStop Color="#FFF" Offset="0"/>
+        <GradientStop Color="#999" Offset="1"/>
+    </LinearGradientBrush>
     
     <!-- Системные цвета -->
     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"  

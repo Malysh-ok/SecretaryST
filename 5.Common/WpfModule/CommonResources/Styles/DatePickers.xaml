@@ -14,13 +14,17 @@
     <!-- Стиль -->
     <Style x:Key="BaseDatePicker" 
            TargetType="{x:Type DatePicker}">
-        <Setter Property="Height" Value="27"/>
-        <!-- В любом случае надо стремиться делать высоту нечетной - глючно рендерит границу -->
+        <Setter Property="Height" Value="26"/>
         
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         
-        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderThickness" Value="1" /> 
+        <!-- <Setter Property="BorderBrush" Value="{StaticResource DefaultLightBorderBrush}"/> -->
+        
+        <!-- Для четкой границы -->
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
     </Style>
 
 </ResourceDictionary>
