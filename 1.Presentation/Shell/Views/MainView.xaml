@@ -354,9 +354,9 @@
                              Height="20" 
                              Minimum="0"
                              Maximum="100"
-                             Value="{Binding StatusBarData.ProgressValue, 
+                             Value="{Binding StatusBarService.ProgressValue, 
                                 Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                             Visibility="{Binding StatusBarData.IsProgressVisible,
+                             Visibility="{Binding StatusBarService.IsProgressVisible,
                                 Converter={StaticResource BooleanToVisibilityConverter}}" />
             </fluent:StatusBarItem>
 
@@ -367,8 +367,8 @@
                 <TextBlock MinWidth="200"
                            TextTrimming="CharacterEllipsis"
                            TextWrapping="Wrap"
-                           Text="{Binding  StatusBarData.StatusText}"
-                           Foreground="{Binding  StatusBarData.Brush}"/>
+                           Text="{Binding  StatusBarService.StatusText}"
+                           Foreground="{Binding  StatusBarService.Brush}"/>
             </fluent:StatusBarItem>
 
             <!-- Separator -->

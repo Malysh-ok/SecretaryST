@@ -3,7 +3,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
-using Common.WpfModule.Components.Models;
+using Common.BaseComponents.Components.Exceptions;
+using Common.WpfModule.Components.Services;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -35,9 +36,9 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     public SettingVM SettingVM { get; } = null!;
 
     /// <summary>
-    /// Данные для статус-бара.
+    /// Сервис статус-бара.
     /// </summary>
-    public StatusBarData StatusBarData { get; } = null!;
+    public StatusBarService StatusBarService { get; } = null!;
 
     // TODO: Временная команда (кнопка панели быстрого доступа)
     public ICommand PinkCommand { get; } = null!;
@@ -53,11 +54,11 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     /// <summary>
     /// Конструктор.
     /// </summary>
-    private MainVM(BackstageVM backstageVm, SettingVM settingVm, StatusBarData statusBarData, ILogger logger)
+    private MainVM(BackstageVM backstageVm, SettingVM settingVm, StatusBarService statusBarService, ILogger logger)
     {
         BackstageVM = backstageVm;
         SettingVM = settingVm;
-        StatusBarData = statusBarData;
+        StatusBarService = statusBarService;
         _logger = logger;
         
         //TODO: Заменить название PinkCommand
@@ -68,14 +69,14 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     /// Создание экземпляра класса (фабричный метод).
     /// </summary>
     /// <param name="view">Представление, реализующее ресурсы.</param>
-    /// <param name="statusBarData">Данные для статус-бара.</param>
+    /// <param name="statusBarService">Сервис статус-бара.</param>
     /// <param name="logger">Логгер.</param>
     /// <param name="appSetting">Настройки приложения.</param>
     /// <param name="exceptionsProvider">Поставщик исключения.</param>
     /// <param name="competitionDataService">Сервис для работы с Данными о соревнованиях.</param>
     /// <param name="refereeService">Сервис для работы с Судьями.</param>
     public static MainVM Create(IViewWithResources view, 
-        StatusBarData statusBarData,
+        StatusBarService statusBarService,
         ILogger logger, 
         IExceptionsProvider exceptionsProvider,
         AppSettingService appSetting,
@@ -84,16 +85,16 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
         )
     {
         // TODO: Устанавливаем цвет кистей статус-бара (возможно изменим)
-        statusBarData.ReSetBrushes(Brushes.Azure, Brushes.Azure,
+        statusBarService.ReSetBrushes(Brushes.Azure, Brushes.Azure,
             // new SolidColorBrush(Color.FromRgb(0xE6, 0x5C, 0x00)));
             Brushes.LightSalmon);
 
         // Создаем ViewModel's. Последовательность создания важна!
-        var settingVM = new SettingVM(view, statusBarData, logger, exceptionsProvider, appSetting,
+        var settingVM = new SettingVM(view, statusBarService, logger, exceptionsProvider, appSetting,
             competitionDataService, refereeService);
-        var backstageVM = new BackstageVM(statusBarData, logger, exceptionsProvider, appSetting, 
+        var backstageVM = new BackstageVM(statusBarService, logger, exceptionsProvider, appSetting, 
             competitionDataService);
-        var mainVM = new MainVM(backstageVM, settingVM, statusBarData, logger);
+        var mainVM = new MainVM(backstageVM, settingVM, statusBarService, logger);
 
         return mainVM;
     }
@@ -104,16 +105,16 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     private async Task OnPink()
     {
         // Пишем в статус-бар
-        await StatusBarData.SetProgressAsync(50);
-        await StatusBarData.SetTextAsync("OnPink" + 
+        await StatusBarService.SetProgressAsync(50);
+        await StatusBarService.SetTextAsync("OnPink" + 
             " Если нужно добавить всплывающие подсказки, иконки и кликабельность" + 
             " Если нужно добавить всплывающие подсказки, иконки и кликабельность" + 
             " Если нужно добавить всплывающие подсказки, иконки и кликабельность", 
-                StatusBarData.StatusBarTextType.Info, 0, false);
+                BaseException.ExcptnType.Info, 0, false);
         await Task.Delay(2000);
-        await StatusBarData.SetProgressAsync(100);
+        await StatusBarService.SetProgressAsync(100);
         await Task.Delay(3000);
-        await StatusBarData.SetProgressAsync(0);
+        await StatusBarService.SetProgressAsync(0);
     }
     
     public void Dispose()

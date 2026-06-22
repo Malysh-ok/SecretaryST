@@ -1,42 +1,22 @@
 using System.Drawing;
 using System.Windows.Media;
+using Common.BaseComponents.Components.Exceptions;
 using Common.WpfModule.Extensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Brush = System.Windows.Media.Brush;
 
-namespace Common.WpfModule.Components.Models;
+namespace Common.WpfModule.Components.Services;
 
 /// <summary>
-/// Данные для статус-бара.
+/// Сервис для работы со статус-баром.
 /// </summary>
-public class StatusBarData : ObservableObject
+public class StatusBarService : ObservableObject
 {
     /// <summary>
     /// Токен для отмены времени показа текста статус-бара.
     /// </summary>
     private static CancellationTokenSource _ctsVisualizationTime = new();
 
-    /// <summary>
-    /// Тип текста статус-бара.
-    /// </summary>
-    public enum StatusBarTextType
-    {
-        /// <summary>
-        /// Информация.
-        /// </summary>
-        Info = 1,
-        
-        /// <summary>
-        /// Предупреждение.
-        /// </summary>
-        Warning,
-        
-        /// <summary>
-        /// Ошибка.
-        /// </summary>
-        Error
-    }
-    
     /// <summary>
     /// Время показа информации в мсек. в статус-баре по умолчанию.
     /// </summary>
@@ -119,7 +99,7 @@ public class StatusBarData : ObservableObject
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public StatusBarData()
+    public StatusBarService()
     {
         StatusText = string.Empty;
         VisualizationTime = VisualizationTimeDefault;
@@ -198,15 +178,15 @@ public class StatusBarData : ObservableObject
     /// Если <paramref name="visualizationTime"/> меньше или равен 0 - текст стираться не будет.
     /// </remarks>
     public async Task SetTextAsync(string? statusText = null,
-        StatusBarTextType textType = StatusBarTextType.Info, 
+        BaseException.ExcptnType textType = BaseException.ExcptnType.Info, 
         int? visualizationTime = null,
         bool isHideProgressBar = true)
     {
         var brush = textType switch
         {
-            StatusBarTextType.Info => InfoBrush,
-            StatusBarTextType.Warning => WarningBrush,
-            StatusBarTextType.Error => ErrorBrush,
+            BaseException.ExcptnType.Info => InfoBrush,
+            BaseException.ExcptnType.Warning => WarningBrush,
+            BaseException.ExcptnType.Error => ErrorBrush,
             _ => throw new ArgumentOutOfRangeException(nameof(textType), textType, null)
         };
         await SetTextAsync(statusText, brush, visualizationTime, isHideProgressBar);

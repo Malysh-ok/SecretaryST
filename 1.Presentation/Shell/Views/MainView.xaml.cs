@@ -7,7 +7,7 @@ using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
 using Common.BaseExtensions;
 using Common.BaseExtensions.ValueTypes;
-using Common.WpfModule.Components.Models;
+using Common.WpfModule.Components.Services;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.Input;
 using Presentation.ViewModels._Contracts;
@@ -59,7 +59,7 @@ public partial class MainView : IViewWithResources
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public MainView(StatusBarData statusBarData,
+    public MainView(StatusBarService statusBarService,
         ILogger logger, 
         IExceptionsProvider exceptionsProvider, 
         AppSettingService appSetting,
@@ -71,7 +71,7 @@ public partial class MainView : IViewWithResources
         InitializeComponent();
         
         // Получаем главную модель представления
-        var mainVm = MainVM.Create(this, statusBarData, logger, exceptionsProvider,
+        var mainVm = MainVM.Create(this, statusBarService, logger, exceptionsProvider,
             appSetting, competitionDataService, refereeService);
         
         // mainVm.StatusBarData=new StatusBarData(StatusBarData.StatusBarTextType.Info, 

@@ -14,6 +14,27 @@ namespace Common.BaseComponents.Components.Exceptions;
 public class BaseException : Exception
 {
     /// <summary>
+    /// Тип исключения.
+    /// </summary>
+    public enum ExcptnType
+    {
+        /// <summary>
+        /// Информация.
+        /// </summary>
+        Info = 1,
+        
+        /// <summary>
+        /// Предупреждение.
+        /// </summary>
+        Warning,
+        
+        /// <summary>
+        /// Ошибка.
+        /// </summary>
+        Error
+    }
+
+    /// <summary>
     /// Создание объекта с помощью конструктора запрещено.
     /// </summary>
     // ReSharper disable once UnusedMember.Local

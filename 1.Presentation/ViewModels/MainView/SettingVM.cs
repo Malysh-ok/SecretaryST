@@ -6,10 +6,11 @@ using AppDomain.Phrases;
 using AppDomain.Setting.Entities;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
+using Common.BaseComponents.Components.Exceptions;
 using Common.BaseComponents.Wrappers;
 using Common.BaseExtensions.Collections;
 using Common.WpfModule.Components.Collections;
-using Common.WpfModule.Components.Models;
+using Common.WpfModule.Components.Services;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -60,9 +61,9 @@ public sealed class SettingVM : ObservableRecipient,
     }
     
     /// <summary>
-    /// Данные для статус-бара.
+    /// Сервис статус-бара.
     /// </summary>
-    public StatusBarData StatusBarData { get; } = null!;
+    public StatusBarService StatusBarService { get; } = null!;
 
     #region [---------- Данные о соревнованиях ----------]
 
@@ -190,7 +191,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// Конструктор.
     /// </summary>
     public SettingVM(IViewWithResources view, 
-        StatusBarData statusBarData, 
+        StatusBarService statusBarService, 
         ILogger logger, 
         IExceptionsProvider exceptionsProvider,
         AppSettingService appSetting,
@@ -198,7 +199,7 @@ public sealed class SettingVM : ObservableRecipient,
         RefereeService refereeService)
     {
         _view = view;
-        StatusBarData = statusBarData;
+        StatusBarService = statusBarService;
         _logger = logger;
         _appSetting = appSetting;
         _competitionDataService = competitionDataService;
@@ -342,8 +343,8 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(detailedCompetitionsStatusesResult.Excptn?.Message, 
-                StatusBarData.StatusBarTextType.Error, 0);            
+            _ = StatusBarService.SetTextAsync(detailedCompetitionsStatusesResult.Excptn?.Message, 
+                BaseException.ExcptnType.Error, 0);            
             _logger.Error(detailedCompetitionsStatusesResult.Excptn, 
                 "{class}.{method}.", 
                 typeof(SettingVM), nameof(OnGetDetailedCompetitionStatusesAsync));
@@ -366,8 +367,8 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(newIndexResult.Excptn?.Message,
-                StatusBarData.StatusBarTextType.Error, 0);
+            _ = StatusBarService.SetTextAsync(newIndexResult.Excptn?.Message,
+                BaseException.ExcptnType.Error, 0);
             _logger.Error(newIndexResult.Excptn, "{class}.{method}",
                 typeof(SettingVM), nameof(OnAddConductingOrganization));
         }
@@ -392,8 +393,8 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(newIndexResult.Excptn?.Message,
-                StatusBarData.StatusBarTextType.Error, 0);
+            _ = StatusBarService.SetTextAsync(newIndexResult.Excptn?.Message,
+                BaseException.ExcptnType.Error, 0);
             _logger.Error(newIndexResult.Excptn, "{class}.{method}",
                 typeof(SettingVM), nameof(OnRemoveConductingOrganization));
         }
@@ -449,8 +450,8 @@ public sealed class SettingVM : ObservableRecipient,
             if (exception != null)
             {
                 // Пишем в статус-бар и лог об ошибке
-                _ = StatusBarData.SetTextAsync(exception.Message,
-                    StatusBarData.StatusBarTextType.Error, 0);
+                _ = StatusBarService.SetTextAsync(exception.Message,
+                    BaseException.ExcptnType.Error, 0);
                 _logger.Error(exception,
                     "{class}.{method}.",
                     typeof(SettingVM), nameof(OnGetCompetitionDataAsync));
@@ -476,8 +477,8 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(intResult.Excptn?.Message,
-                StatusBarData.StatusBarTextType.Error, 0);
+            _ = StatusBarService.SetTextAsync(intResult.Excptn?.Message,
+                BaseException.ExcptnType.Error, 0);
             _logger.Error(intResult.Excptn,
                 "{class}.{method}.",
                 typeof(SettingVM), nameof(OnSaveCompetitionDataAsync));
@@ -503,8 +504,8 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(refereeLevelsResult.Excptn?.Message, 
-                StatusBarData.StatusBarTextType.Error, 0);            
+            _ = StatusBarService.SetTextAsync(refereeLevelsResult.Excptn?.Message, 
+                BaseException.ExcptnType.Error, 0);            
             _logger.Error(refereeLevelsResult.Excptn, 
                 "{class}.{method}.", 
                 typeof(SettingVM), nameof(OnGetRefereeLevels));
@@ -526,8 +527,8 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(refereeJobTitlesResult.Excptn?.Message, 
-                StatusBarData.StatusBarTextType.Error, 0);            
+            _ = StatusBarService.SetTextAsync(refereeJobTitlesResult.Excptn?.Message, 
+                BaseException.ExcptnType.Error, 0);            
             _logger.Error(refereeJobTitlesResult.Excptn, "{class}.{method}", 
                 typeof(SettingVM), nameof(OnGetRefereeJobTitles));
         }
@@ -542,8 +543,8 @@ public sealed class SettingVM : ObservableRecipient,
         if (! refereesResult)
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(refereesResult.Excptn?.Message,
-                StatusBarData.StatusBarTextType.Error, 0);
+            _ = StatusBarService.SetTextAsync(refereesResult.Excptn?.Message,
+                BaseException.ExcptnType.Error, 0);
             _logger.Error(refereesResult.Excptn, "{class}.{method}",
                 typeof(SettingVM), nameof(OnGetRefereesAsync));
         }
@@ -561,13 +562,13 @@ public sealed class SettingVM : ObservableRecipient,
             Referees.SelectedIndex = refereesResult.Value;
             
             // TODO: Временно (без ожидания окончания)
-            _ = StatusBarData.SetTextAsync("Добавили судью.", StatusBarData.StatusBarTextType.Info);
+            _ = StatusBarService.SetTextAsync("Добавили судью.", BaseException.ExcptnType.Info);
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(refereesResult.Excptn?.Message, 
-                StatusBarData.StatusBarTextType.Error, 0);
+            _ = StatusBarService.SetTextAsync(refereesResult.Excptn?.Message, 
+                BaseException.ExcptnType.Error, 0);
             _logger.Error(refereesResult.Excptn, "{class}.{method}", 
                 typeof(SettingVM), nameof(OnAddRefereeAsync));
         }
@@ -586,13 +587,13 @@ public sealed class SettingVM : ObservableRecipient,
             
             // TODO: Временно (без ожидания окончания)
             if (refereesResult.Value >= 0)
-                _ = StatusBarData.SetTextAsync("Удалили судью.", StatusBarData.StatusBarTextType.Error);
+                _ = StatusBarService.SetTextAsync("Удалили судью.", BaseException.ExcptnType.Error);
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(refereesResult.Excptn?.Message, 
-                StatusBarData.StatusBarTextType.Error, 0);            
+            _ = StatusBarService.SetTextAsync(refereesResult.Excptn?.Message, 
+                BaseException.ExcptnType.Error, 0);            
             _logger.Error(refereesResult.Excptn, "{class}.{method}", 
                 typeof(SettingVM), nameof(OnRemoveReferee));
         }
@@ -610,8 +611,8 @@ public sealed class SettingVM : ObservableRecipient,
         if (! intResult)
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(intResult.Excptn?.Message, 
-                StatusBarData.StatusBarTextType.Error, 0);            
+            _ = StatusBarService.SetTextAsync(intResult.Excptn?.Message, 
+                BaseException.ExcptnType.Error, 0);            
             _logger.Error(intResult.Excptn, "{class}.{method}", 
                 typeof(SettingVM), nameof(OnSaveReferees));
         }

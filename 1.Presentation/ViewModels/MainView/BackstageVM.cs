@@ -6,6 +6,8 @@ using AppDomain.Phrases;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
 using Common.WpfModule.Components.Models;
+using Common.BaseComponents.Components.Exceptions;
+using Common.WpfModule.Components.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -38,9 +40,9 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     public CompetitionData? CurrentCompetitionData { get; set; }
     
     /// <summary>
-    /// Данные для статус-бара.
+    /// Сервис статус-бара.
     /// </summary>
-    public StatusBarData StatusBarData { get; } = null!;
+    public StatusBarService StatusBarService { get; } = null!;
 
     
     #region [---------- Команды ----------]
@@ -75,13 +77,13 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     /// Конструктор.
     /// </summary>
     public BackstageVM(
-        StatusBarData statusBarData,
+        StatusBarService statusBarService,
         ILogger logger,
         IExceptionsProvider exceptionsProvider,
         AppSettingService appSetting,
         CompetitionDataService competitionDataService)
     {
-        StatusBarData = statusBarData;
+        StatusBarService = statusBarService;
         _logger = logger;
         _exceptionsProvider = exceptionsProvider;
         _appSetting = appSetting;
@@ -165,6 +167,8 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             // Пишем в статус-бар и лог об ошибке
             _ = StatusBarData.SetTextAsync(competitionsResult.Excptn?.Message,
                 StatusBarData.StatusBarTextType.Error, 0);
+            _ = StatusBarService.SetTextAsync(competitionsResult.Excptn?.Message,
+                BaseException.ExcptnType.Error, 0);
             _logger.Error(competitionsResult.Excptn, "{class}.{method}",
                 typeof(SettingVM), nameof(OnGetAllCompetitionDataAsync));
         }
@@ -202,15 +206,15 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             Messenger.Send(new AllCompetitionsMessage(CompetitionDataCollection, CurrentCompetitionData));
             
             // TODO: Временно (без ожидания окончания)
-            _ = StatusBarData.SetTextAsync("Добавили соревнование.", StatusBarData.StatusBarTextType.Error);
+            _ = StatusBarService.SetTextAsync("Добавили соревнование.", BaseException.ExcptnType.Error);
         }
         finally
         {
             if (exception != null)
             {
                 // Пишем в статус-бар и лог об ошибке
-                _ = StatusBarData.SetTextAsync(exception.Message,
-                    StatusBarData.StatusBarTextType.Error, 0);
+                _ = StatusBarService.SetTextAsync(exception.Message,
+                    BaseException.ExcptnType.Error, 0);
                 _logger.Error(exception,
                     "{class}.{method}.",
                     typeof(SettingVM), nameof(OnAddCompetitionDataAsync));
@@ -257,15 +261,15 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             Messenger.Send(new AllCompetitionsMessage(CompetitionDataCollection, CurrentCompetitionData));
             
             // TODO: Временно (без ожидания окончания)
-            _ = StatusBarData.SetTextAsync("Удалили соревнование.", StatusBarData.StatusBarTextType.Error);
+            _ = StatusBarService.SetTextAsync("Удалили соревнование.", BaseException.ExcptnType.Error);
         }
         finally
         {
             if (exception != null)
             {
                 // Пишем в статус-бар и лог об ошибке
-                _ = StatusBarData.SetTextAsync(exception.Message,
-                    StatusBarData.StatusBarTextType.Error, 0);
+                _ = StatusBarService.SetTextAsync(exception.Message,
+                    BaseException.ExcptnType.Error, 0);
                 _logger.Error(exception,
                     "{class}.{method}.",
                     typeof(SettingVM), nameof(OnRemoveCompetitionDataAsync));

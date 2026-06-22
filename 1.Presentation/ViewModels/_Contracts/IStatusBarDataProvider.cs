@@ -1,4 +1,4 @@
-﻿using Common.WpfModule.Components.Models;
+﻿using Common.WpfModule.Components.Services;
 
 namespace Presentation.ViewModels._Contracts;
 
@@ -8,7 +8,7 @@ namespace Presentation.ViewModels._Contracts;
 public interface IStatusBarDataProvider
 {
     /// <summary>
-    /// Данные для статус-бара.
+    /// Сервис статус-бара.
     /// </summary>
-    StatusBarData StatusBarData { get; }
+    StatusBarService StatusBarService { get; }
 }

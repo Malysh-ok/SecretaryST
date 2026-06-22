@@ -7,11 +7,10 @@ using AppDomain.Phrases;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases._Contracts;
 using AppDomain.UseCases.Services;
-using Common.WpfModule.Components.Models;
+using Common.WpfModule.Components.Services;
 using DataAccess.DbContexts;
 using DataAccess.Repositories;
 using DataAccess.Repositories.Exceptions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Presentation.Shell.Views;
 using Presentation.ViewModels._Contracts;
@@ -71,7 +70,7 @@ public partial class App
                     retainedFileCountLimit: 50)
                 .CreateLogger()
             )
-            .AddSingleton<StatusBarData>()
+            .AddSingleton<StatusBarService>()
             .AddSingleton<IExceptionsProvider, ExceptionsProvider>()
             .AddScoped<CompetitionDataService>()
             .AddScoped<RefereeService>()
