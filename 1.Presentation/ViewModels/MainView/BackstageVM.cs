@@ -5,7 +5,6 @@ using AppDomain.AppExceptions;
 using AppDomain.Phrases;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
-using Common.WpfModule.Components.Models;
 using Common.BaseComponents.Components.Exceptions;
 using Common.WpfModule.Components.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -165,8 +164,6 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarData.SetTextAsync(competitionsResult.Excptn?.Message,
-                StatusBarData.StatusBarTextType.Error, 0);
             _ = StatusBarService.SetTextAsync(competitionsResult.Excptn?.Message,
                 BaseException.ExcptnType.Error, 0);
             _logger.Error(competitionsResult.Excptn, "{class}.{method}",
