@@ -86,4 +86,10 @@
     <data name="ConductingOrganizationsRemoveError" xml:space="preserve">
         <value>Не удалось удалить проводящую организацию.</value>
     </data>
+    <data name="DatabaseCreateError" xml:space="preserve">
+        <value>Ошибка создания БД.</value>
+    </data>
+    <data name="AppDirsCreateError" xml:space="preserve">
+        <value>Не удалось создать каталоги приложения.</value>
+    </data>
 </root>

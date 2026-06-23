@@ -82,42 +82,51 @@ public partial class App
     /// </summary>
     private async void OnStartup(object sender, StartupEventArgs e)
     {
-        // Создаем каталоги приложения
-        var appSettingService = _serviceProvider.GetService<AppSettingService>();
-        var result = appSettingService?.AppDir.CreateAppDirs();     // TODO: обработать result в App.OnStartup после создания директорий
-        
-        var dbContext = _serviceProvider.GetService<AppDbContext>()!;
-        var initRepository = _serviceProvider.GetService<IRepositoryHelper>()!;
+        var exceptionsProvider = _serviceProvider.GetService<IExceptionsProvider>()!;
         try
         {
-            // Применяем последнюю миграцию
-            if (dbContext is { /*IsPossibleConnect: true,*/ IsNullOrEmptyConnectionString: false })
-                await dbContext.Database.MigrateAsync();
-
-            if (! await initRepository.IsExistLibrary())
+            // Создаем каталоги приложения
+            var appSettingService = _serviceProvider.GetService<AppSettingService>();
+            var result = appSettingService?.AppDir.CreateAppDirs();
+            if (result != null && ! result)
             {
+                exceptionsProvider.Exception = new DbFatalException(innerException: result.Excptn);
+                exceptionsProvider.IsFatal = true;
+                return;
+            }
+            
+            var repositoryHelper = _serviceProvider.GetService<IRepositoryHelper>()!;
+
+            if (! await repositoryHelper.IsExistLibrary())
+            {
+                Exception? exception;
+
                 // Пересоздание репозитория
-                result = await initRepository.RebuildRepository();  // TODO: обработать result в App.OnStartup после пересоздания репозитория
+                result = await repositoryHelper.RebuildRepository();
+                if (! result)
+                {
+                    // Пробрасываем исключение "Ошибка создания БД."
+                    exception = new AppException($"{AppPhrases.DatabaseCreateError}", result.Excptn);
+                    exceptionsProvider.Exception = exception;
+                    return;
+                }
 
                 // Пробрасываем исключение "Одна или несколько сущностей Библиотеки отсутствуют..."
-                var exception = new AppException($"{AppPhrases.MissingEntitiesError}\n{AppPhrases.DatabaseRebuilt}");
-                var exceptionsProvider = _serviceProvider.GetService<IExceptionsProvider>();
-                exceptionsProvider!.Exception = exception;
+                exception = new AppException($"{AppPhrases.MissingEntitiesError}\n{AppPhrases.DatabaseRebuilt}");
+                exceptionsProvider.Exception = exception;
             }
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            // TODO: Пересоздание репозитория
-            // await initRepository.RebuildRepository();
-            
             // Пробрасываем фатальное исключение
-            var exceptionsProvider = _serviceProvider.GetService<IExceptionsProvider>();
-            exceptionsProvider?.Exception = new DbFatalException(innerException: exception);
-            exceptionsProvider?.IsFatal = true;
+            exceptionsProvider.Exception = new DbFatalException(innerException: ex);
+            exceptionsProvider.IsFatal = true;
         }
-        
-        // Получаем главное представление (окно) и показываем его
-        var mainView = _serviceProvider.GetRequiredService<MainView>();
-        mainView!.Show();
+        finally
+        {
+            // Получаем главное представление (окно) и показываем его
+            var mainView = _serviceProvider.GetRequiredService<MainView>();
+            mainView.Show();
+        }
     }
 }

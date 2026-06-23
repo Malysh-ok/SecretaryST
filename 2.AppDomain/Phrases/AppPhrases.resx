@@ -93,4 +93,10 @@
     <data name="ConductingOrganizationsRemoveError" xml:space="preserve">
         <value>Failed to remove a event organizer.</value>
     </data>
+    <data name="DatabaseCreateError" xml:space="preserve">
+        <value>Database creation error.</value>
+    </data>
+    <data name="AppDirsCreateError" xml:space="preserve">
+        <value>Failed to create application directories.</value>
+    </data>
 </root>

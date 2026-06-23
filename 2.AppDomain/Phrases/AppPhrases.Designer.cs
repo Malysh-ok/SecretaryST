@@ -60,6 +60,15 @@ namespace AppDomain.Phrases {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to create application directories..
+        /// </summary>
+        public static string AppDirsCreateError {
+            get {
+                return ResourceManager.GetString("AppDirsCreateError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to create the new competition in the repository..
         /// </summary>
         public static string CompetitionDataCreateError {
@@ -164,6 +173,15 @@ namespace AppDomain.Phrases {
         public static string ConductingOrganizationsSetError {
             get {
                 return ResourceManager.GetString("ConductingOrganizationsSetError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Database creation error..
+        /// </summary>
+        public static string DatabaseCreateError {
+            get {
+                return ResourceManager.GetString("DatabaseCreateError", resourceCulture);
             }
         }
         

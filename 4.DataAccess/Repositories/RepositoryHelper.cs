@@ -1,5 +1,6 @@
 ﻿using AppDomain.UseCases._Contracts;
 using Common.BaseComponents.Components;
+using DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using ProblemDomain.Entities.LibraryEntities;
 
@@ -11,6 +12,7 @@ namespace DataAccess.Repositories;
 public class RepositoryHelper : IRepositoryHelper
 {
     private readonly IRepository _repository = null!;
+    private readonly AppDbContext _dbContext = null!;
     
     /// <summary>
     /// Конструктор, запрещающий создание экземпляра без параметров.
@@ -22,9 +24,10 @@ public class RepositoryHelper : IRepositoryHelper
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public RepositoryHelper(IRepository repository) : this()
+    public RepositoryHelper(IRepository repository, AppDbContext dbContext) : this()
     {
         _repository =  repository;
+        _dbContext = dbContext;
     }
 
     /// <inheritdoc />
@@ -54,11 +57,18 @@ public class RepositoryHelper : IRepositoryHelper
     public async Task<Result<bool>> RebuildRepository()
     {
         // Полностью удаляем БД
-        await _repository.GetDbContext().Database.EnsureDeletedAsync();
+        await _dbContext.Database.EnsureDeletedAsync();
         
         // Применяем ожидающие миграции
-        await _repository.GetDbContext().Database.MigrateAsync();
-        
+        try
+        {
+            await _dbContext.Database.MigrateAsync();
+        }
+        catch (Exception ex)
+        {
+            return Result<bool>.Fail(ex);
+        }
+
         // Наполняем БД библиотечными данными
         return await FillDatabase();
     }

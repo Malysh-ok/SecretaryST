@@ -241,31 +241,10 @@ public sealed class SettingVM : ObservableRecipient,
         // Для отображения сообщений в нужной локализации при инициализации
         AppPhrases.Culture = _currLang.GetCultureInfo();
 
-        // Проверка, прислали ли исключение "сверху"?
-        if (exceptionsProvider.Exception is not null)
-        {
-            // Исключение прислали - отображаем его в статус-баре и пишем в лог
-            _ = StatusBarData.SetTextAsync(exceptionsProvider.Exception.Message, 
-                StatusBarData.StatusBarTextType.Error, 0);
-            _logger.Error(exceptionsProvider.Exception, "{class}.{method}",
-                typeof(SettingVM), "CTOR");
-        }
-        
-        if (exceptionsProvider.Exception is null || exceptionsProvider is {Exception: not null, IsFatal: false})
-        {
-            // Исключения нет (или оно есть, но не фатально) - получаем асинхронно данные с обработкой ошибки
-            _ = InitAsync().ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                {
-                    var exception = new AppException(AppPhrases.UnknownError, t.Exception);
-                    _ = StatusBarData.SetTextAsync(exception.Message, 
-                        StatusBarData.StatusBarTextType.Error, 0);
-                    _logger.Error(exception, "{class}.{method}",
-                        typeof(SettingVM), "CTOR");
-                }
-            });
-        }
+        // Обработка исключений "сверху", запуск инициализации если исключений нет
+        ViewModelHelper.HandleExceptionsProvider(
+            exceptionsProvider, InitAsync,
+            StatusBarService, _logger);
     }
     
     /// <summary>

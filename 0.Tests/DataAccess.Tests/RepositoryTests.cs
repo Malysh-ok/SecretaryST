@@ -77,9 +77,10 @@ public class RepositoryTests
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var repository = new Repository<AppDbContext>(dbContext);
-        var initRepository = new RepositoryHelper(repository);
+        var repositoryHelper = new RepositoryHelper(repository, dbContext);
 
-        await initRepository.RebuildRepository();
+        result = await repositoryHelper.RebuildRepository();
+        Assert.That(result.Excptn, Is.Null, result.Excptn?.Message);
         
         repository.Dispose();
     }

@@ -95,18 +95,9 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
         // Подписываемся на получение сообщений
         Messenger.Register(this);
         
-        // Инициализация
-        _ = InitAsync().ContinueWith(t =>
-        {
-            if (t.IsFaulted)
-            {
-                var exception = new AppException(AppPhrases.UnknownError, t.Exception);
-                _ = StatusBarData.SetTextAsync(exception.Message, 
-                    StatusBarData.StatusBarTextType.Error, 0);
-                _logger.Error(exception, "{class}.{method}",
-                    typeof(BackstageVM), "CTOR");
-            }
-        });
+        // Обработка исключений "сверху", запуск инициализации если исключений нет
+        ViewModelHelper.HandleExceptionsProvider(
+            exceptionsProvider, InitAsync, StatusBarService, _logger);
     }
     
     /// <summary>
