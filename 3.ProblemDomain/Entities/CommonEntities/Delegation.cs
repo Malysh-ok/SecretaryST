@@ -34,6 +34,7 @@ public sealed class Delegation
             delegation.Name,
             delegation.Region,
             delegation.Representative,
+            delegation.CompetitionData,
             delegation.Description
         )
     {
@@ -44,10 +45,12 @@ public sealed class Delegation
     /// </summary>
     /// <inheritdoc />
     /// <param name="representative">Представитель.</param>
-    public Delegation(int number, string name, string region, Representative representative, string? description = null) 
+    public Delegation(int number, string name, string region, Representative representative, 
+            CompetitionData competitionData, string? description = null) 
         : this(number, name, region, description)
     {
         Representative = representative;
+        CompetitionData = competitionData;
     }
 
     /// <inheritdoc />
@@ -65,11 +68,18 @@ public sealed class Delegation
 
     /// <inheritdoc cref="RepresentativeId"/>
     public Representative Representative { get; set; } = null!;
-    
+        
     /// <summary>
-    /// Список спортсменов.
+    /// Связь с соревнованием (объектом-владельцем).
     /// </summary>
-    // ReSharper disable once CollectionNeverUpdated.Global
+    public int CompetitionDataId { get; set; }
+
+    /// <inheritdoc cref="CompetitionDataId"/>
+    public CompetitionData CompetitionData { get; set; } = null!;
+
+    /// <summary>
+    /// Коллекция спортсменов.
+    /// </summary>
     public ICollection<Athlete> Athletes { get; set; } = new HashSet<Athlete>();
     
     /// <summary>

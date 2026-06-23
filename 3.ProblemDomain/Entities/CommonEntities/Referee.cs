@@ -38,6 +38,7 @@ public sealed class Referee
             referee.Domicile,
             referee.RefereeLevel,
             referee.RefereeJobTitle,
+            referee.CompetitionData,
             referee.Patronymic,
             referee.Description
         )
@@ -52,11 +53,13 @@ public sealed class Referee
     /// <param name="refereeJobTitle">Судейская должность.</param>
     public Referee(int number, string lastName, string firstName, string domicile, 
         RefereeLevel refereeLevel, RefereeJobTitle refereeJobTitle, 
+        CompetitionData competitionData,
         string? patronymic = null, string? description = null) 
         : this(number, lastName, firstName, domicile, patronymic, description)
     {
         RefereeLevel = refereeLevel;
         RefereeJobTitle = refereeJobTitle;
+        CompetitionData = competitionData;
     }
     
     /// <inheritdoc />
@@ -82,7 +85,15 @@ public sealed class Referee
 
     /// <inheritdoc cref="RefereeJobTitleId"/>
     public RefereeJobTitle RefereeJobTitle { get; set; } = null!;
-    
+        
+    /// <summary>
+    /// Связь с соревнованием (объектом-владельцем).
+    /// </summary>
+    public int CompetitionDataId { get; set; }
+
+    /// <inheritdoc cref="CompetitionDataId"/>
+    public CompetitionData CompetitionData { get; set; } = null!;
+
     /// <summary>
     /// Клонирование.
     /// </summary>

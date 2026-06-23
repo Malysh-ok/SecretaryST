@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Linq.Expressions;
 using AppDomain.UseCases._Contracts;
 using Common.BaseComponents.Components;
 using Common.BaseComponents.Components.Exceptions;
@@ -32,7 +33,7 @@ public class Repository<TDbContext> : IRepository
     private readonly bool _autoDetectChangesState = false;
 
     /// <summary>
-    /// Контекст БД.
+    /// TODO: Удалить - Контекст БД.
     /// </summary>
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
@@ -201,14 +202,18 @@ public class Repository<TDbContext> : IRepository
     }
 
     /// <inheritdoc />
-    public async Task<Result<IList<TEntity>>> GetAllAsync<TEntity>(params string[] navigationProperties)
+    public async Task<Result<IList<TEntity>>> GetAllAsync<TEntity>(
+            Expression<Func<TEntity, bool>>? filter = null,
+            params string[] navigationProperties)
         where TEntity : class
     {
         try
         {
             var queryable = DbContext.Set<TEntity>().AsTracking();  // Т.к. запрос может быть сложным,
                                                                     // .AsNoTracking() использовать не получается
-
+            if (filter is not null)
+                queryable = queryable.Where(filter);
+                                                                    
             return Result<IList<TEntity>>.Done(await AddNavigationProperties(queryable, navigationProperties)
                 .ToListAsync());
         }
@@ -220,6 +225,7 @@ public class Repository<TDbContext> : IRepository
     
     /// <inheritdoc />
     public async Task<Result<IList<TEntity>>> GetNumberedAllAsync<TEntity>(bool ascending = true,
+            Expression<Func<TEntity, bool>>? filter = null,
             params string[] navigationProperties
         )
         where TEntity : class, INumberedEntity
@@ -228,7 +234,9 @@ public class Repository<TDbContext> : IRepository
         {
             var queryable = DbContext.Set<TEntity>().AsTracking();  // Т.к. запрос может быть сложным,
                                                                     // .AsNoTracking() использовать не получается
-        
+            if (filter is not null)
+                queryable = queryable.Where(filter);
+            
             queryable = ascending 
                 ? queryable.OrderBy(e => e.Number) 
                 : queryable.OrderByDescending(e => e.Number);
@@ -244,6 +252,7 @@ public class Repository<TDbContext> : IRepository
     
     /// <inheritdoc />
     public async Task<Result<IList<TEntity>>> GetAllByNumberAsync<TEntity>(int? number,
+            Expression<Func<TEntity, bool>>? filter = null,
             params string[] navigationProperties
         )
         where TEntity : class, INumberedEntity
@@ -252,7 +261,9 @@ public class Repository<TDbContext> : IRepository
         {
             var queryable = DbContext.Set<TEntity>().AsTracking();  // Т.к. запрос может быть сложным,
                                                                     // .AsNoTracking() использовать не получается
-        
+            if (filter is not null)
+                queryable = queryable.Where(filter);
+                                                                    
             return Result<IList<TEntity>>.Done(await AddNavigationProperties(queryable, navigationProperties)
                                                .Where(e => e.Number == number)
                                                .ToListAsync());

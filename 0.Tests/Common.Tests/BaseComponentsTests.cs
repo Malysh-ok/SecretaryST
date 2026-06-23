@@ -129,24 +129,12 @@ public class BaseComponentsTests
         Assert.That(hsbColor1 == hsbColor2, Is.False, "Цвета НЕ должны быть равны.");
         Assert.That(hsbColor1 != hsbColor2, Is.True, "Цвета НЕ должны быть равны.");
     }
-    
+
     [Test]
     public void TmpTest()
     {
-        var representative = new Representative("Банько", "Яна", "Евгеньевна");
-        
-        // Делегации
-        var delegations = new List<Delegation>()
-        {
-            new(1, name: "Делегация 11111", "Якутия", representative),
-            new(2, name: "Делегация 22222", "Сахалин", representative),
-        };
-
-        var newList = delegations.DeepCopy();
-        ICopyEntity delegation = delegations[0];
-        delegation.Copy(delegations[1]);
     }
-    
+
     [Test]
     public void ResultTest()
     {

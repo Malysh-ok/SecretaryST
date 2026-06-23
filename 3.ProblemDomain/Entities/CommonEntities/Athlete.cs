@@ -80,6 +80,7 @@ public sealed class Athlete
     /// Связь с делегацией (объектом-владельцем).
     /// </summary>
     public int DelegationId { get; set; }
+    
     /// <summary>
     /// <inheritdoc cref="DelegationId"/>
     /// </summary>

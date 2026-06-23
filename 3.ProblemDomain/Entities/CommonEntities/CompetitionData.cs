@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ProblemDomain.Entities._Contracts;
+using ProblemDomain.Entities.DistanceEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 
@@ -108,6 +109,21 @@ public sealed class CompetitionData
     
     /// <inheritdoc cref="DetailedCompetitionStatusId"/>
     public DetailedCompetitionStatus DetailedCompetitionStatus { get; set; } = null!;
+    
+    /// <summary>
+    /// Коллекция судей.
+    /// </summary>
+    public ICollection<Referee> Referees { get; set; } = new HashSet<Referee>();
+
+    /// <summary>
+    /// Коллекция видов программы.
+    /// </summary>
+    public ICollection<SportEvent> SportEvents { get; set; } = new HashSet<SportEvent>();
+
+    /// <summary>
+    /// Коллекция делегаций.
+    /// </summary>
+    public ICollection<Delegation> Delegations { get; set; } = new HashSet<Delegation>();
     
     /// <summary>
     /// Клонирование.

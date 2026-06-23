@@ -132,7 +132,7 @@ public class CompetitionDataService(IRepository repository)
     public async Task<Result<IList<DetailedCompetitionStatus>>> GetDetailedCompetitionsStatusesAsync()
     {
         var detailedCompetitionStatuses
-            = await repository.GetAllAsync<DetailedCompetitionStatus>(nameof(CompetitionsStatus));
+            = await repository.GetAllAsync<DetailedCompetitionStatus>(navigationProperties: nameof(CompetitionsStatus));
         
         return detailedCompetitionStatuses
             ? Result<IList<DetailedCompetitionStatus>>.Done(detailedCompetitionStatuses.Value!) 
@@ -318,15 +318,6 @@ public class CompetitionDataService(IRepository repository)
         
         // Удаляем из репозитория
         var intResult = repository.Remove(competition);
-        if (! intResult)
-        {
-            return Task.FromResult(Result<CompetitionData>.Fail(
-                new AppException(AppPhrases.CompetitionDataRemoveError, intResult.Excptn)
-            ));
-        }
-        
-        // Обновляем соревнования в репозитории
-        intResult = repository.UpdateRange(competitionDataCollection);
         if (! intResult)
         {
             return Task.FromResult(Result<CompetitionData>.Fail(

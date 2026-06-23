@@ -75,16 +75,16 @@ public sealed class Representative
     /// <inheritdoc cref="SexId"/>
     public Sex? Sex { get; set; }
 
-    
     /// <summary>
     /// Коллекция делегаций.
     /// </summary>
-    // ReSharper disable once CollectionNeverUpdated.Global
+    /// <remarks>
+    /// REMARK: С точки зрения Правил, одной делегации должен соответствовать один представитель.
+    /// </remarks>
     public ICollection<Delegation> Delegations { get; set; } = new HashSet<Delegation>();
 
-    // TODO: Подумать, насчет правильного сравнения Representative
-    
     /// <inheritdoc />
+    // TODO: Подумать, насчет правильного сравнения Representative
     public override bool Equals(object? obj)
     {
         if (obj == null || GetType() != obj.GetType()) return false;

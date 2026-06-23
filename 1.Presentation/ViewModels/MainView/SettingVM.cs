@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Input;
-using AppDomain.AppExceptions;
 using AppDomain.Phrases;
 using AppDomain.Setting.Entities;
 using AppDomain.Setting.Services;
@@ -301,7 +300,6 @@ public sealed class SettingVM : ObservableRecipient,
         await OnGetDetailedCompetitionStatusesAsync();
         await OnGetRefereeLevels();
         await OnGetRefereeJobTitles();
-        await OnGetRefereesAsync();
     }
 
     #region [---------- Функции для команд ― Данные о соревн. ----------]
@@ -423,6 +421,10 @@ public sealed class SettingVM : ObservableRecipient,
             {
                 exception = intResult.Excptn;
             }
+            
+            // Обновляем список судей
+            _ = OnGetRefereesAsync();
+
         }
         finally
         {
@@ -518,7 +520,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private async Task OnGetRefereesAsync()
     {
-        var refereesResult = await _refereeService.GetRefereesAsync(Referees);
+        var refereesResult = await _refereeService.GetRefereesAsync(Referees, CurrentCompetitionData);
         if (! refereesResult)
         {
             // Пишем в статус-бар и лог об ошибке
@@ -534,7 +536,8 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private async Task OnAddRefereeAsync()
     {
-        var refereesResult = await _refereeService.AddRefereeAsync(Referees, Referees.SelectedIndex);
+        var refereesResult = await _refereeService.AddRefereeAsync(
+            Referees, Referees.SelectedIndex, CurrentCompetitionData);
         if (refereesResult)
         {
             // Перезаписываем индекс
@@ -586,7 +589,7 @@ public sealed class SettingVM : ObservableRecipient,
     private async Task OnSaveReferees()
     {
         // Сохраняем изменения
-        var intResult = await _refereeService.SaveRefereesAsync();
+        var intResult = await _refereeService.SaveRefereesAsync(CurrentCompetitionData);
         if (! intResult)
         {
             // Пишем в статус-бар и лог об ошибке

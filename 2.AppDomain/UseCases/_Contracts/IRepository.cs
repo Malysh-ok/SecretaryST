@@ -1,4 +1,5 @@
-﻿using Common.BaseComponents.Components;
+﻿using System.Linq.Expressions;
+using Common.BaseComponents.Components;
 using Common.BaseComponents.Components.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using ProblemDomain.Entities._Contracts;
@@ -76,8 +77,11 @@ public interface IRepository : IDisposable
     /// <summary>
     /// Получить из репозитория первую сущность типа <typeparamref name="TEntity"/>.
     /// </summary>
+    /// <param name="navigationProperties">Массив имен навигационных свойств сущности,
+    ///     данные которых включаются в результат (т.е. мы получаем связанные сущности);
+    ///     имя может быть составным (т.е. вторая часть есть навигационное свойство связанной сущности),
+    ///     в этом случае части имени разделяются символом '.'.</param>
     /// <returns>Получаемая сущность.</returns>
-    /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
     public Task<Result<TEntity?>> GetFirstAsync<TEntity>(params string[] navigationProperties)
         where TEntity : class, IAbstractEntity;
 
@@ -85,7 +89,7 @@ public interface IRepository : IDisposable
     /// Получить из репозитория последнюю сущность типа <typeparamref name="TEntity"/>.
     /// </summary>
     /// <returns>Получаемая сущность.</returns>
-    /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
+    /// <inheritdoc cref="GetFirstAsync{TEntity}(string[])"/>
     public Task<Result<TEntity?>> GetLastAsync<TEntity>(params string[] navigationProperties)
         where TEntity : class, IAbstractEntity;
 
@@ -93,30 +97,38 @@ public interface IRepository : IDisposable
     /// Получение всех сущностей из репозитория.
     /// </summary>
     /// <typeparam name="TEntity">Тип сущности.</typeparam>
-    /// <param name="navigationProperties">Массив имен навигационных свойств сущности,
-    ///     данные которых включаются в результат (т.е. мы получаем связанные сущности);
-    ///     имя может быть составным (т.е. вторая часть есть навигационное свойство связанной сущности),
-    ///     в этом случае части имени разделяются символом '.'.</param>
+    /// <param name="filter">Выражение, определяющее условие фильтрации -
+    /// лямбда-выражение, которое будет преобразовано в SQL-условие <c>WHERE</c></param>
     /// <returns>Коллекция получаемых сущностей.</returns>
-    public Task<Result<IList<TEntity>>> GetAllAsync<TEntity>(params string[] navigationProperties) 
+    /// <inheritdoc cref="GetFirstAsync{TEntity}(string[])"/>
+    public Task<Result<IList<TEntity>>> GetAllAsync<TEntity>(
+        Expression<Func<TEntity, bool>>? filter = null, 
+        // ReSharper disable once InvalidXmlDocComment
+        params string[] navigationProperties) 
         where TEntity : class;
 
     /// <summary>
     /// Получение всех нумерованных сущностей из репозитория с возможностью сортировки по номеру.
     /// </summary>
     /// <param name="ascending">Признак сортировки (True - по возрастанию, False - по убыванию).</param>
-    /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
-    // ReSharper disable once InvalidXmlDocComment
-    public Task<Result<IList<TEntity>>> GetNumberedAllAsync<TEntity>(bool ascending = true, params string[] navigationProperties)
+    /// <inheritdoc cref="GetAllAsync{TEntity}(Expression{Func{TEntity, bool}},string[])"/>
+    public Task<Result<IList<TEntity>>> GetNumberedAllAsync<TEntity>(bool ascending = true,
+        // ReSharper disable once InvalidXmlDocComment
+        Expression<Func<TEntity, bool>>? filter = null, 
+        // ReSharper disable once InvalidXmlDocComment
+        params string[] navigationProperties)
         where TEntity : class, INumberedEntity;
 
     /// <summary>
     /// Получение всех нумерованных сущностей из репозитория с заданным номером.
     /// </summary>
     /// <param name="number">Искомый номер.</param>
-    /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
-    // ReSharper disable once InvalidXmlDocComment
-    public Task<Result<IList<TEntity>>> GetAllByNumberAsync<TEntity>(int? number, params string[] navigationProperties)
+    /// <inheritdoc cref="GetAllAsync{TEntity}(Expression{Func{TEntity, bool}},string[])"/>
+    public Task<Result<IList<TEntity>>> GetAllByNumberAsync<TEntity>(int? number, 
+        // ReSharper disable once InvalidXmlDocComment
+        Expression<Func<TEntity, bool>>? filter = null, 
+        // ReSharper disable once InvalidXmlDocComment
+        params string[] navigationProperties)
         where TEntity : class, INumberedEntity;
 
     #endregion

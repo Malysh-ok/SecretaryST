@@ -194,7 +194,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             Messenger.Send(new AllCompetitionsMessage(CompetitionDataCollection, CurrentCompetitionData));
             
             // TODO: Временно (без ожидания окончания)
-            _ = StatusBarService.SetTextAsync("Добавили соревнование.", BaseException.ExcptnType.Error);
+            _ = StatusBarService.SetTextAsync("Добавили соревнование.", BaseException.ExcptnType.Info);
         }
         finally
         {
@@ -219,7 +219,9 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
         try
         {
             // TODO: Временно, возможно будет отдельное окно
-            var result = MessageBox.Show("Вы уверены, что хотите удалить соревнование?", _appSetting.AppName, 
+            var result = MessageBox.Show(
+                $"Вы уверены, что хотите удалить соревнование '{CurrentCompetitionData!.ShortName}'?",
+                _appSetting.AppName, 
                 MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
             if (result == MessageBoxResult.No)
                 return;
@@ -239,20 +241,20 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             if (! intResult)
             {
                 // Неудачное сохранение в репозитории
-                exception = competitionResult.Excptn;
+                exception = intResult.Excptn;
                 return;
             }
 
             CurrentCompetitionData = competitionResult.Value;
             
-            // Посылаем сообщение о загрузке соревнований
-            Messenger.Send(new AllCompetitionsMessage(CompetitionDataCollection, CurrentCompetitionData));
-            
             // TODO: Временно (без ожидания окончания)
-            _ = StatusBarService.SetTextAsync("Удалили соревнование.", BaseException.ExcptnType.Error);
+            _ = StatusBarService.SetTextAsync("Удалили соревнование.", BaseException.ExcptnType.Warning);
         }
         finally
         {
+            // Посылаем сообщение о загрузке соревнований
+            Messenger.Send(new AllCompetitionsMessage(CompetitionDataCollection, CurrentCompetitionData));
+            
             if (exception != null)
             {
                 // Пишем в статус-бар и лог об ошибке

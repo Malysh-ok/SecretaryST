@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ProblemDomain.Entities._Contracts;
+using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 // ReSharper disable InvalidXmlDocComment
@@ -35,6 +36,7 @@ public sealed class SportEvent
             sportEvent.IsShort,
             sportEvent.Difficulty,
             sportEvent.Discipline,
+            sportEvent.CompetitionData,
             sportEvent.Description
         )
     {
@@ -46,10 +48,11 @@ public sealed class SportEvent
     /// <inheritdoc />
     /// <param name="discipline">Дисциплина.</param>
     public SportEvent(string name, bool? isShort, Difficulty.IdEnm difficulty, Discipline discipline,
-        string? description = null) 
+            CompetitionData competitionData, string? description = null) 
         : this(name, isShort, difficulty, description)
     {
         Discipline = discipline;
+        CompetitionData = competitionData;
     }
 
     /// <summary>
@@ -62,7 +65,6 @@ public sealed class SportEvent
     /// </summary>
     public Difficulty.IdEnm Difficulty { get; set; }
 
-
     /// <summary>
     /// Связь с дисциплиной (объектом-владельцем).
     /// </summary>
@@ -71,6 +73,14 @@ public sealed class SportEvent
     /// <inheritdoc cref="DisciplineId"/>
     public Discipline Discipline { get; set; } = null!;
     
+    /// <summary>
+    /// Связь с соревнованием (объектом-владельцем).
+    /// </summary>
+    public int CompetitionDataId { get; set; }
+
+    /// <inheritdoc cref="CompetitionDataId"/>
+    public CompetitionData CompetitionData { get; set; } = null!;
+
     /// <summary>
     /// Коллекция спортивных юнитов.
     /// </summary>
@@ -90,6 +100,7 @@ public sealed class SportEvent
     }
     
     /// <inheritdoc cref="ICopyEntity.Copy"/>
+    // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(SportEvent destination)
     {
         destination.Name = Name;
