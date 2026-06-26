@@ -1,8 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
-using AppDomain.AppExceptions;
-using AppDomain.Phrases;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
 using Common.BaseComponents.Components.Exceptions;
@@ -31,12 +29,12 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     /// <summary>
     /// Коллекция соревнований.
     /// </summary>
-    public ObservableCollection<CompetitionData> CompetitionDataCollection { get; set; } = [];
+    public ObservableCollection<CompetitionData> Competitions { get; set; } = [];
 
     /// <summary>
     /// Текущее соревнование.
     /// </summary>
-    public CompetitionData? CurrentCompetitionData { get; set; }
+    public CompetitionData? CurrentCompetition { get; set; }
     
     /// <summary>
     /// Сервис статус-бара.
@@ -52,9 +50,9 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     public ICommand GetAllCompetitionsCommand { get; } = null!;
     
     /// <summary>
-    /// Команда добавления соревнования.
+    /// Команда создания соревнования.
     /// </summary>
-    public ICommand AddCompetitionCommand { get; } = null!;
+    public ICommand CreateCompetitionCommand { get; } = null!;
 
     /// <summary>
     /// Команда удаления соревнования.
@@ -88,9 +86,9 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
         _appSetting = appSetting;
         _competitionDataService = competitionDataService;
 
-        GetAllCompetitionsCommand = new AsyncRelayCommand(OnGetAllCompetitionDataAsync);
-        AddCompetitionCommand = new AsyncRelayCommand(OnAddCompetitionDataAsync);
-        RemoveCompetitionCommand =  new AsyncRelayCommand(OnRemoveCompetitionDataAsync);
+        GetAllCompetitionsCommand = new AsyncRelayCommand(GetAllCompetitionsAsync);
+        CreateCompetitionCommand = new AsyncRelayCommand(CreateCompetitionAsync);
+        RemoveCompetitionCommand =  new AsyncRelayCommand(RemoveCompetitionAsync);
 
         // Подписываемся на получение сообщений
         Messenger.Register(this);
@@ -105,7 +103,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     /// </summary>
     public void Receive(CompetitionMessage message)
     {
-        CurrentCompetitionData = message.CurrentCompetitionData;
+        CurrentCompetition = message.CurrentCompetition;
     }
 
     /// <summary>
@@ -113,44 +111,44 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     /// </summary>
     private async Task InitAsync()
     {
-        await OnGetAllCompetitionDataAsync();
+        await GetAllCompetitionsAsync();
     }
 
     #region [---------- Функции для команд ----------]
 
     /// <summary>
-    /// Получение данных о всех соревнованиях.
+    /// Получение (обновление) коллекции соревнований.
     /// </summary>
-    private async Task OnGetAllCompetitionDataAsync()
+    private async Task GetAllCompetitionsAsync()
     {
         // Получаем список соревнований
         var competitionsResult = 
-            await _competitionDataService.GetAllCompetitionsDataAsync(CompetitionDataCollection);
+            await _competitionDataService.GetAllCompetitionsDataAsync(Competitions);
         if (competitionsResult)
         {
-            if (CompetitionDataCollection.Any())
+            if (Competitions.Any())
             {
                 // Если коллекция не пуста
                 
-                var newCurrentCompetitionData = CompetitionDataCollection.First();
-                if (CurrentCompetitionData != null)
+                var newCurrentCompetitionData = Competitions.First();
+                if (CurrentCompetition != null)
                 {
-                    var id = CurrentCompetitionData.Id;
+                    var id = CurrentCompetition.Id;
                     // Если CurrentCompetitionData создано (не из репозитория) -
                     // присваиваем последний, иначе - находим по id
                     newCurrentCompetitionData = id == 0 
-                        ? CompetitionDataCollection.Last()  
-                        : CompetitionDataCollection.First(c => c.Id == id);
+                        ? Competitions.Last()  
+                        : Competitions.First(c => c.Id == id);
                 }
-                CurrentCompetitionData = newCurrentCompetitionData;
+                CurrentCompetition = newCurrentCompetitionData;
             }
             else
             {
-                CurrentCompetitionData = null;
+                CurrentCompetition = null;
             }
 
             // Посылаем сообщение о загрузке соревнований
-            Messenger.Send(new AllCompetitionsMessage(CompetitionDataCollection, CurrentCompetitionData));
+            Messenger.Send(new AllCompetitionsMessage(Competitions, CurrentCompetition));
         }
         else
         {
@@ -158,20 +156,20 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             _ = StatusBarService.SetTextAsync(competitionsResult.Excptn?.Message,
                 BaseException.ExcptnType.Error, 0);
             _logger.Error(competitionsResult.Excptn, "{class}.{method}",
-                typeof(SettingVM), nameof(OnGetAllCompetitionDataAsync));
+                typeof(SettingVM), nameof(GetAllCompetitionsAsync));
         }
     }
     
     /// <summary>
-    /// Добавление соревнования.
+    /// Создание соревнования.
     /// </summary>
-    private async Task OnAddCompetitionDataAsync()
+    private async Task CreateCompetitionAsync()
     {
         Exception? exception = null;
         try
         {
             // Получаем
-            var competitionResult = await _competitionDataService.AddCompetitionDataAsync(CompetitionDataCollection);
+            var competitionResult = await _competitionDataService.CreateCompetitionDataAsync(Competitions);
             if (! competitionResult)
             {
                 // Неудачное получение данных из репозитория
@@ -188,10 +186,10 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
                 return;
             }
 
-            CurrentCompetitionData = competitionResult.Value;
+            CurrentCompetition = competitionResult.Value;
             
             // Посылаем сообщение о загрузке соревнований
-            Messenger.Send(new AllCompetitionsMessage(CompetitionDataCollection, CurrentCompetitionData));
+            Messenger.Send(new AllCompetitionsMessage(Competitions, CurrentCompetition));
             
             // TODO: Временно (без ожидания окончания)
             _ = StatusBarService.SetTextAsync("Добавили соревнование.", BaseException.ExcptnType.Info);
@@ -205,7 +203,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
                     BaseException.ExcptnType.Error, 0);
                 _logger.Error(exception,
                     "{class}.{method}.",
-                    typeof(SettingVM), nameof(OnAddCompetitionDataAsync));
+                    typeof(SettingVM), nameof(CreateCompetitionAsync));
             }
         }
     }
@@ -213,14 +211,14 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     /// <summary>
     /// Удаление соревнования.
     /// </summary>
-    private async Task OnRemoveCompetitionDataAsync()
+    private async Task RemoveCompetitionAsync()
     {
         Exception? exception = null;
         try
         {
             // TODO: Временно, возможно будет отдельное окно
             var result = MessageBox.Show(
-                $"Вы уверены, что хотите удалить соревнование '{CurrentCompetitionData!.ShortName}'?",
+                $"Вы уверены, что хотите удалить соревнование '{CurrentCompetition!.ShortName}'?",
                 _appSetting.AppName, 
                 MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
             if (result == MessageBoxResult.No)
@@ -228,7 +226,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             
             // Удаляем
             var competitionResult = 
-                await _competitionDataService.RemoveCompetitionDataAsync(CompetitionDataCollection, CurrentCompetitionData);
+                await _competitionDataService.RemoveCompetitionDataAsync(Competitions, CurrentCompetition);
             if (! competitionResult)
             {
                 // Неудачное удаление данных в репозитории
@@ -245,7 +243,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
                 return;
             }
 
-            CurrentCompetitionData = competitionResult.Value;
+            CurrentCompetition = competitionResult.Value;
             
             // TODO: Временно (без ожидания окончания)
             _ = StatusBarService.SetTextAsync("Удалили соревнование.", BaseException.ExcptnType.Warning);
@@ -253,7 +251,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
         finally
         {
             // Посылаем сообщение о загрузке соревнований
-            Messenger.Send(new AllCompetitionsMessage(CompetitionDataCollection, CurrentCompetitionData));
+            Messenger.Send(new AllCompetitionsMessage(Competitions, CurrentCompetition));
             
             if (exception != null)
             {
@@ -262,7 +260,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
                     BaseException.ExcptnType.Error, 0);
                 _logger.Error(exception,
                     "{class}.{method}.",
-                    typeof(SettingVM), nameof(OnRemoveCompetitionDataAsync));
+                    typeof(SettingVM), nameof(RemoveCompetitionAsync));
             }
         }
     }

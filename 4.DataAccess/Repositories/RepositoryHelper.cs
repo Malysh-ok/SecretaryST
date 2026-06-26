@@ -54,7 +54,7 @@ public class RepositoryHelper : IRepositoryHelper
     }
 
     /// <inheritdoc />
-    public async Task<Result<bool>> RebuildRepository()
+    public async Task<Result<bool>> RebuildRepository(bool isUseMigrations = true)
     {
         // Полностью удаляем БД
         await _dbContext.Database.EnsureDeletedAsync();
@@ -62,7 +62,12 @@ public class RepositoryHelper : IRepositoryHelper
         // Применяем ожидающие миграции
         try
         {
-            await _dbContext.Database.MigrateAsync();
+            if (isUseMigrations)
+                await _dbContext.Database.MigrateAsync();
+            else
+            {
+                await _dbContext.Database.EnsureCreatedAsync();
+            }
         }
         catch (Exception ex)
         {

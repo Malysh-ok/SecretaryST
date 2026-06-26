@@ -17,6 +17,8 @@
     <Color x:Key="DisabledForegroundColor">#55000000</Color>             <!--FF0078D7-->
     <Color x:Key="HDisabledBackgroundColor">#55FFFFFF</Color>
     <Color x:Key="MenuBackgroundColor">#FFD0D0D0</Color>
+    <Color x:Key="DarkDarkGrayColor">#FF303030</Color>
+
     
     <SolidColorBrush x:Key="DefaultForegroundBrush" Color="{StaticResource DefaultForegroundColor}"/>
     <SolidColorBrush x:Key="DefaultBackgroundBrush" Color="{StaticResource DefaultBackgroundColor}"/>

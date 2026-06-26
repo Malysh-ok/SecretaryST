@@ -25,6 +25,13 @@ public class GridColumnSpacingExtension : MarkupExtension
     /// <summary>
     /// Конструктор.
     /// </summary>
+    public GridColumnSpacingExtension()
+    {
+    }
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
     /// <param name="spacing">Отступ между столбцами в пикселях (добавляется справа от элемента, кроме последнего столбца)</param>
     public GridColumnSpacingExtension(double spacing)
     {

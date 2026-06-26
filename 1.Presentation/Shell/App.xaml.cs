@@ -56,9 +56,9 @@ public partial class App
             
             .AddDbContext<AppDbContext>(options =>
                 dbConfigurator.UseProvider<AppDbContext>(options),
-                ServiceLifetime.Transient)                              // регистрируем контекст БД
-            .AddTransient<IRepository, Repository<AppDbContext>>()      // регистрируем репозиторий
-            .AddTransient<IRepositoryHelper, RepositoryHelper>()        // регистрируем "помощник" репозитория
+                ServiceLifetime.Transient)                       // регистрируем контекст БД
+            .AddScoped<IRepository, Repository<AppDbContext>>()  // регистрируем репозиторий
+            .AddTransient<IRepositoryHelper, RepositoryHelper>() // регистрируем "помощник" репозитория
             
             // .AddLogging(builder => builder.AddSerilog(dispose: true))
             .AddSingleton<ILogger>

@@ -7,6 +7,7 @@
                     xmlns:fluent="urn:fluent-ribbon"
                     xmlns:converters="clr-namespace:Common.WpfModule.Ui.Converters;assembly=Ui"
                     xmlns:markups="clr-namespace:Common.WpfModule.Ui.Markups;assembly=Ui"
+                    xmlns:local="clr-namespace:Common.WpfModule.Ui.AttachedProperties;assembly=Ui"
                     mc:Ignorable="options d">
     
     <ResourceDictionary.MergedDictionaries>
@@ -18,9 +19,25 @@
     <!-- Шаблон заголовка кнопки с увеличенным отступом слева перед текстом -->
     <DataTemplate x:Key="ButtonHeaderWithMarginLeft">
         <TextBlock Text="{Binding}" 
-                   Margin="3,0,0,0" 
                    VerticalAlignment="Center"
-                   TextWrapping="Wrap" />
+                   TextWrapping="Wrap">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <!-- Базовый Margin -->
+                    <Setter Property="Margin" Value="3,0,0,0"/>
+                    <Style.Triggers>
+                        <!-- Триггер, реагирующий на SizeDefinition кнопки -->
+                        <DataTrigger Binding="{Binding SizeDefinition, 
+                                            RelativeSource={RelativeSource AncestorType=fluent:Button}}"
+                                     Value="Large">
+                            <Setter Property="MaxWidth" Value="120" />
+                            <Setter Property="Margin" Value="0"/>
+                            <Setter Property="Padding" Value="0"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
     </DataTemplate>
 
     <!-- _______________ ЦВЕТА, КИСТИ _______________ -->
@@ -130,14 +147,16 @@
         
         <Style.Triggers>
             <!-- Первый элемент -->
-            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" 
-                         Value="First">
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, 
+                                            Path=(local:ElementProperties.IsFirst)}" 
+                         Value="True">
                 <Setter Property="Padding" Value="10, 0, 5, 0"/>
             </DataTrigger>
             
             <!-- Последний элемент -->
-            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" 
-                         Value="Last">
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, 
+                                            Path=(local:ElementProperties.IsLast)}" 
+                         Value="True">
                 <Setter Property="Padding" Value="0, 0, 10, 0"/>
             </DataTrigger>
         </Style.Triggers>

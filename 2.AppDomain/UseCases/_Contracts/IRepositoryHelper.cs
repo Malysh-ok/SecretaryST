@@ -15,5 +15,5 @@ public interface IRepositoryHelper
     /// <summary>
     /// Полное пересоздание репозитория (БД).
     /// </summary>
-    public Task<Result<bool>> RebuildRepository();
+    public Task<Result<bool>> RebuildRepository(bool isUseMigrations = true);
 }

@@ -10,6 +10,7 @@
                      xmlns:local="clr-namespace:Presentation.Shell.Views"
                      xmlns:viewModels.MainView="clr-namespace:Presentation.ViewModels.MainView;assembly=ViewModels"
                      xmlns:userControls="clr-namespace:Presentation.Shell.UserControls"
+                     xmlns:attachedProperties="clr-namespace:Common.WpfModule.Ui.AttachedProperties;assembly=Ui"
                      d:DataContext="{ d:DesignInstance viewModels.MainView:MainVM }"
                      mc:Ignorable="d"
                      Title="{DynamicResource MainView}"
@@ -65,7 +66,7 @@
                         <fluent:Button x:Name="BtnBstgCreate"
                                        Icon="{DynamicResource CirclePlusDrawingImage}"
                                        Header="{DynamicResource MainView_Ribbon_File_Create}"
-                                       Command="{Binding AddCompetitionCommand}" />
+                                       Command="{Binding CreateCompetitionCommand}" />
                         <fluent:Button x:Name="BtnBstgRemove"
                                        Icon="{DynamicResource CircleXmarkSolidDrawingImage}"
                                        Header="{DynamicResource MainView_Ribbon_File_Remove}" 
@@ -86,85 +87,72 @@
             <!-- Настройки -->
             <fluent:RibbonTabItem Header="{DynamicResource MainView_Ribbon_Setting}"
                                   DataContext="{Binding SettingVM}">
+                
+                <fluent:RibbonGroupBox x:Name="SettingCommon" 
+                                       Header="Общее" >
+                        <fluent:Button
+                            x:Name="BtnSaveCompetition"
+                            LargeIcon="{DynamicResource FloppyDiskDrawingImage_VioletBlue}"
+                            SizeDefinition="Large"
+                            Header="{DynamicResource MainView_Ribbon_Setting_SaveChanges}"
+                            Command="{Binding SaveCompetitionCommand}" />
+                        <fluent:Button
+                            x:Name="BtnUndo"
+                            Icon="{DynamicResource RotateLeftDrawingImage_VioletBlue}"
+                            Header="{DynamicResource MainView_Ribbon_Setting_Undo}"
+                            Command="{Binding UndoCommand}" />
+                        <fluent:Button
+                            x:Name="BtnRedo"
+                            Icon="{DynamicResource RotateRightDrawingImage_VioletBlue}"
+                            Header="{DynamicResource MainView_Ribbon_Setting_Redo}"
+                            Command="{Binding RedoCommand}" />
+                    </fluent:RibbonGroupBox>
+                
                 <!-- Соревнования -->
                 <fluent:RibbonGroupBox x:Name="SettingCompetition" 
                                        Header="{DynamicResource MainView_Ribbon_Setting_Competitions}" >
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" >
-                            <Label x:Name="LblCurrentCompetition"
-                                        Content="{DynamicResource MainView_Ribbon_Setting_CurrCompetitions}" />
-
-                            <fluent:ComboBox x:Name="CmboxCurrentCompetition"
-                                             Width="200"
-                                             HorizontalAlignment="Left"
-                                             ItemsSource="{Binding CompetitionDataCollection,
-                                                Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                                             SelectedItem="{Binding  CurrentCompetitionData,
-                                                Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <Label 
+                                x:Name="LblCurrentCompetition"
+                                Content="{DynamicResource MainView_Ribbon_Setting_CurrCompetitions}" />
+                            <fluent:ComboBox
+                                x:Name="CmboxCurrentCompetition"
+                                MinWidth="120"
+                                HorizontalAlignment="Left"
+                                ItemsSource="{Binding Competitions,
+                                    Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                SelectedItem="{Binding  CurrentCompetition,
+                                    Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
-                        
-                        <Grid >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <fluent:Button Grid.Column="0" x:Name="BtnUpdateCompetition"
-                                           Icon="{DynamicResource RotateDrawingImage_DarkGreen}"
-                                           Header="{DynamicResource MainView_Ribbon_Setting_UpdateCompetition}" 
-                                           Command="{Binding GetCompetitionCommand}"
-                                           CommandParameter="{Binding CurrentCompetitionData.Id, 
-                                                UpdateSourceTrigger=PropertyChanged}"/>
-                        </Grid>
-                        <Grid >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <fluent:Button Grid.Column="0" x:Name="BtnSaveCompetition"
-                                           Icon="{DynamicResource FloppyDiskDrawingImage_DarkGreen}"
-                                           Header="{DynamicResource MainView_Ribbon_Setting_SaveChanges}"
-                                           Command="{Binding SaveCompetitionCommand}" />
-                        </Grid>                        
+                        <fluent:Button
+                            x:Name="BtnUpdateCompetition"
+                            Icon="{DynamicResource RotateDrawingImage_DarkGreen}"
+                            Header="{DynamicResource MainView_Ribbon_Setting_UpdateCompetition}"
+                            Command="{Binding GetCompetitionCommand}"
+                            CommandParameter="{Binding CurrentCompetition.Id,
+                                UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                 </fluent:RibbonGroupBox>
 
                 <!-- Судьи -->
                 <fluent:RibbonGroupBox x:Name="SettingReferees" 
                                        Header="{DynamicResource MainView_Ribbon_Setting_Referees}" >
-                    <StackPanel>
-                        <Grid >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <fluent:Button Grid.Column="0" x:Name="BtnUpdateReferees"
-                                           Icon="{DynamicResource DrawingImage_Olive}"
-                                           Header="{DynamicResource MainView_Ribbon_Setting_UpdateReferees}"
-                                           Command="{Binding GetRefereesCommand}" />
-                            <fluent:Button Grid.Column="1"  x:Name="BtnAddReferee"
-                                           Icon="{DynamicResource CirclePlusDrawingImage_Olive}"
-                                           Header="{DynamicResource MainView_Ribbon_Setting_AddReferee}"
-                                           Command="{Binding AddRefereeCommand}" />
-                        </Grid>
-                        <Grid >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <fluent:Button Grid.Column="0"  x:Name="BtnSaveReferees"
-                                           Icon="{DynamicResource FloppyDiskDrawingImage_Olive}"
-                                           Header="{DynamicResource MainView_Ribbon_Setting_SaveChanges}"
-                                           Command="{Binding SaveRefereesCommand}" />
-                            <fluent:Button Grid.Column="1"  x:Name="BtnDeleteReferee"
-                                           Icon="{DynamicResource CircleXmarkSolidDrawingImage_Olive}"
-                                           Header="{DynamicResource MainView_Ribbon_Setting_DeleteReferee}"
-                                           Command="{Binding RemoveRefereeCommand}" />
-                        </Grid>
-                    </StackPanel>
+                    <fluent:Button
+                        x:Name="BtnUpdateReferees"
+                        Icon="{DynamicResource DrawingImage_Olive}"
+                        Header="{DynamicResource MainView_Ribbon_Setting_UpdateReferees}"
+                        Command="{Binding GetRefereesCommand}" />
+                    <fluent:Button
+                        x:Name="BtnAddReferee"
+                        Icon="{DynamicResource CirclePlusDrawingImage_Olive}"
+                        Header="{DynamicResource MainView_Ribbon_Setting_AddReferee}"
+                        Command="{Binding CreateRefereeCommand}" />
+                    <fluent:Button
+                        x:Name="BtnDeleteReferee"
+                        Icon="{DynamicResource CircleXmarkSolidDrawingImage_Olive}"
+                        Header="{DynamicResource MainView_Ribbon_Setting_DeleteReferee}"
+                        Command="{Binding RemoveRefereeCommand}" />
                 </fluent:RibbonGroupBox>
                 
                 <!-- Дополнительные -->
@@ -338,7 +326,7 @@
             <!-- Левый элемент статус-бара -->
             <fluent:StatusBarItem Grid.Column="0" 
                                   Title="Левая часть статус-бара"
-                                  Tag="First">
+                                  attachedProperties:ElementProperties.IsFirst="True">
                 <TextBlock Text="Left!"/>   <!--TODO: Left! - временно-->
             </fluent:StatusBarItem>
 
@@ -378,7 +366,7 @@
             <!-- Правый элемент статус-бара -->
             <fluent:StatusBarItem Grid.Column="5"
                                   Title="Правая часть статус-бара"
-                                  Tag="Last">
+                                  attachedProperties:ElementProperties.IsLast="True" >
                 <TextBlock  Text="Right!" HorizontalAlignment="Right" />   <!--TODO: Right! - временно-->
             </fluent:StatusBarItem>
             

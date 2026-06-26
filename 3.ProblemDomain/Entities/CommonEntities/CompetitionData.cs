@@ -139,7 +139,6 @@ public sealed class CompetitionData
     
     /// <inheritdoc cref="ICopyEntity.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
-    // TODO: Не понятно, что делать с копированием списка секретарей
     public void Copy(CompetitionData destination)
     {
         destination.Name = Name;

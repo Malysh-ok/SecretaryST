@@ -28,7 +28,10 @@
     <v:String x:Key="MainView_Ribbon_File_Exit">Выход</v:String>
     <!-- Главное представление - Лента - Настройки -->
     <v:String x:Key="MainView_Ribbon_Setting">Настройки</v:String>
+    <!--            Общее -->
     <v:String x:Key="MainView_Ribbon_Setting_SaveChanges">Сохранить изменения</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_Undo">Отменить</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_Redo">Повторить</v:String>
     <!--            Соревнования -->
     <v:String x:Key="MainView_Ribbon_Setting_Competitions">Соревнования</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_CurrCompetitions">Соревнование:</v:String>

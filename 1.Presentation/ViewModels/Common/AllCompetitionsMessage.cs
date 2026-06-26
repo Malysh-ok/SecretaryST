@@ -12,12 +12,12 @@ public class AllCompetitionsMessage
     /// Коллекция данных о соревнованиях.
     /// </summary>
     // ReSharper disable once MemberInitializerValueIgnored
-    public ObservableCollection<CompetitionData> CompetitionDataCollection { get; set; } = [];
+    public ObservableCollection<CompetitionData> Competitions { get; set; } = [];
 
     /// <summary>
     /// Данные о текущем соревновании.
     /// </summary>
-    public CompetitionData? CurrentCompetitionData { get; set; }
+    public CompetitionData? CurrentCompetition { get; set; }
 
     /// <summary>
     /// Конструктор, запрещающий создания экземпляра без параметров.
@@ -30,13 +30,13 @@ public class AllCompetitionsMessage
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="competitionDataCollection">Коллекция данных о соревнованиях.</param>
-    /// <param name="currentCompetitionData">Данные о текущем соревновании.</param>
+    /// <param name="competitions">Коллекция данных о соревнованиях.</param>
+    /// <param name="currentCompetition">Данные о текущем соревновании.</param>
     public AllCompetitionsMessage(
-        ObservableCollection<CompetitionData> competitionDataCollection, 
-        CompetitionData? currentCompetitionData)
+        ObservableCollection<CompetitionData> competitions, 
+        CompetitionData? currentCompetition)
     {
-        CompetitionDataCollection = competitionDataCollection;
-        CurrentCompetitionData = currentCompetitionData;
+        Competitions = competitions;
+        CurrentCompetition = currentCompetition;
     }
 }

@@ -10,7 +10,7 @@ public class CompetitionMessage
     /// <summary>
     /// Данные о текущем соревновании.
     /// </summary>
-    public CompetitionData? CurrentCompetitionData { get; set; }
+    public CompetitionData? CurrentCompetition { get; set; }
 
     /// <summary>
     /// Конструктор, запрещающий создания экземпляра без параметров.
@@ -23,9 +23,9 @@ public class CompetitionMessage
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="currentCompetitionData">Данные о текущем соревновании.</param>
-    public CompetitionMessage(CompetitionData? currentCompetitionData)
+    /// <param name="currentCompetition">Данные о текущем соревновании.</param>
+    public CompetitionMessage(CompetitionData? currentCompetition)
     {
-        CurrentCompetitionData = currentCompetitionData;
+        CurrentCompetition = currentCompetition;
     }
 }

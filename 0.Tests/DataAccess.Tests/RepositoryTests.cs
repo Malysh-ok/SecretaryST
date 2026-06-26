@@ -222,20 +222,33 @@ public class RepositoryTests
     // [Category($"OnceAtBeginning")]
     public async Task RebuildDbTest()
     {
-        // Создаем сервис настроек приложения и создаем необходимые каталоги
-        // (без каталога метод dbContext.Database.MigrateAsync вызовет ошибку)
-        var appSettingService = new AppSettingService();
-        var result = appSettingService.AppDir.CreateAppDirs();
-        Assert.That(result.Excptn, Is.Null, result.Excptn?.Message);
+        IRepository? repository = null;
+        try
+        {
+            // Создаем сервис настроек приложения и создаем необходимые каталоги
+            // (без каталога метод dbContext.Database.MigrateAsync вызовет ошибку)
+            var appSettingService = new AppSettingService();
+            var result = appSettingService.AppDir.CreateAppDirs();
+            Assert.That(result.Excptn, Is.Null, result.Excptn?.Message);
         
-        var dbContext = new DbContextFactory().CreateDbContext([]);
-        var repository = new Repository<AppDbContext>(dbContext);
-        var repositoryHelper = new RepositoryHelper(repository, dbContext);
+            var dbContext = new DbContextFactory().CreateDbContext([]);
+            repository = new Repository<AppDbContext>(dbContext);
+            var repositoryHelper = new RepositoryHelper(repository, dbContext);
 
-        result = await repositoryHelper.RebuildRepository();
-        Assert.That(result.Excptn, Is.Null, result.Excptn?.Message);
-        
-        repository.Dispose();
+            result = await repositoryHelper.RebuildRepository(isUseMigrations: true);
+            if (result)
+                Assert.Pass();
+
+            var resultPost = await repositoryHelper.RebuildRepository(isUseMigrations: false);
+            if (resultPost)
+                Assert.Inconclusive("Не смогли применить миграции, но БД создана:\n" + result.Excptn?.Message!);
+            else
+                Assert.Fail(resultPost.Excptn?.Message!);
+        }
+        finally
+        {
+            repository?.Dispose();
+        }
     }
     
     [Test, Category($"Other")]

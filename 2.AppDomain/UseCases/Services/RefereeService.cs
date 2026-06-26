@@ -56,17 +56,17 @@ public class RefereeService(IRepository repository)
     }
 
     /// <summary>
-    /// Обновление коллекции судей.
+    /// Получение судей, связанных с соревнованием, и обновление ими коллекции.
     /// </summary>
-    /// <param name="refereesCollection">Текущая коллекция судей.</param>
-    /// <param name="competitionData">Текущее соревнование.</param>
+    /// <param name="refereesCollection">Обновляемая коллекция судей.</param>
+    /// <param name="competition">Текущее соревнование.</param>
     /// <returns>Индекс нового текущего судьи.</returns>
     public async Task<Result<bool>> GetRefereesAsync(
-        ObservableCollection<Referee> refereesCollection, CompetitionData? competitionData)
+        ObservableCollection<Referee> refereesCollection, CompetitionData? competition)
     {
                 
         // Проверяем наличие соревнования
-        if (competitionData == null)
+        if (competition == null)
         {
             return Result<bool>.Fail(
                 new AppException(AppPhrases.RefereeAddError, new AppException(AppPhrases.CompetitionDataIsNull))
@@ -81,7 +81,7 @@ public class RefereeService(IRepository repository)
         // Загружаем данные из репозитория
         var refereesResult = await repository.GetNumberedAllAsync<Referee>(
             true, 
-            r => r.CompetitionDataId == competitionData.Id,
+            r => r.CompetitionDataId == competition.Id,
             nameof(RefereeLevel));
         if (! refereesResult)
             return Result<bool>.Fail(new AppException(AppPhrases.RefereesLoadError, result.Excptn));
@@ -94,19 +94,19 @@ public class RefereeService(IRepository repository)
     }
 
     /// <summary>
-    /// Добавление нового судьи после текущего.
+    /// Создание нового судьи и добавление в коллекцию после текущего.
     /// </summary>
-    /// <param name="refereesCollection">Текущая коллекция судей.</param>
+    /// <param name="refereesCollection">Обновляемая коллекция судей.</param>
     /// <param name="index">Индекс текущего судьи.</param>
-    /// <param name="competitionData">Текущее соревнование.</param>
+    /// <param name="competition">Текущее соревнование.</param>
     /// <returns>Индекс нового текущего судьи.</returns>
-    public async Task<Result<int>> AddRefereeAsync(
-        ObservableCollection<Referee> refereesCollection, int index, CompetitionData? competitionData)
+    public async Task<Result<int>> CreateRefereeAsync(
+        ObservableCollection<Referee> refereesCollection, int index, CompetitionData? competition)
     {
         AppException innerException;
         
         // Проверяем наличие соревнования
-        if (competitionData == null)
+        if (competition == null)
         {
             innerException = new AppException(AppPhrases.CompetitionDataIsNull);
             return Result<int>.Fail(
@@ -145,7 +145,7 @@ public class RefereeService(IRepository repository)
             "ТЕРРИТОРИЯ",
             refereeLevelResult.Value!,
             refereeJobTitleResult.Value!,
-            competitionData);
+            competition);
         
         // Добавляем в коллекцию судью и перенумеровываем коллекцию
         refereesCollection.Insert(newIndex, newReferee);
@@ -164,10 +164,10 @@ public class RefereeService(IRepository repository)
     }
     
     /// <summary>
-    /// Удаление судьи.
+    /// Удаление судьи из коллекции.
     /// </summary>
     /// <param name="refereesCollection">Текущая коллекция судей.</param>
-    /// <param name="index">Индекс удаляемого судьи.</param>
+    /// <param name="index">Индекс удаляемого судьи в коллекции.</param>
     /// <returns>Индекс нового текущего судьи.</returns>
     public Result<int> RemoveReferee(ObservableCollection<Referee> refereesCollection, int index)
     {
@@ -189,30 +189,7 @@ public class RefereeService(IRepository repository)
                 new AppException(AppPhrases.RefereeRemoveError, intResult.Excptn)
             );
         }
-        
-        // Обновляем судей в репозитории (необходимо, т.к. коллекцию перенумеровали)
-        intResult = repository.UpdateRange(refereesCollection);
-        if (! intResult)
-        {
-            return Result<int>.Fail(
-                new AppException(AppPhrases.RefereeRemoveError, intResult.Excptn)
-            );
-        }
 
         return Result<int>.Done(index == 0 ? 0 : index - 1);
-    }
-
-    /// <summary>
-    /// Сохранение списка судей.
-    /// </summary>
-    public async Task<Result<int>> SaveRefereesAsync(CompetitionData? competitionData)
-    {
-        // repository.Detach(competitionData);
-        var intResult = await repository.SaveChangesAsync();
-        // repository.Attach(competitionData);
-        
-        return intResult
-            ? intResult
-            : Result<int>.Fail(new AppException(AppPhrases.RefereesSaveError, intResult.Excptn));
     }
 }
