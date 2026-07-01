@@ -14,6 +14,9 @@ public class LocalizationHelper
     // Настройки приложения
     private readonly AppSettingService _appSetting;
 
+    // Базовый  для поиска языкового словаря ресурсов
+    private Regex _regex = new Regex(@"lang\..*xaml", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     /// <summary>
     /// Получаем наименование ресурса локализации.
     /// </summary>
@@ -35,49 +38,68 @@ public class LocalizationHelper
     }
 
     /// <summary>
-    /// Асинхронно локализует представление (окно), заменяя ResourceDictionary языка.
+    /// Локализует представление (окно), заменяя словарь ResourceDictionary языка.
     /// </summary>
     /// <param name="view">Представление, которое нужно локализовать.</param>
     /// <param name="localization">Целевой язык.</param>
     /// <returns>true - локализация успешна, false - ошибка.</returns>
     /// <remarks>
-    /// Если ресурс с локализацией не найден - представление остается в прежней локализации.
+    /// Если словарь с локализацией не найден - представление остается в прежней локализации.
     /// </remarks>
     public bool LocalizeView(IViewWithResources view, Lang localization)
     {
-        // Используем Dispatcher, чтобы получить UI-поток
-        return Application.Current.Dispatcher.Invoke(() =>
+        // Получаем словарь локализации из App
+        var appResDic = Application.Current.Resources.MergedDictionaries.FirstOrDefault(r =>
+            _regex.IsMatch(r.Source.OriginalString));
+
+        // Если у приложения отсутствует словарь с локализацией - выходим
+        if (appResDic?.Source == null)
+            return false;
+
+        try
         {
-            // Получаем ResourceDictionary локализации из App
-            var regex = new Regex(@"lang\..*xaml", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            var appResources = Application.Current.Resources.MergedDictionaries.FirstOrDefault(r =>
-                regex.IsMatch(r.Source.OriginalString));
-
-            // Если у приложения отсутствует ресурс с локализацией - выходим
-            if (appResources?.Source == null)
-                return false;
-
-            try
+            // Создаем новый словарь с локализацией для целевого языка
+            var newResDic = new ResourceDictionary
             {
-                // Создаем ResourceDictionary для нового языкового стандарта
-                var viewResources = new ResourceDictionary
-                {
-                    Source = new Uri(
-                        regex.Replace(appResources.Source.OriginalString,
-                            GetLangResourceName(localization)),
-                        UriKind.Relative)
-                };
+                Source = new Uri(
+                    _regex.Replace(appResDic.Source.OriginalString, 
+                        GetLangResourceName(localization)), UriKind.Relative)
+            };
 
-                // Удаляем текущий ResourceDictionary локализации, добавляем новый
-                view.Resources.MergedDictionaries.Remove(appResources);
-                view.Resources.MergedDictionaries.Add(viewResources);
+            // Находим и удаляем все языковые словари в представлении
+            var toRemoveResDicList = view.Resources.MergedDictionaries
+                               .Where(r => r.Source != null && _regex.IsMatch(r.Source.OriginalString))
+                               .ToList();
+            toRemoveResDicList.ForEach(d => view.Resources.MergedDictionaries.Remove(d));
+            
+            // Добавляем новый словарь
+            view.Resources.MergedDictionaries.Add(newResDic);
 
-                return true;
-            }
-            catch
-            {
-                return false;   // если ошибка - выходим
-            }
-        });
+            return true;
+        }
+        catch
+        {
+            return false; // если ошибка - выходим
+        }
+    }
+
+    /// <summary>
+    /// Получение строки в текущей локализации из словаря <see cref="ResourceDictionary"/> представления.
+    /// </summary>
+    /// <param name="view">Представление, откуда получаем строку.</param>
+    /// <param name="key">Ключ в ресурсе.</param>
+    /// <param name="defaultValue">Значение, получаемое при неудачном поиске в словаре.</param>
+    public string GetLocalizedString(IViewWithResources view, string key, string defaultValue = "")
+    {            
+        // Получаем словарь текущей локализации из представления
+        var viewResDic = view.Resources.MergedDictionaries.FirstOrDefault(r =>
+            _regex.IsMatch(r.Source.OriginalString));
+        
+        // Получаем локализованную строку, если она есть 
+        var result = defaultValue;
+        if (viewResDic != null && viewResDic.Contains(key))
+            result = (viewResDic[key] as string);
+
+        return result ?? defaultValue;
     }
 }

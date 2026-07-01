@@ -92,4 +92,7 @@
     <data name="AppDirsCreateError" xml:space="preserve">
         <value>Не удалось создать каталоги приложения.</value>
     </data>
+    <data name="LocalizingError" xml:space="preserve">
+        <value>Ошибка локализации представления "{0}".</value>
+    </data>
 </root>

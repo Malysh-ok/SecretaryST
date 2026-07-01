@@ -6,7 +6,7 @@ using AppDomain.Setting.Entities;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
 using Common.BaseComponents.Components.Exceptions;
-using Common.BaseComponents.Wrappers;
+using Common.BaseExtensions;
 using Common.BaseExtensions.Collections;
 using Common.WpfModule.Components.Collections;
 using Common.WpfModule.Components.Services;
@@ -243,31 +243,34 @@ public sealed class SettingVM : ObservableRecipient,
     /// <summary>
     /// Получаем сообщение с экземпляром <see cref="LocalizationMessage"/>.
     /// </summary>
-    public void Receive(LocalizationMessage message)
+    public async void Receive(LocalizationMessage message)
     {
-        var localization = _appSetting.AppLocalization;
-        
-        var lang = message.Lang;            // устанавливаемый язык
-        var oldLang = message.OldLang;      // предыдущий язык
-        
-        // Перевод наименований всех доступных языков приложения в соответствии с устанавливаемым языком
-        localization.Translate(localization.SetCurrentLang(lang).GetCultureInfo());
-
-        _ = Task.Run(() =>
+        try
         {
-            if (! _localizationHelper.LocalizeView(_view, lang))
-            {
-                // Если локализовать не получилось - переводим доступные языки обратно,
-                // в соответствии с предыдущим языком
-                localization.Translate(localization.SetCurrentLang(oldLang).GetCultureInfo());
-            }
-        });
-        var currLang = localization.GetCurrentOrDefaultLang();
+            var localization = _appSetting.AppLocalization;
+        
+            var lang = message.Lang;       // устанавливаемый язык
+            var oldLang = message.OldLang; // предыдущий язык
+        
+            // Перевод наименований всех доступных языков приложения в соответствии с устанавливаемым языком
+            localization.Translate(localization.SetCurrentLang(lang).GetCultureInfo());
 
-        // Меняем текущую локализацию и локализацию фраз приложения в соответствии с текущим языком
-        CultureInfo.CurrentUICulture = currLang.GetCultureInfo();
-        CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture;
-        AppPhrases.Culture = CultureInfo.CurrentUICulture;
+            // Локализация представления асинхронно в UI-потоке, но без блокировки
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                if (! _localizationHelper.LocalizeView(_view, lang))
+                {
+                    // Если локализовать не получилось - переводим доступные языки обратно,
+                    // в соответствии с предыдущим языком
+                    localization.Translate(localization.SetCurrentLang(oldLang).GetCultureInfo());
+                }
+            }, DispatcherPriority.Background);
+        
+            // После завершения локализации обновляем культуру, UI, и фразы приложения
+            var currLang = localization.GetCurrentOrDefaultLang();
+            CultureInfo.CurrentUICulture = currLang.GetCultureInfo();
+            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture;
+            AppPhrases.Culture = CultureInfo.CurrentUICulture;
         
         // Изменяем свойства, используемые для биндинга
         SetProperty(ref _currLang!, null);      // отвязываем привязку свойства к событию изменения значения 

@@ -2,6 +2,7 @@
 using AppDomain.Setting.Services;
 using Common.WpfModule.Ui.Views;
 using Presentation.ViewModels;
+using Serilog;
 
 namespace Presentation.Shell.Views;
 
@@ -21,10 +22,10 @@ public partial class OtherSettingView : IViewWithResources
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public OtherSettingView(AppSettingService appSetting)
+    public OtherSettingView(ILogger logger, AppSettingService appSetting)
     {
         InitializeComponent();
 
-        DataContext = new OtherSettingVM(this, appSetting);
+        DataContext = new OtherSettingVM(this, logger, appSetting);
     }
 }

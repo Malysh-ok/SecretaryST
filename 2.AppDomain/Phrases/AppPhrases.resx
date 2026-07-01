@@ -99,4 +99,7 @@
     <data name="AppDirsCreateError" xml:space="preserve">
         <value>Failed to create application directories.</value>
     </data>
+    <data name="LocalizingError" xml:space="preserve">
+        <value>Localizing "{0}" view error.</value>
+    </data>
 </root>

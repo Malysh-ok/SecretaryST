@@ -1,9 +1,16 @@
-﻿using AppDomain.Setting.Entities;
+﻿using System.Windows;
+using System.Windows.Threading;
+using AppDomain.AppExceptions;
+using AppDomain.Phrases;
+using AppDomain.Setting.Entities;
 using AppDomain.Setting.Services;
+using Common.BaseExtensions;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Presentation.ViewModels.Common;
+using Presentation.ViewModels.Common.Messages;
+using Serilog;
 
 namespace Presentation.ViewModels;
 
@@ -13,9 +20,9 @@ namespace Presentation.ViewModels;
 // ReSharper disable once InconsistentNaming
 public class OtherSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
 {
-    private readonly AppSettingService _appSetting;
-
     private readonly IViewWithResources _view;
+    private readonly ILogger _logger;
+    private readonly AppSettingService _appSetting;
 
     private readonly LocalizationHelper _localizationHelper;
 
@@ -29,9 +36,12 @@ public class OtherSettingVM : ObservableRecipient, IRecipient<LocalizationMessag
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public OtherSettingVM(IViewWithResources view, AppSettingService appSetting)
+    public OtherSettingVM(IViewWithResources view, 
+        ILogger logger, 
+        AppSettingService appSetting)
     {
         _view = view;
+        _logger = logger;
         _appSetting = appSetting;
         _localizationHelper = new LocalizationHelper(appSetting);
 
@@ -46,18 +56,29 @@ public class OtherSettingVM : ObservableRecipient, IRecipient<LocalizationMessag
     /// <summary>
     /// Получаем сообщение с экземпляром <see cref="LocalizationMessage"/>.
     /// </summary>
-    public void Receive(LocalizationMessage message)
+    public async void Receive(LocalizationMessage message)
     {
-        DisplayMsg = message.Lang;
-        
-        // Локализуем представление
-        _ = Task.Run(() =>
+        try
         {
-            if (! _localizationHelper.LocalizeView(_view, message.Lang))
+            DisplayMsg = message.Lang;
+        
+            // Локализация представления асинхронно в UI-потоке, но без блокировки
+            await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                DisplayMsg = message.OldLang;
-            }
-        });
-
+                if (! _localizationHelper.LocalizeView(_view, message.Lang))
+                {
+                    // Если локализовать не получилось - восстанавливаем предыдущий язык
+                    DisplayMsg = message.OldLang;
+                }
+            }, DispatcherPriority.Background);
+        }
+        catch (Exception ex)
+        {
+            // Пишем в и лог об ошибке
+            var exception = new AppException(AppPhrases.LocalizingError.Format(nameof(OtherSettingVM)), ex);
+            _logger.Error(exception,
+                "{class}.{method}.",
+                typeof(OtherSettingVM), nameof(Receive));
+        }
     }
 }

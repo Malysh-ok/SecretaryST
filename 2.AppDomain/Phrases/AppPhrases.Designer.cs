@@ -213,6 +213,15 @@ namespace AppDomain.Phrases {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Localizing &quot;{0}&quot; view error..
+        /// </summary>
+        public static string LocalizingError {
+            get {
+                return ResourceManager.GetString("LocalizingError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to One or more Library entities are missing..
         /// </summary>
         public static string MissingEntitiesError {
