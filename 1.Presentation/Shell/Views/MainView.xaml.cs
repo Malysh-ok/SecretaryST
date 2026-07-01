@@ -22,8 +22,8 @@ namespace Presentation.Shell.Views;
 /// </summary>
 public partial class MainView : IViewWithResources
 {
-    // Настройки приложения
-    private static AppSettingService _appSetting = null!;   // на момент обращения поле уже будет != null
+    private static ILogger _logger = null!;
+    private static AppSettingService _appSetting = null!;       // настройки приложения
     
     /// <summary>
     /// Представление (окно) дополнительных настроек.
@@ -46,7 +46,7 @@ public partial class MainView : IViewWithResources
 
         // Удаляем старое и создаем новое окно доп. настроек
         _otherSettingView?.Close();
-        _otherSettingView = new OtherSettingView(_appSetting)
+        _otherSettingView = new OtherSettingView(_logger, _appSetting)
         {
             Owner = Application.Current.MainWindow
         };
@@ -66,6 +66,7 @@ public partial class MainView : IViewWithResources
         CompetitionDataService competitionDataService,
         RefereeService refereeService)
     {
+        _logger = logger;
         _appSetting = appSetting;
 
         InitializeComponent();
