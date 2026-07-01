@@ -272,11 +272,21 @@ public sealed class SettingVM : ObservableRecipient,
             CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture;
             AppPhrases.Culture = CultureInfo.CurrentUICulture;
         
-        // Изменяем свойства, используемые для биндинга
-        SetProperty(ref _currLang!, null);      // отвязываем привязку свойства к событию изменения значения 
-        Languages.Clear();
-        localization.Languages.ForEach(item => Languages.Add(item.Value));
-        SetProperty(ref _currLang, currLang, nameof(CurrLang));     // вновь привязываем
+            SetProperty(ref _currLang!, null);                          // отвязываем привязку свойства к событию изменения значения 
+            Languages.Clear();
+            localization.Languages.ForEach(item => Languages.Add(item.Value));
+            SetProperty(ref _currLang, currLang, nameof(CurrLang));     // вновь привязываем
+        }
+        catch (Exception ex)
+        {
+            // Пишем в статус-бар и лог об ошибке
+            var exception = new AppException(AppPhrases.LocalizingError.Format(nameof(SettingVM)), ex);
+            _ = StatusBarService.SetTextAsync(exception.Message,
+                BaseException.ExcptnType.Error, 0);
+            _logger.Error(exception,
+                "{class}.{method}.",
+                typeof(SettingVM), nameof(Receive));
+        }
     }
 
     /// <summary>
