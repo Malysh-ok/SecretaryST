@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using Common.BaseExtensions;
+using Common.BaseExtensions.ValueTypes;
 
 namespace Common.WpfModule.Ui.Converters;
 
@@ -39,7 +39,7 @@ public class RowsToPixelsConverter : IValueConverter
         // Получаем количество строк из ConverterParameter
         if (parameter == null) 
             return DependencyProperty.UnsetValue;
-        var rows = parameter.ToString().ParseToInt();
+        var rows = parameter.ToString().ToInt();
         if (rows <= 0)
             return DependencyProperty.UnsetValue;
         

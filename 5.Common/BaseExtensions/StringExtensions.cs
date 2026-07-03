@@ -353,25 +353,6 @@ public static class StringExtensions
 
         return measure;
     }
-        
-    /// <summary>
-    /// Замена разделителя '.' или ',' в текстовом представлении числа на
-    /// значение разделителя в текущей локализации ОС.
-    /// </summary>
-    /// <param name="value">Исходная строка.</param>
-    /// <param name="culture">Языковая культура.</param>
-    public static string NormalizeForDouble(this string value, CultureInfo culture = null)
-    {
-        if (value == null)
-            throw new ArgumentNullException(nameof(value));
-
-        culture ??= CultureInfo.CurrentCulture;
-
-        return value.Replace(".", culture.NumberFormat.NumberDecimalSeparator)
-            .Replace(",", culture.NumberFormat.CurrencyGroupSeparator == ","
-                ? string.Empty
-                : culture.NumberFormat.NumberDecimalSeparator);
-    }
 
     /// <summary>
     /// Замена null строки на пустую.
@@ -394,48 +375,6 @@ public static class StringExtensions
     public static bool ParseToBool(this string stringValue, bool defaultValue = false)
     {
         return bool.TryParse(stringValue, out var value)
-            ? value
-            : defaultValue;
-    }
-
-    /// <summary>
-    /// Преобразование строки в <see cref="double"/>, с заменой разделителя '.' или ','
-    /// на значение разделителя в текущей локализации ОС.
-    /// </summary>
-    /// <param name="stringValue">Исходная строка.</param>
-    /// <param name="defaultValue">Значение результата в случае ошибки преобразования.</param>
-    public static double ParseToDouble(this string stringValue, double defaultValue = double.NaN)
-    {
-        if (stringValue == null)
-            throw new ArgumentNullException(nameof(stringValue));
-
-        CommonPhrases.Culture = CultureInfo.CurrentUICulture; // устанавливаем яз. стандарт для фраз
-
-        var normalized = stringValue.NormalizeForDouble();
-        if (!string.IsNullOrEmpty(normalized))
-        {
-            if (double.TryParse(normalized, out var result))
-            {
-                return result;
-            }
-        }
-
-        if (defaultValue.Equals(double.NaN))
-        {
-            throw new ArgumentException(CommonPhrases.Exception_ParamIsNotConvertToDouble.Format(stringValue));
-        }
-
-        return defaultValue;
-    }
-
-    /// <summary>
-    /// Преобразование строки в число. 
-    /// </summary>
-    /// <param name="stringValue">Исходная строка.</param>
-    /// <param name="defaultValue">Значение результата в случае ошибки преобразования.</param>
-    public static int ParseToInt(this string stringValue, int defaultValue = 0)
-    {
-        return int.TryParse(stringValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
             ? value
             : defaultValue;
     }

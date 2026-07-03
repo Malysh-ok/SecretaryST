@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using Common.BaseExtensions;
+using Common.BaseExtensions.ValueTypes;
 using Common.WpfModule.Extensions;
 
 namespace Common.WpfModule.Ui.Converters;
@@ -31,7 +31,7 @@ public class RowIndexConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         // Смещение (по умолчанию 1)
-        var offset = parameter?.ToString().ParseToInt(1) ?? 1;
+        var offset = parameter?.ToString().ToInt(defaultValue: 1) ?? 1;
         
         var index = GetIndex(value);
         
