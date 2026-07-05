@@ -1,6 +1,6 @@
 ﻿using AppDomain.Setting.Entities;
 
-namespace Presentation.ViewModels.Common;
+namespace Presentation.ViewModels.Common.Messages;
 
 /// <summary>
 /// Сообщение, рассылаемое представлениям (окнам) при локализации приложения.

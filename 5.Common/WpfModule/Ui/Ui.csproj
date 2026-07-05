@@ -18,6 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Behaviors\ComboBoxes\" />
       <Folder Include="Behaviors\Windows\" />
     </ItemGroup>
 

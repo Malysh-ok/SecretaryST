@@ -24,9 +24,10 @@
     <SolidColorBrush x:Key="DefaultBackgroundBrush" Color="{StaticResource DefaultBackgroundColor}"/>
     <SolidColorBrush x:Key="DefaultDarkBackgroundBrush" Color="{StaticResource DefaultDarkBackgroundColor}"/>
     <SolidColorBrush x:Key="DefaultBorderBrush" Color="{StaticResource DefaultBorderColor}"/>
-    <SolidColorBrush x:Key="DefaultDarkBorderBrush" Color="{StaticResource DefaultLightBorderColor}"/>
+    <SolidColorBrush x:Key="DefaultDarkBorderBrush" Color="{StaticResource DefaultDarkBorderColor}"/>
     <SolidColorBrush x:Key="DefaultLightBorderBrush" Color="{StaticResource DefaultLightBorderColor}"/>
     <SolidColorBrush x:Key="GrayTextBrush" Color="{StaticResource GrayTextColor}"/>
+    <SolidColorBrush x:Key="LightGrayTextBrush" Color="{StaticResource DefaultBorderColor}"/>
     <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}"/>
     <SolidColorBrush x:Key="HyperlinkBrush" Color="{StaticResource HyperlinkColor}"/>
     <SolidColorBrush x:Key="DisabledForegroundBrush" Color="{StaticResource DisabledForegroundColor}"/>
@@ -35,6 +36,7 @@
     <SolidColorBrush x:Key="MenuForegroundBrush" Color="{x:Static SystemColors.MenuTextColor}"/>
     <SolidColorBrush x:Key="StatusBarBackgroundBrush" Color="{StaticResource MenuBackgroundColor}"/>
     <SolidColorBrush x:Key="StatusBarForegroundBrush" Color="{x:Static SystemColors.MenuTextColor}"/>
+    <SolidColorBrush x:Key="DarkDarkGrayBrush" Color="{StaticResource DarkDarkGrayColor}"/>
     
     <Color x:Key="AccentColor">#1ba1e2</Color>
     <SolidColorBrush x:Key="Accent" Color="{DynamicResource AccentColor}" />
@@ -98,5 +100,9 @@
                      Color="{StaticResource HighlightColor}"/>
     <SolidColorBrush x:Key="{x:Static SystemColors.InactiveCaptionBrush}"  
                      Color="{StaticResource InactiveSelectionHighlightColor}"/>
+    
+    <SolidColorBrush x:Key="{x:Static SystemColors.GrayTextBrush}"  
+                     Color="{StaticResource GrayTextColor}"/>
+
 </ResourceDictionary>
     

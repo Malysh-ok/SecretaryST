@@ -1,28 +1,27 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using System.Windows.Media;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
 using Common.BaseComponents.Components.Exceptions;
-using Common.WpfModule.Components.Services;
+using Common.WpfModule.Ui.Services;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Presentation.ViewModels._Contracts;
 using Serilog;
+// ReSharper disable InconsistentNaming
 
 namespace Presentation.ViewModels.MainView;
 
 /// <summary>
 /// ViewModel для основного представления.
 /// </summary>
-[SuppressMessage("ReSharper", "InconsistentNaming")]
 public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDisposable
 {
     /// <summary>
     /// Логгер.
     /// </summary>
-    [SuppressMessage("ReSharper", "NotAccessedField.Local")]
+    // ReSharper disable once NotAccessedField.Local
     private ILogger _logger = null!;
 
     /// <summary>
@@ -75,14 +74,15 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     /// <param name="exceptionsProvider">Поставщик исключения.</param>
     /// <param name="competitionDataService">Сервис для работы с Данными о соревнованиях.</param>
     /// <param name="refereeService">Сервис для работы с Судьями.</param>
+    /// <param name="sportEventService">Сервис для работы с Видами программы</param>
     public static MainVM Create(IViewWithResources view, 
         StatusBarService statusBarService,
         ILogger logger, 
         IExceptionsProvider exceptionsProvider,
         AppSettingService appSetting,
         CompetitionDataService competitionDataService,
-        RefereeService refereeService
-        )
+        RefereeService refereeService,
+        SportEventService sportEventService)
     {
         // TODO: Устанавливаем цвет кистей статус-бара (возможно изменим)
         statusBarService.ReSetBrushes(Brushes.Azure, Brushes.Azure,
@@ -91,7 +91,7 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
 
         // Создаем ViewModel's. Последовательность создания важна!
         var settingVM = new SettingVM(view, statusBarService, logger, exceptionsProvider, appSetting,
-            competitionDataService, refereeService);
+            competitionDataService, refereeService, sportEventService);
         var backstageVM = new BackstageVM(statusBarService, logger, exceptionsProvider, appSetting, 
             competitionDataService);
         var mainVM = new MainVM(backstageVM, settingVM, statusBarService, logger);

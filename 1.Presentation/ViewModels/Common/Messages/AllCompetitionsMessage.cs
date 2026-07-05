@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using ProblemDomain.Entities.CommonEntities;
 
-namespace Presentation.ViewModels.Common;
+namespace Presentation.ViewModels.Common.Messages;
 
 /// <summary>
 /// Сообщение, рассылаемое представлениям (окнам) при изменении списка всех соревнований.

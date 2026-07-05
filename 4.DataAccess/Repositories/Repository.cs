@@ -200,6 +200,25 @@ public class Repository<TDbContext> : IRepository
             return Result<TEntity?>.Fail(ex);
         }
     }
+    
+    /// <inheritdoc />
+    public async Task<Result<TEntity?>> GetByConditionAsync<TEntity>(Expression<Func<TEntity, bool>> predicate,  
+            params string[] navigationProperties)
+        where TEntity : class
+    {
+        try
+        {
+            var queryable = DbContext.Set<TEntity>().AsTracking();  // Т.к. запрос может быть сложным,
+                                                                    // .AsNoTracking() использовать не получается
+            
+            return Result<TEntity?>.Done(await AddNavigationProperties(queryable, navigationProperties)
+                .FirstOrDefaultAsync(predicate));
+        }
+        catch (Exception ex)
+        {
+            return Result<TEntity?>.Fail(ex);
+        }
+    }
 
     /// <inheritdoc />
     public async Task<Result<IList<TEntity>>> GetAllAsync<TEntity>(

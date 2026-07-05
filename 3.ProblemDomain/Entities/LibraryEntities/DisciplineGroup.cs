@@ -77,4 +77,8 @@ public sealed class DisciplineGroup
     {
         Copy((DisciplineGroup)destination);
     }
+    
+    /// <inheritdoc />
+    public override string ToString()
+        => Name;
 }

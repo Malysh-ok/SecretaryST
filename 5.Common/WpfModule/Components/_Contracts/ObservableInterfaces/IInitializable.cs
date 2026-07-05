@@ -1,4 +1,4 @@
-﻿namespace Common.WpfModule.Components.ObservableModelInterfaces;
+﻿namespace Common.WpfModule.Components._Contracts.ObservableInterfaces;
 
 /// <summary>
 /// Интерфейс уведомления модели представления об инициализации с передачей параметра для инициализации.

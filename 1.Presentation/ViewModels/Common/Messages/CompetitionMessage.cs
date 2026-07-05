@@ -1,6 +1,6 @@
 ﻿using ProblemDomain.Entities.CommonEntities;
 
-namespace Presentation.ViewModels.Common;
+namespace Presentation.ViewModels.Common.Messages;
 
 /// <summary>
 /// Сообщение, рассылаемое представлениям (окнам) при изменении соревнования.

@@ -6,6 +6,8 @@ using Common.BaseComponents.Components.Colors;
 using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions;
 using Common.BaseExtensions.Collections;
+using Common.BaseExtensions.ValueTypes;
+using Common.WpfModule.Components.Collections;
 using DataAccess.Repositories.Exceptions;
 using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.CommonEntities;

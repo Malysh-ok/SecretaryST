@@ -3,8 +3,8 @@ using AppDomain.AppExceptions;
 using AppDomain.Phrases;
 using AppDomain.UseCases._Contracts;
 using Common.BaseComponents.Components;
-using Common.BaseComponents.Wrappers;
 using Common.BaseExtensions.Collections;
+using Common.WpfModule.Components.Wrappers;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
@@ -33,7 +33,7 @@ public class CompetitionDataService(IRepository repository)
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(new AppException(AppPhrases.ConductingOrganizationsGetError, ex));
+            return Result<int>.Fail(new AppException(AppPhrases.ConductingOrganizationsLoadError, ex));
         }
     }
     
@@ -83,7 +83,7 @@ public class CompetitionDataService(IRepository repository)
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(new AppException(AppPhrases.ConductingOrganizationsAddError, ex));
+            return Result<int>.Fail(new AppException(AppPhrases.ConductingOrganizationCreateError, ex));
         }
     }
     
@@ -107,7 +107,7 @@ public class CompetitionDataService(IRepository repository)
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(new AppException(AppPhrases.ConductingOrganizationsRemoveError, ex));
+            return Result<int>.Fail(new AppException(AppPhrases.ConductingOrganizationRemoveError, ex));
         }
     }
 
@@ -120,7 +120,7 @@ public class CompetitionDataService(IRepository repository)
 
         return competitionsStatusesResult 
             ? Result<IList<CompetitionsStatus>>.Done(competitionsStatusesResult.Value!) 
-            : Result<IList<CompetitionsStatus>>.Fail(new AppException(AppPhrases.CompetitionsStatusesLoadError));
+            : Result<IList<CompetitionsStatus>>.Fail(new AppException(AppPhrases.CompetitionStatusesLoadError));
     }
 
     /// <summary>
@@ -193,12 +193,12 @@ public class CompetitionDataService(IRepository repository)
         // Сбрасываем отслеживание сущностей
         var result = repository.DetachAll<CompetitionData>();
         if (!result)
-            return Result<int>.Fail(new AppException(AppPhrases.CompetitionDataLoadError, result.Excptn));
+            return Result<int>.Fail(new AppException(AppPhrases.CompetitionDataListLoadError, result.Excptn));
         
         // Загружаем данные из репозитория
         var competitionsDataResult = await repository.GetAllAsync<CompetitionData>();
         if (!competitionsDataResult)
-            return Result<int>.Fail(new AppException(AppPhrases.CompetitionDataLoadError, result.Excptn));
+            return Result<int>.Fail(new AppException(AppPhrases.CompetitionDataListLoadError, result.Excptn));
 
         // Перезаписываем коллекцию соревнований новыми данными
         competitionCollection.Clear();
@@ -249,12 +249,12 @@ public class CompetitionDataService(IRepository repository)
     {
         AppException innerException;
         
-        // Получаем статус соревнований
-        var competitionsStatusResult = await repository.FindAsync<CompetitionsStatus>(
+        // Получаем статус соревнования
+        var competitionStatusResult = await repository.FindAsync<CompetitionsStatus>(
             CompetitionsStatusEnm.Regional);
-        if (! competitionsStatusResult)
+        if (! competitionStatusResult)
         {
-            innerException = new AppException(AppPhrases.CompetitionsStatusFindError, competitionsStatusResult.Excptn);
+            innerException = new AppException(AppPhrases.CompetitionStatusFindError, competitionStatusResult.Excptn);
             return Result<CompetitionData>.Fail(
                 new AppException(AppPhrases.CompetitionDataCreateError, innerException)
             );
@@ -277,7 +277,7 @@ public class CompetitionDataService(IRepository repository)
             ["ПРОВОДЯЩАЯ ОРГАНИЗАЦИЯ"],
             DateTime.Now, DateTime.Now,
             "МЕСТО ПРОВЕДЕНИЯ", "СОРЕВЫ",
-            competitionsStatusResult.Value!,
+            competitionStatusResult.Value!,
             detailedCompetitionStatusResult.Value!
         );
         

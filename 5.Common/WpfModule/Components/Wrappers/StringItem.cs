@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Common.BaseComponents.Wrappers;
+namespace Common.WpfModule.Components.Wrappers;
 
 /// <summary>
 /// Обёртка для строкового значения с поддержкой уведомлений об изменениях.

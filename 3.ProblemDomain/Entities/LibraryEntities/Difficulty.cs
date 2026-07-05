@@ -1,4 +1,5 @@
 using System;
+using Common.BaseExtensions.ValueTypes;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 
 namespace ProblemDomain.Entities.LibraryEntities;
@@ -67,12 +68,12 @@ public static class Difficulty
     /// </summary>
     /// <remarks>
     /// 1 - 6 к.с. для маршрутов, 1 - 6 класс дистанций (в том числе для сев. ходьбы),
-    /// 1 - 3 ст.с. для маршрутов.
+    /// -3 - -1 ст.с. для маршрутов.
     /// </remarks>
     /// <param name="id">Вариант трудности.</param>
     public static int GetValue(this IdEnm id)
     {
-        return Math.Abs((int)id);
+        return id.ToInt();
     }
     
     /// <summary>

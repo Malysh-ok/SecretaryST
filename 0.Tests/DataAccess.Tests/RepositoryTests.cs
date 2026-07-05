@@ -150,9 +150,11 @@ public class RepositoryTests
         // Создаем Виды программ
         var sportEvents = new List<SportEvent>()
         {
-            new("Вид программы 1", null,
+            new("Вид программы 1", true,
                 Difficulty.IdEnm.Fourth, disciplineResult.Value!, competitionData),
-            new("Вид программы 2", null,
+            new("Вид программы 2", false,
+                Difficulty.IdEnm.Third, disciplineResult.Value!, competitionData),
+            new("Вид программы 3", null,
                 Difficulty.IdEnm.Third, disciplineResult.Value!, competitionData),
         };
         

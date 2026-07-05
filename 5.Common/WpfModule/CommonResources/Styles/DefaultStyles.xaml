@@ -11,8 +11,9 @@
         <ResourceDictionary Source="/CommonResources;component/Styles/Labels.xaml" />
         <ResourceDictionary Source="/CommonResources;component/Styles/Menus.xaml" />
         <ResourceDictionary Source="/CommonResources;component/Styles/StatusBars.xaml" />
-        <ResourceDictionary Source="/CommonResources;component/Styles/TextBoxes.xaml" />
         <ResourceDictionary Source="/CommonResources;component/Styles/ComboBoxes.xaml" />
+        <ResourceDictionary Source="/CommonResources;component/Styles/TextBoxes.xaml" />
+        <ResourceDictionary Source="/CommonResources;component/Styles/CheckBoxes.xaml" />
     </ResourceDictionary.MergedDictionaries>
     
     <!-- Неявный стиль для всех FrameworkElement в приложении -->
