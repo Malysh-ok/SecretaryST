@@ -15,6 +15,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\3.ProblemDomain\Entities\Entities.csproj" />
       <ProjectReference Include="..\..\5.Common\BaseComponents\BaseComponents.csproj" />
+      <ProjectReference Include="..\..\5.Common\WpfModule\Components\Components.csproj" />
       <ProjectReference Include="..\AppExceptions\AppExceptions.csproj" />
       <ProjectReference Include="..\Phrases\Phrases.csproj" />
     </ItemGroup>

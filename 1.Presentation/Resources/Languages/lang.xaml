@@ -5,6 +5,7 @@
                     xmlns:v="clr-namespace:System;assembly=mscorlib">
     
     <!-- Общие элементы ============================= -->
+    <v:String x:Key="NullDisplayText">– Not selected –</v:String>
     
     <!-- Общие элементы - Кнопки ============================= -->
     <v:String x:Key="BtnOk">OK</v:String>
@@ -37,12 +38,19 @@
     <v:String x:Key="MainView_Ribbon_Setting_CurrCompetitions">Competitions:</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_UpdateCompetition">Update data of competition</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_AddCompetition">Add competition</v:String>
-    <v:String x:Key="MainView_Ribbon_Setting_DeleteCompetition">Delete competition</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_RemoveCompetition">Remove competition</v:String>
+    <!--            Виды программы -->
+    <v:String x:Key="MainView_Ribbon_Setting_SportEvents">Sport events</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_DisciplineGroupFilter">Discipline group restriction:</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_DisciplineSubGroupFilter">Discipline subgroup restriction:</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_UpdateSportEvents">Update sport events</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_AddSportEvent">Add sport event</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_RemoveSportEvent">Remove sport event</v:String>
     <!--            Судьи -->
     <v:String x:Key="MainView_Ribbon_Setting_Referees">Referees</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_UpdateReferees">Update list of referees</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_AddReferee">Add referee</v:String>
-    <v:String x:Key="MainView_Ribbon_Setting_DeleteReferee">Delete referee</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_RemoveReferee">Remove referee</v:String>
     <!--            Дополнительно -->
     <v:String x:Key="MainView_Ribbon_Setting_Optionally">Optionally</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_ProgramSetting">Program setting</v:String>
@@ -58,6 +66,7 @@
     <!-- Главное представление - UserControls ============================= -->
     
     <!-- Главное представление - UserControls - SettingControl (Настройки) -->
+    <!--            Соревнования -->
     <v:String x:Key="SettingControl.CompetitionName">Competition name:</v:String>
     <v:String x:Key="SettingControl.CompetitionShortName">Competition short name:</v:String>
     <v:String x:Key="SettingControl.ConductingOrganizations">Conducting organizations:</v:String>
@@ -68,14 +77,23 @@
     <v:String x:Key="SettingControl_DetailedCompetitionStatus">Status and name of the competition:</v:String>
     <v:String x:Key="SettingControl_CompetitionStatus">Brief Status of the competition:</v:String>
     <v:String x:Key="SettingControl_CompetitionNote">Note:</v:String>
-    <v:String x:Key="SettingControl_JudgesList">List of judges:</v:String>
-    <v:String x:Key="SettingControl_JudgesList_LastName">Last Name</v:String>
-    <v:String x:Key="SettingControl_JudgesList_FirstName">First Name</v:String>
-    <v:String x:Key="SettingControl_JudgesList_Patronymic">Patronymic</v:String>
-    <v:String x:Key="SettingControl_RefereeJobTitle">Job Title</v:String>
-    <v:String x:Key="SettingControl_RefereeLevel">Level</v:String>
-    <v:String x:Key="SettingControl_RefereeDomicile">Domicile</v:String>
-    <v:String x:Key="SettingControl_RefereeDescription">Description</v:String>
+    <!--            Виды программы -->
+    <v:String x:Key="SettingControl_SportEventList">List of sport event:</v:String>
+    <v:String x:Key="SettingControl_SportEventList_Name">Name</v:String>
+    <v:String x:Key="SettingControl_SportEventList_Discipline">Discipline</v:String>
+    <v:String x:Key="SettingControl_SportEventList_Difficulty">Difficulty</v:String>
+    <v:String x:Key="SettingControl_SportEventList_Difficulty_Tooltip">Route difficulty category or distance class</v:String>
+    <v:String x:Key="SettingControl_SportEventList_IsShort">Is short?</v:String>
+    <v:String x:Key="SettingControl_SportEventList_Description">Description</v:String>
+    <!--            Судьи -->
+    <v:String x:Key="SettingControl_RefereeList">List of judges:</v:String>
+    <v:String x:Key="SettingControl_RefereeList_LastName">Last Name</v:String>
+    <v:String x:Key="SettingControl_RefereeList_FirstName">First Name</v:String>
+    <v:String x:Key="SettingControl_RefereeList_Patronymic">Patronymic</v:String>
+    <v:String x:Key="SettingControl_RefereeList_JobTitle">Job Title</v:String>
+    <v:String x:Key="SettingControl_RefereeList_Level">Level</v:String>
+    <v:String x:Key="SettingControl_RefereeList_Domicile">Domicile</v:String>
+    <v:String x:Key="SettingControl_RefereeList_Description">Description</v:String>
 
     
     <!-- Представление дополнительных настроек ============================= -->

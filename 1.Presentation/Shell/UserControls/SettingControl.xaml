@@ -19,229 +19,386 @@
     
     <Grid >
         <Grid.RowDefinitions>
-            <RowDefinition Height="0.6*" MinHeight="260" /> <!-- TODO: откорректировать MinHeight -->
-            <RowDefinition Height="0.4*" />
+            <!-- 1️⃣ Верхняя зона - Данные о соревнованиях, Виды программ -->
+            <RowDefinition Height="0.6*" MinHeight="225" /> <!-- TODO: откорректировать MinHeight -->
+            
+            <!-- 2️⃣ Строка для разделителя -->
+            <RowDefinition Height="Auto" />
+            
+            <!-- 3️⃣ Нижняя зона - Судьи -->
+            <RowDefinition Height="0.4*" MinHeight="80" />
         </Grid.RowDefinitions>
 
-        <!-- Данные о соревнованиях -->
+        <!-- 1️⃣ Верхняя зона - Данные о соревнованиях, Виды программ -->
         <Grid Grid.Row="0">
-            <Grid Style="{markups:GridColumnSpacing 10}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="0.2*" MinWidth="230" />
-                    <ColumnDefinition Width="0.8*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <!--
-                    <RowDefinition Height="*" MinHeight="{Binding ElementName=ConductingOrganizationsGrid, 
-                                        Path=Items.Count, 
-                                        Converter={StaticResource RowsToPixelsConverter},
-                                        ConverterParameter=3,
-                                        NotifyOnTargetUpdated=True}"/>
-                    -->
-                    <!--
-                    <RowDefinition Height="*" MinHeight="{Binding Items.Count, 
-                                  Source={x:Reference ConductingOrganizationsGrid}, 
-                                  Converter={StaticResource RowsToPixelsConverter},
-                                  ConverterParameter=3}"/>
-                    -->
-                    <RowDefinition MinHeight="75"/>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <!-- <RowDefinition Height="*" MinHeight="100" /> -->
-                </Grid.RowDefinitions>
-
-                <!-- Краткое название соревнований -->
-                <Label Grid.Row="0" Grid.Column="0" 
-                       x:Name="CompetitionShortName"
-                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
-                       attachedProperties:ElementProperties.IsFirst="True"
-                       Content="{DynamicResource SettingControl.CompetitionShortName}" />
-                <TextBox Grid.Row="1" Grid.Column="0" 
-                         Style="{DynamicResource BaseTextBox}"
-                         HorizontalAlignment="Stretch"
-                         Text="{Binding CurrentCompetition.ShortName, UpdateSourceTrigger=LostFocus}" />
+            <Grid.ColumnDefinitions>
+                <!-- 1️⃣1️⃣ Левая верхняя зона - Данные о соревнованиях -->
+                <ColumnDefinition Width="5*" MinWidth="150"/>
                 
-                <!-- Название соревнований -->
-                <Label Grid.Row="0" Grid.Column="1" 
-                       x:Name="CompetitionName"
-                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
-                       attachedProperties:ElementProperties.IsFirst="True"
-
-                       Content="{DynamicResource SettingControl.CompetitionName}" />
-                <TextBox Grid.Row="1" Grid.Column="1" 
-                         Style="{DynamicResource BaseTextBox}"
-                         HorizontalAlignment="Stretch"
-                         Text="{Binding CurrentCompetition.Name, UpdateSourceTrigger=LostFocus}" />
-
-                <!-- Проводящие организации -->
-                <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" 
-                       x:Name="ConductingOrganizations"
-                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
-                       Content="{DynamicResource SettingControl.ConductingOrganizations}" />
-                <DataGrid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" 
-                          x:Name="ConductingOrganizationsGrid"
-                          Style="{DynamicResource DataGridDefault}"
-                          ColumnHeaderStyle="{StaticResource DataGridColumnHeaderDefault.ContentRight}"
-                          MinColumnWidth="200"
-                          AlternationCount="2"
-                          AutoGenerateColumns="False"
-                          SelectionUnit="FullRow"
-                          SelectionMode="Single"
-                          ItemsSource="{Binding ConductingOrganizations, 
-                            Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          SelectedIndex="{Binding ConductingOrganizations.SelectedIndex, 
-                            Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                          SelectedValuePath=""
-                          AllowDrop="True">
-
-                    <i:Interaction.Behaviors>
-                        <dataGrids:DataGridDragAndDropBehavior 
-                            Items="{Binding ConductingOrganizations}" />
-                    </i:Interaction.Behaviors>
-
-                    <DataGrid.Columns>
-                        <!-- Номер -->
-                        <DataGridTextColumn
-                            Width="Auto"
-                            MinWidth="30">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Center" />
-                                    <Setter Property="Text" 
-                                            Value="{Binding RelativeSource=
-                                                {RelativeSource AncestorType=DataGridRow}, 
-                                                Converter={StaticResource RowIndexConverter}}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        
-                        <!-- Название -->
-                        <DataGridTextColumn
-                            Binding="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                            CanUserSort="False"
-                            Width="*">
-                            <DataGridTextColumn.Header>
-                                <controls:DataGridColumnHeaderWithButtons
-                                    Content="Действия:"
-                                    IsTextOnRight="False"
-                                    Style="{StaticResource DataGridColumnHeaderWithButtons}" 
-                                    Button1Content="➕"
-                                    Button1Command="{Binding DataContext.CreateConductingOrganizationCommand, 
-                                        ElementName=ConductingOrganizationsGrid}"
-                                    Button1ToolTip="{DynamicResource SettingControl.AddConductingOrganization}"
-                                    Button2Content="❌"
-                                    Button2Command="{Binding DataContext.RemoveConductingOrganizationCommand, 
-                                        ElementName=ConductingOrganizationsGrid}"
-                                    Button2ToolTip="{DynamicResource SettingControl.RemoveConductingOrganization}" />
-                                <!-- TODO: Content удалить -->
-                                
-                            </DataGridTextColumn.Header>
-                        </DataGridTextColumn>
-                    </DataGrid.Columns>
-                        
-                </DataGrid>
+                <!-- 1️⃣2️⃣ Столбец для разделителя -->
+                <ColumnDefinition Width="Auto"/>
                 
-                <!-- Дата проведения -->
-                <Label Grid.Row="4" Grid.Column="0" 
-                       x:Name="CompetitionDate"
-                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
-                       Content="{DynamicResource SettingControl_CompetitionDate}" />
-                <StackPanel Grid.Row="5" Grid.Column="0"
-                            Orientation="Horizontal">
-                    <DatePicker Width="100" 
-                                Style="{DynamicResource BaseDatePicker}"
-                                SelectedDate="{Binding CurrentCompetition.InitialDate, 
-                                    Mode=TwoWay, UpdateSourceTrigger=LostFocus}">
+                <!-- 1️⃣2️⃣ Правая верхняя зона - Виды программ -->
+                <ColumnDefinition Width="5*" MinWidth="150"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 1️⃣1️⃣ Левая верхняя зона - Данные о соревнованиях -->
+            <!-- Данные о соревнованиях -->
+            <Grid Grid.Row="0">
+                <Grid Style="{markups:GridColumnSpacing 10}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" MinWidth="220" />
+                        <ColumnDefinition Width="8*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />     <!-- 0. Краткое название, название соревнований - Метка -->
+                        <RowDefinition Height="Auto" />     <!-- 1. Краткое название соревнований - Текстовое поле -->
+                        <RowDefinition Height="Auto" />     <!-- 2. Проводящие организации - Метка -->
+                        <RowDefinition MinHeight="60"/>     <!-- 3. Проводящие организации - DataGrid -->
+                        <RowDefinition Height="Auto" />     <!-- 4. Дата, место проведения - Метки -->
+                        <RowDefinition Height="Auto" />     <!-- 5. Дата, место проведения - DatePicker, Текстовое поле -->
+                        <RowDefinition Height="Auto" />     <!-- 6. Статус и наименование соревнования - Метка -->
+                        <RowDefinition Height="Auto" />     <!-- 7. Статус и наименование соревнования - Текстовое поле, Выпад. список -->
+                        <RowDefinition Height="Auto" />     <!-- 8. Примечание - Метка -->
+                        <RowDefinition Height="Auto" />     <!-- 9. Примечание - Текстовое поле -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Краткое название соревнований -->
+                    <Label Grid.Row="0" Grid.Column="0" 
+                           x:Name="CompetitionShortName"
+                           Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                           attachedProperties:ElementProperties.IsFirst="True"
+                           Content="{DynamicResource SettingControl.CompetitionShortName}" />
+                    <TextBox Grid.Row="1" Grid.Column="0" 
+                             Style="{DynamicResource BaseTextBox}"
+                             HorizontalAlignment="Stretch"
+                             Text="{Binding CurrentCompetition.ShortName, UpdateSourceTrigger=LostFocus}" />
+                    
+                    <!-- Название соревнований -->
+                    <Label Grid.Row="0" Grid.Column="1" 
+                           x:Name="CompetitionName"
+                           Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                           attachedProperties:ElementProperties.IsFirst="True"
+
+                           Content="{DynamicResource SettingControl.CompetitionName}" />
+                    <TextBox Grid.Row="1" Grid.Column="1" 
+                             Style="{DynamicResource BaseTextBox}"
+                             HorizontalAlignment="Stretch"
+                             Text="{Binding CurrentCompetition.Name, UpdateSourceTrigger=LostFocus}" />
+
+                    <!-- Проводящие организации -->
+                    <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" 
+                           x:Name="ConductingOrganizations"
+                           Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                           Content="{DynamicResource SettingControl.ConductingOrganizations}" />
+                    <DataGrid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" 
+                              x:Name="ConductingOrganizationsGrid"
+                              Style="{DynamicResource DataGridDefault}"
+                              ColumnHeaderStyle="{StaticResource DataGridColumnHeaderDefault.ContentRight}"
+                              MinColumnWidth="200"
+                              AlternationCount="2"
+                              AutoGenerateColumns="False"
+                              SelectionUnit="FullRow"
+                              SelectionMode="Single"
+                              ItemsSource="{Binding ConductingOrganizations, 
+                                Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              SelectedIndex="{Binding ConductingOrganizations.SelectedIndex, 
+                                Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              SelectedValuePath=""
+                              AllowDrop="True">
+
                         <i:Interaction.Behaviors>
-                            <datePickers:DatePickerLocalizationBehavior LanguageTag="{Binding CurrLang.Name}" />
+                            <dataGrids:DataGridDragAndDropBehavior 
+                                Items="{Binding ConductingOrganizations}" />
                         </i:Interaction.Behaviors>
-                    </DatePicker>
-                    <TextBlock Width="20"
-                               TextAlignment="Center"
-                               VerticalAlignment="Center"
-                               Text="-" />
-                    <DatePicker Width="100" 
-                                Style="{DynamicResource BaseDatePicker}"
-                                SelectedDate="{Binding CurrentCompetition.EndDate, 
-                                    Mode=TwoWay, UpdateSourceTrigger=LostFocus}">
-                        <i:Interaction.Behaviors>
-                            <datePickers:DatePickerLocalizationBehavior LanguageTag="{Binding CurrLang.Name}" />
-                        </i:Interaction.Behaviors>
-                    </DatePicker>
-                </StackPanel>
 
-                <!-- Место проведения -->
-                <Label Grid.Row="4" Grid.Column="1" 
-                       x:Name="CompetitionVenue"
-                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
-                       Content="{DynamicResource SettingControl_CompetitionVenue}" />
-                <TextBox Grid.Row="5" Grid.Column="1" 
-                         Style="{DynamicResource BaseTextBox}"
-                         MinWidth="200"
-                         HorizontalAlignment="Stretch"
-                         Text="{Binding CurrentCompetition.Venue, UpdateSourceTrigger=LostFocus}">
-                </TextBox>
+                        <DataGrid.Columns>
+                            <!-- Номер -->
+                            <DataGridTextColumn
+                                Width="Auto"
+                                MinWidth="30">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Center" />
+                                        <Setter Property="Text" 
+                                                Value="{Binding RelativeSource=
+                                                    {RelativeSource AncestorType=DataGridRow}, 
+                                                    Converter={StaticResource RowIndexConverter}}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            
+                            <!-- Название -->
+                            <DataGridTextColumn
+                                Binding="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                CanUserSort="False"
+                                Width="*">
+                                <DataGridTextColumn.Header>
+                                    <controls:DataGridColumnHeaderWithButtons
+                                        Content="Действия:"
+                                        IsTextOnRight="False"
+                                        Style="{StaticResource DataGridColumnHeaderWithButtons}" 
+                                        Button1Content="➕"
+                                        Button1Command="{Binding DataContext.CreateConductingOrganizationCommand, 
+                                            ElementName=ConductingOrganizationsGrid}"
+                                        Button1ToolTip="{DynamicResource SettingControl.AddConductingOrganization}"
+                                        Button2Content="❌"
+                                        Button2Command="{Binding DataContext.RemoveConductingOrganizationCommand, 
+                                            ElementName=ConductingOrganizationsGrid}"
+                                        Button2ToolTip="{DynamicResource SettingControl.RemoveConductingOrganization}" />
+                                    <!-- TODO: Content удалить -->
+                                    
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                            
+                    </DataGrid>
+                    
+                    <!-- Дата проведения -->
+                    <Label Grid.Row="4" Grid.Column="0" 
+                           x:Name="CompetitionDate"
+                           Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                           Content="{DynamicResource SettingControl_CompetitionDate}" />
+                    <StackPanel Grid.Row="5" Grid.Column="0"
+                                Orientation="Horizontal">
+                        <DatePicker Width="95" 
+                                    Style="{DynamicResource BaseDatePicker}"
+                                    SelectedDate="{Binding CurrentCompetition.InitialDate, 
+                                        Mode=TwoWay, UpdateSourceTrigger=LostFocus}">
+                            <i:Interaction.Behaviors>
+                                <datePickers:DatePickerLocalizationBehavior LanguageTag="{Binding CurrLang.Name}" />
+                            </i:Interaction.Behaviors>
+                        </DatePicker>
+                        <TextBlock Width="20"
+                                   TextAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Text="-" />
+                        <DatePicker Width="95" 
+                                    Style="{DynamicResource BaseDatePicker}"
+                                    SelectedDate="{Binding CurrentCompetition.EndDate, 
+                                        Mode=TwoWay, UpdateSourceTrigger=LostFocus}">
+                            <i:Interaction.Behaviors>
+                                <datePickers:DatePickerLocalizationBehavior LanguageTag="{Binding CurrLang.Name}" />
+                            </i:Interaction.Behaviors>
+                        </DatePicker>
+                    </StackPanel>
 
-                <!-- Статус соревнования (кратко) -->
-                <Label Grid.Row="6" Grid.Column="0" 
-                       x:Name="CompetitionStatus"
-                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
-                       Content="{DynamicResource SettingControl_CompetitionStatus}" />
-                <TextBox Grid.Row="7" Grid.Column="0" 
-                         Style="{DynamicResource BaseTextBox}"
-                         MinWidth="200"
-                         Width="Auto"
-                         HorizontalAlignment="Stretch"
-                         IsReadOnly="True"
-                         Text="{Binding CurrentCompetition.DetailedCompetitionStatus.CompetitionsStatus.Name}">
-                </TextBox>
-                
-                <!-- Статус и наименование соревнования -->
-                <Label Grid.Row="6" Grid.Column="1" 
-                       x:Name="DetailedCompetitionStatus"
-                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
-                       Content="{DynamicResource SettingControl_DetailedCompetitionStatus}" />
-                <ComboBox Grid.Row="7" Grid.Column="1" 
-                          Width="Auto"
-                          HorizontalAlignment="Stretch"
-                          Style="{DynamicResource BaseComboBox}"
-                          ItemsSource="{Binding Path=DataContext.DetailedCompetitionStatuses, 
-                                        RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                          SelectedItem="{Binding CurrentCompetition.DetailedCompetitionStatus, 
-                            UpdateSourceTrigger=LostFocus}" />
-                
-                <!-- Примечание -->
-                <Label Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
-                       x:Name="CompetitionNote"
-                       Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
-                       Content="{DynamicResource SettingControl_CompetitionNote}" />
-                <TextBox Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
-                         Style="{DynamicResource BaseTextBox}"
-                         MinWidth="200"
-                         HorizontalAlignment="Stretch"
-                         Text="{Binding CurrentCompetition.Description, UpdateSourceTrigger=LostFocus}">
-                </TextBox>
+                    <!-- Место проведения -->
+                    <Label Grid.Row="4" Grid.Column="1" 
+                           x:Name="CompetitionVenue"
+                           Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                           Content="{DynamicResource SettingControl_CompetitionVenue}" />
+                    <TextBox Grid.Row="5" Grid.Column="1" 
+                             Style="{DynamicResource BaseTextBox}"
+                             MinWidth="200"
+                             HorizontalAlignment="Stretch"
+                             Text="{Binding CurrentCompetition.Venue, UpdateSourceTrigger=LostFocus}">
+                    </TextBox>
 
+                    <!-- Статус соревнования (кратко) -->
+                    <Label Grid.Row="6" Grid.Column="0" 
+                           x:Name="CompetitionStatus"
+                           Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                           Content="{DynamicResource SettingControl_CompetitionStatus}" />
+                    <TextBox Grid.Row="7" Grid.Column="0" 
+                             Style="{DynamicResource BaseTextBox}"
+                             MinWidth="200"
+                             Width="Auto"
+                             HorizontalAlignment="Stretch"
+                             IsReadOnly="True"
+                             Text="{Binding CurrentCompetition.DetailedCompetitionStatus.CompetitionsStatus.Name}">
+                    </TextBox>
+                    
+                    <!-- Статус и наименование соревнования -->
+                    <Label Grid.Row="6" Grid.Column="1" 
+                           x:Name="DetailedCompetitionStatus"
+                           Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                           Content="{DynamicResource SettingControl_DetailedCompetitionStatus}" />
+                    <ComboBox Grid.Row="7" Grid.Column="1" 
+                              Width="Auto"
+                              HorizontalAlignment="Stretch"
+                              Style="{DynamicResource BaseComboBox}"
+                              ItemsSource="{Binding Path=DataContext.DetailedCompetitionStatuses, 
+                                            RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                              SelectedItem="{Binding CurrentCompetition.DetailedCompetitionStatus, 
+                                UpdateSourceTrigger=LostFocus}" />
+                    
+                    <!-- Примечание -->
+                    <Label Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
+                           x:Name="CompetitionNote"
+                           Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                           Content="{DynamicResource SettingControl_CompetitionNote}" />
+                    <TextBox Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
+                             Style="{DynamicResource BaseTextBox}"
+                             MinWidth="200"
+                             HorizontalAlignment="Stretch"
+                             Text="{Binding CurrentCompetition.Description, UpdateSourceTrigger=LostFocus}">
+                    </TextBox>
+
+                </Grid>
             </Grid>
+
+            <!-- 1️⃣2️⃣ Вертикальный разделитель -->
+            <GridSplitter Grid.Column="1" 
+                          Width="10" 
+                          Margin="7 20 7 20"
+                          HorizontalAlignment="Stretch" 
+                          Background="{StaticResource DefaultLightBorderBrush}"
+                          ResizeBehavior="PreviousAndNext"
+                          />
+
+            <!-- 1️⃣2️⃣ Правая верхняя зона - Виды программ -->
+        <DockPanel Grid.Column="2">
+            <Label DockPanel.Dock="Top" 
+                   x:Name="SportEventList"
+                   Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
+                   attachedProperties:ElementProperties.IsFirst="True"
+                   Content="{DynamicResource SettingControl_SportEventList}" />
+            <DataGrid x:Name="SportEventsGrid"
+                      Style="{DynamicResource DataGridDefault}"
+                      ColumnHeaderStyle="{StaticResource DataGridColumnHeaderDefault.Bold}"
+                      MinColumnWidth="70"
+                      AlternationCount="2"
+                      AutoGenerateColumns="False"
+                      SelectionUnit="FullRow"
+                      SelectionMode="Single"
+                      ItemsSource="{Binding SportEventObservables, 
+                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      SelectedIndex="{Binding SportEventObservables.SelectedIndex, 
+                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      SelectedValuePath=""
+                      AllowDrop="True" >
+
+                <i:Interaction.Behaviors>
+                    <dataGrids:DataGridDragAndDropBehavior 
+                        Items="{Binding SportEventObservables}" />
+                </i:Interaction.Behaviors>
+                
+                <DataGrid.Columns>
+                    <!-- Номер -->
+                    <DataGridTextColumn
+                        Header="№"
+                        Width="Auto"
+                        MinWidth="30">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                <Setter Property="Text" 
+                                        Value="{Binding RelativeSource=
+                                                    {RelativeSource AncestorType=DataGridRow}, 
+                                                    Converter={StaticResource RowIndexConverter}}"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    
+                    <!-- Наименование -->
+                    <DataGridTextColumn Width="1*"
+                                        Binding="{Binding SportEvent.Name, UpdateSourceTrigger=LostFocus}">
+                        <DataGridTextColumn.Header>
+                            <TextBlock Text="{DynamicResource SettingControl_SportEventList_Name}" />
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
+                    
+                    <!-- Дисциплина -->
+                    <DataGridTemplateColumn Width="1.5*">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock Text="{DynamicResource SettingControl_SportEventList_Discipline}" />
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox
+                                    ItemsSource="{Binding Path=DataContext.AvailableDisciplines, 
+                                        RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                    SelectedItem="{Binding  Discipline,
+                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged,
+                                        
+                                        ValidatesOnDataErrors=True,
+                                        NotifyOnValidationError=True}"
+                                    BorderThickness="0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Трудность -->
+                    <DataGridTemplateColumn Width="*">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock 
+                                Text="{DynamicResource SettingControl_SportEventList_Difficulty}"
+                                ToolTip="{DynamicResource SettingControl_SportEventList_Difficulty_Tooltip}"/>
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox
+                                    ItemsSource="{Binding AvailableDifficulties}"
+                                    DisplayMemberPath="Value"
+                                    SelectedValuePath="Key"
+                                    SelectedValue="{Binding Difficulty, 
+                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
+                                    BorderThickness="0">
+                                </ComboBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <!--
+                    ItemsSource="{Binding Path=DataContext.DifficultiesDic, 
+                    RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                    DisplayMemberPath="Value"
+                    SelectedItem="{Binding Path=DataContext.DifficultiesDic.SelectedIndex, 
+                    RelativeSource={RelativeSource AncestorType={x:Type UserControl}},
+                    Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    BorderThickness="0" />
+                    -->
+
+                    
+                    <!-- Признак короткой дистанции -->
+                    <DataGridTemplateColumn Width="0.8*">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock Text="{DynamicResource SettingControl_SportEventList_IsShort}" />
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox 
+                                    Style="{DynamicResource CheckBoxForDataGrid}"
+                                    IsThreeState="True"
+                                    IsChecked="{Binding SportEvent.IsShort, 
+                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    IsEnabled="{Binding IsShortAvailable}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Примечание -->
+                    <DataGridTextColumn Width="*"
+                                        Binding="{Binding SportEvent.Description, UpdateSourceTrigger=LostFocus}">
+                        <DataGridTextColumn.Header>
+                            <TextBlock Text="{DynamicResource SettingControl_SportEventList_Description}" />
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+
+            </DataGrid>
+        </DockPanel>
         </Grid>
         
-        <!-- Судьи -->
-        <DockPanel Grid.Row="1">
+        <!-- 2️⃣ Горизонтальный разделитель -->
+        <GridSplitter Grid.Row="1" 
+                      Height="10"
+                      Margin="20 7 20 0"
+                      VerticalAlignment="Stretch" 
+                      HorizontalAlignment="Stretch"
+                      Background="{StaticResource DefaultLightBorderBrush}"
+                      ResizeBehavior="PreviousAndNext"/>
+        
+        <!-- 3️⃣ Нижняя зона - Судьи -->
+        <DockPanel Grid.Row="2">
             <Label DockPanel.Dock="Top" 
                    x:Name="JudgesList"
                    Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
-                   Content="{DynamicResource SettingControl_JudgesList}" />
+                   Content="{DynamicResource SettingControl_RefereeList}" />
             <DataGrid x:Name="RefereesGrid"
                       Style="{DynamicResource DataGridDefault}"
                       ColumnHeaderStyle="{StaticResource DataGridColumnHeaderDefault.Bold}"
-                      MinColumnWidth="100"
+                      MinColumnWidth="70"
                       AlternationCount="2"
                       AutoGenerateColumns="False"
                       SelectionUnit="FullRow"
@@ -251,7 +408,7 @@
                       SelectedIndex="{Binding Referees.SelectedIndex, 
                         Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       SelectedValuePath=""
-                      AllowDrop="True">
+                      AllowDrop="True" >
 
                 <i:Interaction.Behaviors>
                     <dataGrids:DataGridDragAndDropBehavior 
@@ -275,27 +432,27 @@
                     <DataGridTextColumn Width="*"
                                         Binding="{Binding LastName, UpdateSourceTrigger=LostFocus}">
                         <DataGridTextColumn.Header>
-                            <TextBlock Text="{DynamicResource SettingControl_JudgesList_LastName}" />
+                            <TextBlock Text="{DynamicResource SettingControl_RefereeList_LastName}" />
                         </DataGridTextColumn.Header>
                     </DataGridTextColumn>
                     <!-- Имя -->
                     <DataGridTextColumn Width="*"
                                         Binding="{Binding FirstName, UpdateSourceTrigger=LostFocus}">
                         <DataGridTextColumn.Header>
-                            <TextBlock Text="{DynamicResource SettingControl_JudgesList_FirstName}" />
+                            <TextBlock Text="{DynamicResource SettingControl_RefereeList_FirstName}" />
                         </DataGridTextColumn.Header>
                     </DataGridTextColumn>
                     <!-- Отчество -->
                     <DataGridTextColumn Width="*"
                                         Binding="{Binding Patronymic, UpdateSourceTrigger=LostFocus}">
                         <DataGridTextColumn.Header>
-                            <TextBlock Text="{DynamicResource SettingControl_JudgesList_Patronymic}" />
+                            <TextBlock Text="{DynamicResource SettingControl_RefereeList_Patronymic}" />
                         </DataGridTextColumn.Header>
                     </DataGridTextColumn>
                     <!-- Должность -->
                     <DataGridTemplateColumn Width="1.4*">
                         <DataGridTemplateColumn.Header>
-                            <TextBlock Text="{DynamicResource SettingControl_RefereeJobTitle}" />
+                            <TextBlock Text="{DynamicResource SettingControl_RefereeList_JobTitle}" />
                         </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -324,7 +481,7 @@
                     <!-- Судейская категория -->
                     <DataGridTemplateColumn Width="0.7*">
                         <DataGridTemplateColumn.Header>
-                            <TextBlock Text="{DynamicResource SettingControl_RefereeLevel}" />
+                            <TextBlock Text="{DynamicResource SettingControl_RefereeList_Level}" />
                         </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -342,7 +499,7 @@
                     <DataGridTextColumn Width="*"
                                         Binding="{Binding Domicile, UpdateSourceTrigger=LostFocus}">
                         <DataGridTextColumn.Header>
-                            <TextBlock Text="{DynamicResource SettingControl_RefereeDomicile}" />
+                            <TextBlock Text="{DynamicResource SettingControl_RefereeList_Domicile}" />
                         </DataGridTextColumn.Header>
                     </DataGridTextColumn>
                     
@@ -350,14 +507,13 @@
                     <DataGridTextColumn Width="*"
                                         Binding="{Binding Description, UpdateSourceTrigger=LostFocus}">
                         <DataGridTextColumn.Header>
-                            <TextBlock Text="{DynamicResource SettingControl_RefereeDescription}" />
+                            <TextBlock Text="{DynamicResource SettingControl_RefereeList_Description}" />
                         </DataGridTextColumn.Header>
                     </DataGridTextColumn>
                 </DataGrid.Columns>
 
             </DataGrid>
         </DockPanel>
-        <!-- </StackPanel> -->
     </Grid>
     
 </UserControl>

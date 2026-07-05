@@ -64,12 +64,11 @@ public class RefereeService(IRepository repository)
     public async Task<Result<bool>> GetRefereesAsync(
         ObservableCollection<Referee> refereesCollection, CompetitionData? competition)
     {
-                
         // Проверяем наличие соревнования
         if (competition == null)
         {
             return Result<bool>.Fail(
-                new AppException(AppPhrases.RefereeAddError, new AppException(AppPhrases.CompetitionDataIsNull))
+                new AppException(AppPhrases.RefereesLoadError, new AppException(AppPhrases.CompetitionDataIsNull))
             );
         }
 
@@ -84,7 +83,7 @@ public class RefereeService(IRepository repository)
             r => r.CompetitionDataId == competition.Id,
             nameof(RefereeLevel));
         if (! refereesResult)
-            return Result<bool>.Fail(new AppException(AppPhrases.RefereesLoadError, result.Excptn));
+            return Result<bool>.Fail(new AppException(AppPhrases.RefereesLoadError, refereesResult.Excptn));
         
         // Перезаписываем коллекцию судей новыми данными
         refereesCollection.Clear();
@@ -108,9 +107,8 @@ public class RefereeService(IRepository repository)
         // Проверяем наличие соревнования
         if (competition == null)
         {
-            innerException = new AppException(AppPhrases.CompetitionDataIsNull);
             return Result<int>.Fail(
-                new AppException(AppPhrases.RefereeAddError, innerException)
+                new AppException(AppPhrases.RefereeCreateError, new AppException(AppPhrases.CompetitionDataIsNull))
             );
         }
 
@@ -120,7 +118,7 @@ public class RefereeService(IRepository repository)
         {
             innerException = new AppException(AppPhrases.RefereeLevelFindError, refereeLevelResult.Excptn);
             return Result<int>.Fail(
-                new AppException(AppPhrases.RefereeAddError, innerException)
+                new AppException(AppPhrases.RefereeCreateError, innerException)
             );
         }
         
@@ -130,7 +128,7 @@ public class RefereeService(IRepository repository)
         {
             innerException = new AppException(AppPhrases.RefereeJobTitleFindError, refereeJobTitleResult.Excptn);
             return Result<int>.Fail(
-                new AppException(AppPhrases.RefereeAddError, innerException)
+                new AppException(AppPhrases.RefereeCreateError, innerException)
             );
         }
         
@@ -156,7 +154,7 @@ public class RefereeService(IRepository repository)
         if (! intResult)
         {
             return Result<int>.Fail(
-                new AppException(AppPhrases.RefereeAddError, intResult.Excptn)
+                new AppException(AppPhrases.RefereeCreateError, intResult.Excptn)
             );
         }
 

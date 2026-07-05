@@ -9,6 +9,9 @@ namespace Common.WpfModule.Components.Collections;
 /// </summary>
 public class ObservableCollectionEx<T>: ObservableCollection<T>
 {
+    private Action<int>? _onSelectedIndexChanged;
+    private Action? _onCollectionChanged;
+    
     public ObservableCollectionEx()
     {
     }
@@ -41,17 +44,18 @@ public class ObservableCollectionEx<T>: ObservableCollection<T>
             CheckReentrancy();
 
             field = -1;
-            if (value >= 0 && value < Items.Count)
+            if (value >= 0 && value < Count)
                 field = value;
 
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(SelectedIndex)));
+            _onSelectedIndexChanged?.Invoke(value);
         }
     } = -1;
 
     /// <summary>
     /// Добавление коллекции элементов.
     /// </summary>
-    public void AddRange(IEnumerable<T>? enumerable)
+    public void AddRange(IList<T>? enumerable)
     {
         if (enumerable is null)
             return;
@@ -59,73 +63,102 @@ public class ObservableCollectionEx<T>: ObservableCollection<T>
         // Проверяем на возможность изменения
         CheckReentrancy();
 
-        foreach (var item in enumerable)
-            Items.Add(item);
+        if (enumerable.Count > 0)
+        {
+            foreach (var item in enumerable)
+                Items.Add(item);
 
-        // Вызываем необходимые события
-        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-        OnPropertyChanged(new PropertyChangedEventArgs("Count"));
-        OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+            // Вызываем необходимые события
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            OnPropertyChanged(new PropertyChangedEventArgs("Count"));
+            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+        }
     }
+
+    #region [---------- Сортировки ----------]
+
+    /// <summary>
+    /// Перемещает элементы коллекции так, чтобы их порядок совпадал с порядком элементов заданной коллекции.
+    /// </summary>
+    /// <param name="sortedItems">Заданная коллекция.</param>
+    private void InternalSort(IEnumerable<T> sortedItems)
+    {
+        var sortedItemsList = sortedItems.ToList();
+
+        foreach (var item in sortedItemsList)
+        {
+            Move(IndexOf(item), sortedItemsList.IndexOf(item));
+        }
+    }
+
+    /// <summary>
+    /// Сортирует элементы коллекции в порядке возрастания в соответствии с ключом.
+    /// </summary>
+    /// <typeparam name="TKey">Тип ключа, возвращаемого <paramref name="key"/>.</typeparam>
+    /// <param name="key">Функция, извлекающая ключ из элемента..</param>
+    public void Sort<TKey>(Func<T, TKey> key)
+    {
+        InternalSort(Items.OrderBy(key));
+    }
+
+    /// <summary>
+    /// Сортирует элементы коллекции в порядке убывания по ключу.
+    /// </summary>
+    /// <typeparam name="TKey">Тип ключа, возвращаемого <paramref name="key"/>.</typeparam>
+    /// <param name="key">Функция, извлекающая ключ из элемента..</param>
+    public void SortDescending<TKey>(Func<T, TKey> key)
+    {
+        InternalSort(Items.OrderByDescending(key));
+    }
+
+    /// <summary>
+    /// Сортирует элементы коллекции в порядке возрастания по ключу.
+    /// </summary>
+    /// <typeparam name="TKey">Тип ключа, возвращаемого <paramref name="key"/>.</typeparam>
+    /// <param name="key">Функция, извлекающая ключ из элемента.</param>
+    /// <param name="comparer">An <see cref="IComparer{T}"/> to compare keys.</param>
+    public void Sort<TKey>(Func<T, TKey> key, IComparer<TKey> comparer)
+    {
+        InternalSort(Items.OrderBy(key, comparer));
+    }
+
+    /// <summary>
+    /// Сортирует элементы коллекции в порядке убывания по ключу.
+    /// </summary>
+    /// <typeparam name="TKey">Тип ключа, возвращаемого <paramref name="key"/>.</typeparam>
+    /// <param name="key">Функция, извлекающая ключ из элемента.</param>
+    /// <param name="comparer">An <see cref="IComparer{T}"/> to compare keys.</param>
+    public void SortDescending<TKey>(Func<T, TKey> key, IComparer<TKey> comparer)
+    {
+        InternalSort(Items.OrderByDescending(key, comparer));
+    }
+
+    #endregion // [---------- Сортировки ----------]
     
-        #region [---------- Сортировка ----------]
-        
-        /// <summary>
-        /// Перемещает элементы коллекции так, чтобы их порядок совпадал с порядком элементов заданной коллекции.
-        /// </summary>
-        /// <param name="sortedItems">Заданная коллекция.</param>
-        private void InternalSort(IEnumerable<T> sortedItems)
-        {
-            var sortedItemsList = sortedItems.ToList();
+    /// <summary>
+    /// Устанавливает функцию обратного вызова на изменение SelectedIndex,
+    /// где параметр этой функции - новое значение SelectedIndex.
+    /// </summary>
+    public void OnSelectedIndexChanged(Action<int> callback)
+    {
+        _onSelectedIndexChanged = callback;
+    }
 
-            foreach (var item in sortedItemsList)
-            {
-                Move(IndexOf(item), sortedItemsList.IndexOf(item));
-            }
-        }
+    /// <summary>
+    /// Устанавливает функцию обратного вызова на любое изменение коллекции (Add, Remove, Clear, Replace)
+    /// </summary>
+    public void OnCollectionChanged(Action callback)
+    {
+        _onCollectionChanged = callback;
+    }
 
-        /// <summary>
-        /// Сортирует элементы коллекции в порядке возрастания в соответствии с ключом.
-        /// </summary>
-        /// <typeparam name="TKey">Тип ключа, возвращаемого <paramref name="key"/>.</typeparam>
-        /// <param name="key">Функция, извлекающая ключ из элемента..</param>
-        public void Sort<TKey>(Func<T, TKey> key)
-        {
-            InternalSort(Items.OrderBy(key));
-        }
+    protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+    {
+        base.OnCollectionChanged(e);
+        _onCollectionChanged?.Invoke();
 
-        /// <summary>
-        /// Сортирует элементы коллекции в порядке убывания по ключу.
-        /// </summary>
-        /// <typeparam name="TKey">Тип ключа, возвращаемого <paramref name="key"/>.</typeparam>
-        /// <param name="key">Функция, извлекающая ключ из элемента..</param>
-        public void SortDescending<TKey>(Func<T, TKey> key)
-        {
-            InternalSort(Items.OrderByDescending(key));
-        }
-
-        /// <summary>
-        /// Сортирует элементы коллекции в порядке возрастания по ключу.
-        /// </summary>
-        /// <typeparam name="TKey">Тип ключа, возвращаемого <paramref name="key"/>.</typeparam>
-        /// <param name="key">Функция, извлекающая ключ из элемента.</param>
-        /// <param name="comparer">An <see cref="IComparer{T}"/> to compare keys.</param>
-        public void Sort<TKey>(Func<T, TKey> key, IComparer<TKey> comparer)
-        {
-            InternalSort(Items.OrderBy(key, comparer));
-        }
-        
-        /// <summary>
-        /// Сортирует элементы коллекции в порядке убывания по ключу.
-        /// </summary>
-        /// <typeparam name="TKey">Тип ключа, возвращаемого <paramref name="key"/>.</typeparam>
-        /// <param name="key">Функция, извлекающая ключ из элемента.</param>
-        /// <param name="comparer">An <see cref="IComparer{T}"/> to compare keys.</param>
-        public void SortDescending<TKey>(Func<T, TKey> key, IComparer<TKey> comparer)
-        {
-            InternalSort(Items.OrderByDescending(key, comparer));
-        }
-
-
-        #endregion // [---------- Сортировка ----------]
+        // Если коллекция изменилась, и SelectedIndex выходит за пределы — сбрасываем
+        if (SelectedIndex >= Count)
+            SelectedIndex = Count - 1;
+    }
 }

@@ -60,7 +60,7 @@ namespace AppDomain.Phrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to create application directories..
+        ///   Looks up a localized string similar to Failed to create the application directories..
         /// </summary>
         public static string AppDirsCreateError {
             get {
@@ -87,7 +87,16 @@ namespace AppDomain.Phrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to get the competition from the repository..
+        ///   Looks up a localized string similar to Failed to retrieve the list of competition from the repository..
+        /// </summary>
+        public static string CompetitionDataListLoadError {
+            get {
+                return ResourceManager.GetString("CompetitionDataListLoadError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve the competition from the repository..
         /// </summary>
         public static string CompetitionDataLoadError {
             get {
@@ -123,47 +132,47 @@ namespace AppDomain.Phrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to get a competition statuses in the repository..
+        ///   Looks up a localized string similar to Failed to retrieve the list of competition statuses in the repository..
         /// </summary>
-        public static string CompetitionsStatusesLoadError {
+        public static string CompetitionStatusesLoadError {
             get {
-                return ResourceManager.GetString("CompetitionsStatusesLoadError", resourceCulture);
+                return ResourceManager.GetString("CompetitionStatusesLoadError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to find the competitions status in the repository..
+        ///   Looks up a localized string similar to Failed to find the competition status in the repository..
         /// </summary>
-        public static string CompetitionsStatusFindError {
+        public static string CompetitionStatusFindError {
             get {
-                return ResourceManager.GetString("CompetitionsStatusFindError", resourceCulture);
+                return ResourceManager.GetString("CompetitionStatusFindError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to add a event organizer..
+        ///   Looks up a localized string similar to Failed to create the new event organizer..
         /// </summary>
-        public static string ConductingOrganizationsAddError {
+        public static string ConductingOrganizationCreateError {
             get {
-                return ResourceManager.GetString("ConductingOrganizationsAddError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to get a event organizers..
-        /// </summary>
-        public static string ConductingOrganizationsGetError {
-            get {
-                return ResourceManager.GetString("ConductingOrganizationsGetError", resourceCulture);
+                return ResourceManager.GetString("ConductingOrganizationCreateError", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Failed to remove a event organizer..
         /// </summary>
-        public static string ConductingOrganizationsRemoveError {
+        public static string ConductingOrganizationRemoveError {
             get {
-                return ResourceManager.GetString("ConductingOrganizationsRemoveError", resourceCulture);
+                return ResourceManager.GetString("ConductingOrganizationRemoveError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve the list of event organizers..
+        /// </summary>
+        public static string ConductingOrganizationsLoadError {
+            get {
+                return ResourceManager.GetString("ConductingOrganizationsLoadError", resourceCulture);
             }
         }
         
@@ -195,7 +204,7 @@ namespace AppDomain.Phrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to get a competition statuses and names from the repository..
+        ///   Looks up a localized string similar to Failed to retrieve the list of competition statuses and names from the repository..
         /// </summary>
         public static string DetailedCompetitionStatusesLoadError {
             get {
@@ -209,6 +218,42 @@ namespace AppDomain.Phrases {
         public static string DetailedCompetitionStatusFindError {
             get {
                 return ResourceManager.GetString("DetailedCompetitionStatusFindError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve the list of discipline groups from the repository..
+        /// </summary>
+        public static string DisciplineGroupsLoadError {
+            get {
+                return ResourceManager.GetString("DisciplineGroupsLoadError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve the discipline from the repository..
+        /// </summary>
+        public static string DisciplineLoadError {
+            get {
+                return ResourceManager.GetString("DisciplineLoadError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve the list of disciplines from the repository..
+        /// </summary>
+        public static string DisciplinesLoadError {
+            get {
+                return ResourceManager.GetString("DisciplinesLoadError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve the list of discipline subgroups from the repository..
+        /// </summary>
+        public static string DisciplineSubGroupsLoadError {
+            get {
+                return ResourceManager.GetString("DisciplineSubGroupsLoadError", resourceCulture);
             }
         }
         
@@ -231,11 +276,11 @@ namespace AppDomain.Phrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to add referee to list..
+        ///   Looks up a localized string similar to Failed to create the new referee in the repository..
         /// </summary>
-        public static string RefereeAddError {
+        public static string RefereeCreateError {
             get {
-                return ResourceManager.GetString("RefereeAddError", resourceCulture);
+                return ResourceManager.GetString("RefereeCreateError", resourceCulture);
             }
         }
         
@@ -267,7 +312,7 @@ namespace AppDomain.Phrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to get a list of referee levels from the repository..
+        ///   Looks up a localized string similar to Failed to retrieve the list of referee levels from the repository..
         /// </summary>
         public static string RefereeLevelsLoadError {
             get {
@@ -285,7 +330,7 @@ namespace AppDomain.Phrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to get a list of referee from the repository..
+        ///   Looks up a localized string similar to Failed to retrieve the list of referees from the repository..
         /// </summary>
         public static string RefereesLoadError {
             get {
@@ -294,11 +339,29 @@ namespace AppDomain.Phrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to save the list of referee in the repository..
+        ///   Looks up a localized string similar to Failed to create the new sport event in the repository..
         /// </summary>
-        public static string RefereesSaveError {
+        public static string SportEventCreateError {
             get {
-                return ResourceManager.GetString("RefereesSaveError", resourceCulture);
+                return ResourceManager.GetString("SportEventCreateError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to remove the sport event from the repository..
+        /// </summary>
+        public static string SportEventRemoveError {
+            get {
+                return ResourceManager.GetString("SportEventRemoveError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve the list of sport events from the repository..
+        /// </summary>
+        public static string SportEventsLoadError {
+            get {
+                return ResourceManager.GetString("SportEventsLoadError", resourceCulture);
             }
         }
         

@@ -4,12 +4,13 @@ using System.Windows.Input;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
 using Common.BaseComponents.Components.Exceptions;
-using Common.WpfModule.Components.Services;
+using Common.WpfModule.Ui.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Presentation.ViewModels._Contracts;
 using Presentation.ViewModels.Common;
+using Presentation.ViewModels.Common.Messages;
 using ProblemDomain.Entities.CommonEntities;
 using Serilog;
 

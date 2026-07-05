@@ -141,27 +141,27 @@ public static class RepositoryPlaceholder
         
         var disciplineSubGroupLst = new List<DisciplineSubGroup>
         {
-            new(DisciplineSubGroupEnm.Trek, "",
+            new(DisciplineSubGroupEnm.Trek, "Маршрут",
                 disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Trek)!),
 
-            new(DisciplineSubGroupEnm.Water, "Водная",
+            new(DisciplineSubGroupEnm.Water, "Дистанция - водная",
                 disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!),
-            new(DisciplineSubGroupEnm.Mountain, "Горная",
+            new(DisciplineSubGroupEnm.Mountain, "Дистанция - горная",
                 disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!),
-            new(DisciplineSubGroupEnm.Combined, "Комбинированная",
+            new(DisciplineSubGroupEnm.Combined, "Дистанция - комбинированная",
                 disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!),
-            new(DisciplineSubGroupEnm.Ski, "Лыжная",
+            new(DisciplineSubGroupEnm.Ski, "Дистанция - лыжная",
                 disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!),
-            new(DisciplineSubGroupEnm.OnMovementItems, "На средствах передвижения",
+            new(DisciplineSubGroupEnm.OnMovementItems, "Дистанция - на средствах передвижения",
                 disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!),
-            new(DisciplineSubGroupEnm.Sailing, "Парусная",
+            new(DisciplineSubGroupEnm.Sailing, "Дистанция - парусная",
                 disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!),
-            new(DisciplineSubGroupEnm.Hiking, "Пешеходная",
+            new(DisciplineSubGroupEnm.Hiking, "Дистанция - пешеходная",
                 disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!),
-            new(DisciplineSubGroupEnm.Speleo, "Спелео",
+            new(DisciplineSubGroupEnm.Speleo, "Дистанция - спелео",
                 disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!),
 
-            new(DisciplineSubGroupEnm.NordicWalking, "",
+            new(DisciplineSubGroupEnm.NordicWalking, "Северная ходьба",
                 disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.NordicWalking)!),
         };
 

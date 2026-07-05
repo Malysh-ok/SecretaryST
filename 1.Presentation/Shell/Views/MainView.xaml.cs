@@ -7,11 +7,10 @@ using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
 using Common.BaseExtensions;
 using Common.BaseExtensions.ValueTypes;
-using Common.WpfModule.Components.Services;
+using Common.WpfModule.Ui.Services;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.Input;
 using Presentation.ViewModels._Contracts;
-using Presentation.ViewModels.Common;
 using Presentation.ViewModels.MainView;
 using Serilog;
 
@@ -64,7 +63,9 @@ public partial class MainView : IViewWithResources
         IExceptionsProvider exceptionsProvider, 
         AppSettingService appSetting,
         CompetitionDataService competitionDataService,
-        RefereeService refereeService)
+        RefereeService refereeService,
+        SportEventService  sportEventService)
+
     {
         _logger = logger;
         _appSetting = appSetting;
@@ -73,7 +74,7 @@ public partial class MainView : IViewWithResources
         
         // Получаем главную модель представления
         var mainVm = MainVM.Create(this, statusBarService, logger, exceptionsProvider,
-            appSetting, competitionDataService, refereeService);
+            appSetting, competitionDataService, refereeService, sportEventService);
         
         // mainVm.StatusBarData=new StatusBarData(StatusBarData.StatusBarTextType.Info, 
         //     "Инициализация.");
@@ -100,15 +101,19 @@ public partial class MainView : IViewWithResources
     /// </summary>
     private void LoadViewData()
     {
-        if (_appSetting.GetConfigItem("MainViewLeft").NullToEmpty().TryParseDouble(out var result))
-            Left = result;
-        if (_appSetting.GetConfigItem("MainViewTop").NullToEmpty().TryParseDouble(out result))
-            Top = result;
-        if (_appSetting.GetConfigItem("MainViewWidth").NullToEmpty().TryParseDouble(out result))
-            Width = result;
-        if (_appSetting.GetConfigItem("MainViewHeight").NullToEmpty().TryParseDouble(out result))
-            Height = result;
+        if (_appSetting.GetConfigItem("MainViewLeft").NullToEmpty().TryParseDouble(out var doubleResult))
+            Left = doubleResult;
+        if (_appSetting.GetConfigItem("MainViewTop").NullToEmpty().TryParseDouble(out doubleResult))
+            Top = doubleResult;
+        if (_appSetting.GetConfigItem("MainViewWidth").NullToEmpty().TryParseDouble(out doubleResult))
+            Width = doubleResult;
+        if (_appSetting.GetConfigItem("MainViewHeight").NullToEmpty().TryParseDouble(out doubleResult))
+            Height = doubleResult;
         WindowState = _appSetting.GetConfigItem("MainViewState").NullToEmpty().ToEnum<WindowState>();
+
+        // TODO: Не срабатывает восстановление значений контролов. Придумать другой способ.
+        if (_appSetting.GetConfigItem(nameof(CmboxRestrictedDisciplineGroup)).NullToEmpty().TryParseInt(out var intResult))
+            CmboxRestrictedDisciplineGroup.SelectedIndex = intResult;
     }
 
     /// <summary>
@@ -121,6 +126,8 @@ public partial class MainView : IViewWithResources
         _appSetting.SetConfigItem("MainViewWidth", Width.ToString(CultureInfo.InvariantCulture));
         _appSetting.SetConfigItem("MainViewHeight", Height.ToString(CultureInfo.InvariantCulture));
         _appSetting.SetConfigItem("MainViewState", WindowState.ToString());
+
+        _appSetting.SetConfigItem(nameof(CmboxRestrictedDisciplineGroup), CmboxRestrictedDisciplineGroup.SelectedIndex.ToString());
     }
 
     /// <summary>

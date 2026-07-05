@@ -215,7 +215,7 @@
     </DrawingImage>
     
     <!-- Обновить (Olive) -->
-    <DrawingImage x:Key="DrawingImage_Olive" >
+    <DrawingImage x:Key="RotateDrawingImage_Olive" >
 	    <DrawingImage.Drawing>
 		    <DrawingGroup ClipGeometry="M0,0 V512 H512 V0 H0 Z">
 			    <GeometryDrawing Brush="Olive" 
@@ -223,6 +223,16 @@
 		    </DrawingGroup>
 	    </DrawingImage.Drawing>
     </DrawingImage>
+
+	<!-- Обновить (Highlight) -->
+	<DrawingImage x:Key="RotateDrawingImage_Highlight" >
+		<DrawingImage.Drawing>
+			<DrawingGroup ClipGeometry="M0,0 V512 H512 V0 H0 Z">
+				<GeometryDrawing Brush="{StaticResource HighlightBrush}" 
+				                 Geometry="{StaticResource _rotateGeometry}" />
+			</DrawingGroup>
+		</DrawingImage.Drawing>
+	</DrawingImage>
 
     <!-- ГЕОМЕТРИЯ: Дискета -->
     <Geometry x:Key="_floppyDiskGeometry">
@@ -317,6 +327,16 @@
 	    </DrawingImage.Drawing>
     </DrawingImage>
     
+	<!-- Знак умножения на залитом круге (Highlight) -->
+	<DrawingImage x:Key="CircleXmarkSolidDrawingImage_Highlight">
+		<DrawingImage.Drawing>
+			<DrawingGroup ClipGeometry="M0,0 V512 H512 V0 H0 Z">
+				<GeometryDrawing Brush="{StaticResource HighlightBrush}" 
+				                 Geometry="{StaticResource _circleXmarkSolidGeometry}" />
+			</DrawingGroup>
+		</DrawingImage.Drawing>
+	</DrawingImage>
+
 	<!-- ГЕОМЕТРИЯ: Знак плюс на круге -->
 	<Geometry x:Key="_circlePlusGeometry">
 		F1 M512,512z M0,0z M256,512C397,512 512,397 512,256 512,115 397,0 256,0 115,0 0,115 0,256 0,397 115,512 256,512L256,512z M256,48C371,48 464,141 464,256 464,371 371,464 256,464 141,464 48,371 48,256 48,141 141,48 256,48z M141,256C141,269,152,280,165,280L231,280 231,346C231,359 242,370 255,370 268,370 279,359 279,346L279,280 345,280C358,280 369,269 369,256 369,243 358,232 345,232L279,232 279,166C279,153 268,142 255,142 242,142 231,153 231,166L231,232 165,232C152,232,141,243,141,256z
@@ -356,6 +376,16 @@
 		    </DrawingGroup>
 	    </DrawingImage.Drawing>
     </DrawingImage>
+	
+	<!-- Знак плюс на круге (Highlight) -->
+	<DrawingImage x:Key="CirclePlusDrawingImage_Highlight">
+		<DrawingImage.Drawing>
+			<DrawingGroup ClipGeometry="M0,0 V512 H512 V0 H0 Z">
+				<GeometryDrawing Brush="{StaticResource HighlightBrush}" 
+				                 Geometry="{StaticResource _circlePlusGeometry}" />
+			</DrawingGroup>
+		</DrawingImage.Drawing>
+	</DrawingImage>
 	
 	<!-- ГЕОМЕТРИЯ: Печать -->
 	<Geometry x:Key="_printGeometry">

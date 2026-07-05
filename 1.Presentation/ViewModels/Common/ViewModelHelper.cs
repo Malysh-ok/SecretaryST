@@ -3,7 +3,7 @@ using AppDomain.AppExceptions;
 using AppDomain.Phrases;
 using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions;
-using Common.WpfModule.Components.Services;
+using Common.WpfModule.Ui.Services;
 using Presentation.ViewModels._Contracts;
 using Serilog;
 

@@ -1,4 +1,4 @@
-﻿using Common.WpfModule.Components.Services;
+﻿using Common.WpfModule.Ui.Services;
 
 namespace Presentation.ViewModels._Contracts;
 

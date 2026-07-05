@@ -29,8 +29,8 @@
     <data name="RefereeLevelsLoadError" xml:space="preserve">
         <value>Не удалось получить список судейских категорий из репозитория.</value>
     </data>
-    <data name="CompetitionsStatusesLoadError" xml:space="preserve">
-        <value>Не удалось получить статусы соревнований из репозитория.</value>
+    <data name="CompetitionStatusesLoadError" xml:space="preserve">
+        <value>Не удалось получить список статусов соревнований из репозитория.</value>
     </data>
     <data name="DetailedCompetitionStatusesLoadError" xml:space="preserve">
         <value>Не удалось получить статусы и названия соревнований из репозитория.</value>
@@ -47,8 +47,8 @@
     <data name="RefereeLevelFindError" xml:space="preserve">
         <value>Не удалось найти судейскую категорию в репозитории.</value>
     </data>
-    <data name="RefereeAddError" xml:space="preserve">
-        <value>Не удалось добавить судью в список.</value>
+    <data name="RefereeCreateError" xml:space="preserve">
+        <value>Не удалось создать нового судью в репозитории.</value>
     </data>
     <data name="RefereeJobTitleFindError" xml:space="preserve">
         <value>Не удалось найти судейскую должность в репозитории.</value>
@@ -56,14 +56,11 @@
     <data name="RefereeRemoveError" xml:space="preserve">
         <value>Не удалось удалить судью из репозитория.</value>
     </data>
-    <data name="RefereesSaveError" xml:space="preserve">
-        <value>Не удалось сохранить список судей в репозитории.</value>
-    </data>
     <data name="UnknownError" xml:space="preserve">
         <value>Неизвестная Ошибка. Для получения подробной информации смотрите log-файл.</value>
     </data>
-    <data name="CompetitionsStatusFindError" xml:space="preserve">
-        <value>Не удалось найти статус соревнований в репозитории.</value>
+    <data name="CompetitionStatusFindError" xml:space="preserve">
+        <value>Не удалось найти статус соревнования в репозитории.</value>
     </data>
     <data name="DetailedCompetitionStatusFindError" xml:space="preserve">
         <value>Не удалось найти статус и название соревнования в репозитории.</value>
@@ -74,16 +71,16 @@
     <data name="CompetitionDataNotFound" xml:space="preserve">
         <value>Соревнование в репозитории не найдено.</value>
     </data>
-    <data name="ConductingOrganizationsGetError" xml:space="preserve">
-        <value>Не удалось получить проводящие организации.</value>
+    <data name="ConductingOrganizationsLoadError" xml:space="preserve">
+        <value>Не удалось получить список проводящих организаций.</value>
     </data>
     <data name="ConductingOrganizationsSetError" xml:space="preserve">
         <value>Не удалось задать проводящие организации.</value>
     </data>
-    <data name="ConductingOrganizationsAddError" xml:space="preserve">
-        <value>Не удалось добавить проводящую организацию.</value>
+    <data name="ConductingOrganizationCreateError" xml:space="preserve">
+        <value>Не удалось создать новую проводящую организацию.</value>
     </data>
-    <data name="ConductingOrganizationsRemoveError" xml:space="preserve">
+    <data name="ConductingOrganizationRemoveError" xml:space="preserve">
         <value>Не удалось удалить проводящую организацию.</value>
     </data>
     <data name="DatabaseCreateError" xml:space="preserve">
@@ -94,5 +91,29 @@
     </data>
     <data name="LocalizingError" xml:space="preserve">
         <value>Ошибка локализации представления "{0}".</value>
+    </data>
+    <data name="SportEventsLoadError" xml:space="preserve">
+        <value>Не удалось получить список видов программы из репозитория.</value>
+    </data>
+    <data name="SportEventCreateError" xml:space="preserve">
+        <value>Не удалось создать новый вид программы в репозитории.</value>
+    </data>
+    <data name="DisciplineLoadError" xml:space="preserve">
+        <value>Не удалось получить дисциплину из репозитория.</value>
+    </data>
+    <data name="SportEventRemoveError" xml:space="preserve">
+        <value>Не удалось удалить вид программы из репозитория.</value>
+    </data>
+    <data name="CompetitionDataListLoadError" xml:space="preserve">
+        <value>Не удалось получить список соревнований из репозитория.</value>
+    </data>
+    <data name="DisciplinesLoadError" xml:space="preserve">
+        <value>Не удалось получить список дисциплин из репозитория.</value>
+    </data>
+    <data name="DisciplineGroupsLoadError" xml:space="preserve">
+        <value>Не удалось получить список групп дисциплин из репозитория.</value>
+    </data>
+    <data name="DisciplineSubGroupsLoadError" xml:space="preserve">
+        <value>Не удалось получить список подгрупп дисциплин из репозитория.</value>
     </data>
 </root>

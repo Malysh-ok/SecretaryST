@@ -93,4 +93,8 @@ public sealed class DisciplineSubGroup
     {
         Copy((DisciplineSubGroup)destination);
     }
+    
+    /// <inheritdoc />
+    public override string ToString()
+        => Name;
 }

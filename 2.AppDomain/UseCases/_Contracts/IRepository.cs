@@ -63,13 +63,12 @@ public interface IRepository : IDisposable
     /// Получить сущности из репозитория по Id.
     /// </summary>
     /// <param name="id">Id получаемой сущности.</param>
-    /// <param name="navigationProperties"></param>
     /// <returns>Получаемая сущность.</returns>
     /// <remarks>
     /// Отличается от <see cref="FindAsync{TEntity}"/> возможностью задать навигационные свойства,
     /// но работает медленнее.
     /// </remarks>
-    /// <inheritdoc cref="GetAllAsync{TEntity}(string[])"/>
+    /// <inheritdoc cref="GetFirstAsync{TEntity}(string[])"/>
     // ReSharper disable once InvalidXmlDocComment
     public Task<Result<TEntity?>> GetByIdAsync<TEntity>(int id, params string[] navigationProperties) 
         where TEntity : class, IAbstractEntity;
@@ -93,6 +92,18 @@ public interface IRepository : IDisposable
     public Task<Result<TEntity?>> GetLastAsync<TEntity>(params string[] navigationProperties)
         where TEntity : class, IAbstractEntity;
 
+    /// <summary>
+    /// Получить из репозитория сущность типа <typeparamref name="TEntity"/> по условию.
+    /// </summary>
+    /// <param name="predicate">Условие поиска -
+    /// лямбда-выражение, которое будет преобразовано в SQL-условие <c>WHERE</c></param>
+    /// <returns>Получаемая сущность.</returns>
+    /// <inheritdoc cref="GetFirstAsync{TEntity}(string[])"/>
+    public Task<Result<TEntity?>> GetByConditionAsync<TEntity>(Expression<Func<TEntity, bool>> predicate,
+            // ReSharper disable once InvalidXmlDocComment
+            params string[] navigationProperties)
+        where TEntity : class;
+    
     /// <summary>
     /// Получение всех сущностей из репозитория.
     /// </summary>

@@ -5,7 +5,7 @@ using Common.WpfModule.Extensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Brush = System.Windows.Media.Brush;
 
-namespace Common.WpfModule.Components.Services;
+namespace Common.WpfModule.Ui.Services;
 
 /// <summary>
 /// Сервис для работы со статус-баром.

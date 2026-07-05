@@ -41,12 +41,13 @@ public sealed class SportEvent
         )
     {
     }
-    
+
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <inheritdoc />
     /// <param name="discipline">Дисциплина.</param>
+    /// <param name="competitionData">Соревнование.</param>
     public SportEvent(string name, bool? isShort, Difficulty.IdEnm difficulty, Discipline discipline,
             CompetitionData competitionData, string? description = null) 
         : this(name, isShort, difficulty, description)

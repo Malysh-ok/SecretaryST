@@ -51,6 +51,7 @@ public sealed class Referee
     /// <inheritdoc />
     /// <param name="refereeLevel">Судейская категория.</param>
     /// <param name="refereeJobTitle">Судейская должность.</param>
+    /// <param name="competitionData">Соревнование.</param>
     public Referee(int number, string lastName, string firstName, string domicile, 
         RefereeLevel refereeLevel, RefereeJobTitle refereeJobTitle, 
         CompetitionData competitionData,

@@ -7,7 +7,7 @@ using AppDomain.Phrases;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases._Contracts;
 using AppDomain.UseCases.Services;
-using Common.WpfModule.Components.Services;
+using Common.WpfModule.Ui.Services;
 using DataAccess.DbContexts;
 using DataAccess.Repositories;
 using DataAccess.Repositories.Exceptions;
@@ -74,6 +74,7 @@ public partial class App
             .AddSingleton<IExceptionsProvider, ExceptionsProvider>()
             .AddScoped<CompetitionDataService>()
             .AddScoped<RefereeService>()
+            .AddScoped<SportEventService>()
             ;
     }
 

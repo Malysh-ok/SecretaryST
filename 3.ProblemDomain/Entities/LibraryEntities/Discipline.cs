@@ -105,4 +105,8 @@ public sealed class Discipline
     {
         Copy((Discipline)destination);
     }
+    
+    /// <inheritdoc />
+    public override string ToString()
+        => Name;
 }
