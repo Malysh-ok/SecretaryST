@@ -19,7 +19,7 @@ public class RefereeService(IRepository repository)
     /// <summary>
     /// Перенумерация коллекции судей.
     /// </summary>
-    public void RenumberRefereesCollection(ObservableCollection<Referee> refereesCollection)
+    public void RenumberReferees(IList<Referee> refereesCollection)
     {
         var referees = refereesCollection.ToList();
         refereesCollection.Clear();
@@ -62,7 +62,7 @@ public class RefereeService(IRepository repository)
     /// <param name="competition">Текущее соревнование.</param>
     /// <returns>Индекс нового текущего судьи.</returns>
     public async Task<Result<bool>> GetRefereesAsync(
-        ObservableCollection<Referee> refereesCollection, CompetitionData? competition)
+        IList<Referee> refereesCollection, CompetitionData? competition)
     {
         // Проверяем наличие соревнования
         if (competition == null)
@@ -100,7 +100,7 @@ public class RefereeService(IRepository repository)
     /// <param name="competition">Текущее соревнование.</param>
     /// <returns>Индекс нового текущего судьи.</returns>
     public async Task<Result<int>> CreateRefereeAsync(
-        ObservableCollection<Referee> refereesCollection, int index, CompetitionData? competition)
+        IList<Referee> refereesCollection, int index, CompetitionData? competition)
     {
         AppException innerException;
         
@@ -147,7 +147,7 @@ public class RefereeService(IRepository repository)
         
         // Добавляем в коллекцию судью и перенумеровываем коллекцию
         refereesCollection.Insert(newIndex, newReferee);
-        RenumberRefereesCollection(refereesCollection);
+        RenumberReferees(refereesCollection);
         
         // Обновляем судей в репозитории
         var intResult = repository.UpdateRange(refereesCollection);
@@ -167,7 +167,7 @@ public class RefereeService(IRepository repository)
     /// <param name="refereesCollection">Текущая коллекция судей.</param>
     /// <param name="index">Индекс удаляемого судьи в коллекции.</param>
     /// <returns>Индекс нового текущего судьи.</returns>
-    public Result<int> RemoveReferee(ObservableCollection<Referee> refereesCollection, int index)
+    public Result<int> RemoveReferee(IList<Referee> refereesCollection, int index)
     {
         if (index >= refereesCollection.Count || index < 0)
             return Result<int>.Done(index);
@@ -177,7 +177,7 @@ public class RefereeService(IRepository repository)
         
         // Удаляем из коллекции судью и перенумеровываем коллекцию
         refereesCollection.RemoveAt(index);
-        RenumberRefereesCollection(refereesCollection);
+        RenumberReferees(refereesCollection);
         
         // Удаляем из репозитория
         var intResult = repository.Remove(refereeToRemove);

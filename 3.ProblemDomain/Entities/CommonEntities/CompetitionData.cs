@@ -23,6 +23,7 @@ public sealed class CompetitionData
     /// <param name="initialDate">Начальная дата проведения.</param>
     /// <param name="endDate">Конечная дата проведения.</param>
     /// <param name="venue">Место проведения.</param>
+    /// <param name="shortName">Краткое название.</param>
     private CompetitionData(string name, 
         IList<string> conductingOrganizations, DateTime initialDate, DateTime endDate, string venue, string shortName,
         string? description = null) 
@@ -57,6 +58,8 @@ public sealed class CompetitionData
     /// Конструктор.
     /// </summary>
     /// <inheritdoc />
+    /// <param name="competitionsStatus">Статус соревнований.</param>
+    /// <param name="detailedCompetitionStatus">Статус и наименования соревнования.</param>
     public CompetitionData(string name,
         IList<string> conductingOrganizations, DateTime initialDate, DateTime endDate, string venue, string shortName,
         CompetitionsStatus competitionsStatus, DetailedCompetitionStatus detailedCompetitionStatus,

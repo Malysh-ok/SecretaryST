@@ -177,15 +177,6 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
                 exception = competitionResult.Excptn;
                 return;
             }
-            
-            // Сохраняем изменения
-            var intResult = await _competitionDataService.SaveCompetitionDataAsync();
-            if (! intResult)
-            {
-                // Неудачное сохранение в репозитории
-                exception = competitionResult.Excptn;
-                return;
-            }
 
             CurrentCompetition = competitionResult.Value;
             

@@ -134,6 +134,9 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
                         
                         var view = CollectionViewSource.GetDefaultView(Items);
                         view.Refresh(); // обновляем UI
+                        
+                        // Устанавливаем выделение на перемещённую строку
+                        AssociatedObject.SelectedItem = droppedItem;
                     }
                 }
             }

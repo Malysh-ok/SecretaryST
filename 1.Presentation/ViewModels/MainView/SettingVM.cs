@@ -121,10 +121,8 @@ public sealed class SettingVM : ObservableRecipient,
         // Судьи
         GetRefereesCommand = new AsyncRelayCommand(GetRefereesAsync);
         CreateRefereeCommand = new AsyncRelayCommand(CreateRefereeAsync);
-        RemoveRefereeCommand = new AsyncRelayCommand(RemoveReferee);
-        // Привязываем команду перенумерования к методу в сервисе для работы с судьями
-        RenumberRefereesCommand =
-            new RelayCommand<ObservableCollection<Referee>>(_ => _refereeService.RenumberRefereesCollection(Referees));
+        RemoveRefereeCommand = new RelayCommand(RemoveReferee);
+        RenumberRefereesCommand = new RelayCommand(RenumberReferee);
         
         // Установка локализации из настроек
         Languages = new ObservableCollection<Lang>(localization.Languages.Values);
@@ -918,7 +916,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// <summary>
     /// Удаление судьи.
     /// </summary>
-    private Task RemoveReferee()
+    private void RemoveReferee()
     {
         var refereeResult = _refereeService.RemoveReferee(Referees, Referees.SelectedIndex);
         if (refereeResult)
@@ -938,8 +936,16 @@ public sealed class SettingVM : ObservableRecipient,
             _logger.Error(refereeResult.Excptn, "{class}.{method}", 
                 typeof(SettingVM), nameof(RemoveReferee));
         }
+    }
 
-        return Task.CompletedTask;
+    /// <summary>
+    /// Перенумерация коллекции судей.
+    /// </summary>
+    private void RenumberReferee()
+    {
+        var index = Referees.SelectedIndex;
+        _refereeService.RenumberReferees(Referees);
+        Referees.SelectedIndex = index;
     }
     
     #endregion
