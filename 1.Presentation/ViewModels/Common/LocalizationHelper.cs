@@ -20,7 +20,7 @@ public class LocalizationHelper
     /// <summary>
     /// Получаем наименование ресурса локализации.
     /// </summary>
-    /// <param name="lang">Локализация, для которой получаем наименование.</param>
+    /// <param name="lang">Язык, для которого получаем наименование.</param>
     private string GetLangResourceName(Lang lang)
     {
         var delim = lang.ShortName == _appSetting.AppLocalization.GetDefaultLang().ShortName
@@ -41,12 +41,12 @@ public class LocalizationHelper
     /// Локализует представление (окно), заменяя словарь ResourceDictionary языка.
     /// </summary>
     /// <param name="view">Представление, которое нужно локализовать.</param>
-    /// <param name="localization">Целевой язык.</param>
+    /// <param name="lang">Целевой язык.</param>
     /// <returns>true - локализация успешна, false - ошибка.</returns>
     /// <remarks>
     /// Если словарь с локализацией не найден - представление остается в прежней локализации.
     /// </remarks>
-    public bool LocalizeView(IViewWithResources view, Lang localization)
+    public bool LocalizeView(IViewWithResources view, Lang lang)
     {
         // Получаем словарь локализации из App
         var appResDic = Application.Current.Resources.MergedDictionaries.FirstOrDefault(r =>
@@ -63,7 +63,7 @@ public class LocalizationHelper
             {
                 Source = new Uri(
                     _regex.Replace(appResDic.Source.OriginalString, 
-                        GetLangResourceName(localization)), UriKind.Relative)
+                        GetLangResourceName(lang)), UriKind.Relative)
             };
 
             // Находим и удаляем все языковые словари в представлении

@@ -50,29 +50,27 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     public ObservableCollection<Lang> Languages { get; } = null!;
 
-    private Lang? _currLang;
     /// <summary>
     /// Текущая локализация.
     /// </summary>
     public Lang? CurrLang
     {
-        get => _currLang;
+        get;
         set
         {
-            var oldLang = _currLang?.Clone() ?? _appSetting.AppLocalization.GetDefaultLang();
-            if (SetProperty(ref _currLang, value))
+            var oldLang = field;
+            if (SetProperty(ref field, value))
             {
                 // Оповещаем все представления (окна) приложения о смене локализации
-                Messenger.Send(new LocalizationMessage(value ?? _appSetting.AppLocalization.GetDefaultLang(), oldLang ));
+                Messenger.Send(new LocalizationMessage(value ?? _appSetting.AppLocalization.GetDefaultLang(), oldLang));
             }
         }
     }
-    
+
     /// <summary>
     /// Сервис статус-бара.
     /// </summary>
     public StatusBarService StatusBarService { get; } = null!;
-    
     
         
     /// <summary>
@@ -102,7 +100,7 @@ public sealed class SettingVM : ObservableRecipient,
         _competitionDataService = competitionDataService;
         _refereeService = refereeService;
         _sportEventService =  sportEventService;
-        var localization = appSetting.AppLocalization;
+        _localizationHelper = new LocalizationHelper(appSetting);
 
         // Соревнования
         CreateConductingOrganizationCommand = new AsyncRelayCommand(CreateConductingOrganization);
@@ -124,22 +122,15 @@ public sealed class SettingVM : ObservableRecipient,
         RemoveRefereeCommand = new RelayCommand(RemoveReferee);
         RenumberRefereesCommand = new RelayCommand(RenumberReferee);
         
-        // Установка локализации из настроек
-        Languages = new ObservableCollection<Lang>(localization.Languages.Values);
-        var langName = localization.GetLangFromSetting();
-        _currLang = localization.SetCurrentLangFromName(langName);
-        _localizationHelper = new LocalizationHelper(appSetting);
-
         // Подписываемся на получение сообщений
         Messenger.Register<LocalizationMessage>(this);
         Messenger.Register<AllCompetitionsMessage>(this);
-        
-        // Посылаем сообщение о смене локализации
-        Messenger.Send( new LocalizationMessage(_currLang, localization.GetDefaultLang()));
-        
-        // Для отображения сообщений в нужной локализации при инициализации
-        AppPhrases.Culture = _currLang.GetCultureInfo();
 
+        // Получение языка локализации из настроек
+        var localization = appSetting.AppLocalization;
+        var langName = localization.GetLangFromSetting();
+        CurrLang = localization.SetCurrentLangFromName(langName);
+        
         // Обработка исключений "сверху", запуск инициализации если исключений нет
         ViewModelHelper.HandleExceptionsProvider(
             exceptionsProvider, InitAsync,
@@ -153,36 +144,11 @@ public sealed class SettingVM : ObservableRecipient,
     {
         try
         {
-            var localization = _appSetting.AppLocalization;
-        
-            var lang = message.Lang;       // устанавливаемый язык
-            var oldLang = message.OldLang; // предыдущий язык
-        
-            // Перевод наименований всех доступных языков приложения в соответствии с устанавливаемым языком
-            localization.Translate(localization.SetCurrentLang(lang).GetCultureInfo());
-
             // Локализация представления асинхронно в UI-потоке, но без блокировки
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                if (! _localizationHelper.LocalizeView(_view, lang))
-                {
-                    // Если локализовать не получилось - переводим доступные языки обратно,
-                    // в соответствии с предыдущим языком
-                    localization.Translate(localization.SetCurrentLang(oldLang).GetCultureInfo());
-                }
+                _localizationHelper.LocalizeView(_view, message.Lang);
             }, DispatcherPriority.Background);
-        
-            // После завершения локализации обновляем культуру, UI, и фразы приложения
-            var currLang = localization.GetCurrentOrDefaultLang();
-            CultureInfo.CurrentUICulture = currLang.GetCultureInfo();
-            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture;
-            AppPhrases.Culture = CultureInfo.CurrentUICulture;
-        
-            // Изменяем свойства, используемые для биндинга
-            SetProperty(ref _currLang!, null);                          // отвязываем привязку свойства к событию изменения значения 
-            Languages.Clear();
-            localization.Languages.ForEach(item => Languages.Add(item.Value));
-            SetProperty(ref _currLang, currLang, nameof(CurrLang));     // вновь привязываем
         
             // Дополнительные обновления данных
             await GetDisciplineGroupsAsync();
@@ -214,7 +180,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private async Task InitAsync()
     {
-        // TODO: Возможно нужно сделать проверку результатов вызовов, и если false - делать выход
+        // TODO: Возможно нужно сделать проверку результатов вызовов, и если false - как-то реагировать
         await GetDetailedCompetitionStatusesAsync();
         await GetRefereeLevels();
         await GetRefereeJobTitles();
@@ -317,7 +283,7 @@ public sealed class SettingVM : ObservableRecipient,
         var intResult = await _competitionDataService.SaveCompetitionDataAsync();
         if (intResult)
         {
-            // TODO: возможно изменим - Обновляем соревнование, хотя бы потому, чтобы обновилась коллекция сорев, при изменении ShortNeme одного из них
+            // TODO: возможно изменим - Обновляем соревнование, хотя бы потому, чтобы обновилась коллекция сорев, при изменении ShortName одного из них
             if (CurrentCompetition != null) 
                 // await GetCompetitionDataAsync(CurrentCompetition.Id);
                 CurrentCompetition = CurrentCompetition;
@@ -644,6 +610,9 @@ public sealed class SettingVM : ObservableRecipient,
 
             // Обновляем индекс
             SportEventObservables.SelectedIndex = index == 0 ? 0 : --index;
+
+            // TODO: Временно (без ожидания окончания)
+            _ = StatusBarService.SetTextAsync("Удалили вид программы.", BaseException.ExcptnType.Error);
 
             return Task.CompletedTask;
         }

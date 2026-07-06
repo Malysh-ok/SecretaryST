@@ -25,16 +25,6 @@ public class AppLocalizationService
     private const string RuLangName = "ru-RU";
     
     /// <summary>
-    /// Перечисление доступных языков.
-    /// </summary>
-    public enum LangEnm
-    {
-        En = 1,
-        Ru,
-        Fr      // TODO: удалить ненужные языки локализации
-    }
-    
-    /// <summary>
     /// Делегат, получающий наименование из настроек.
     /// </summary>
     private readonly Func<string> _getLangDelegate;
@@ -79,7 +69,7 @@ public class AppLocalizationService
         _setLangDelegate = setLangDelegate;
 
         // Текущая локализация
-        var appCultureInfo = GetCurrentOrDefaultLang().GetCultureInfo();
+        var appCultureInfo = CreateDefaultLang().GetCultureInfo();
         
         Languages = new Dictionary<LangEnm, Lang>
         {
@@ -103,8 +93,8 @@ public class AppLocalizationService
     /// <summary>
     /// Получить язык по умолчанию.
     /// </summary>
-    /// <returns></returns>
-    public Lang GetDefaultLang() => GetFromName(DefaultLangName)!;
+    public Lang GetDefaultLang() => GetFromName(DefaultLangName) 
+                                    ?? Languages.FirstOrDefault(x => x.Value.Name == DefaultLangName).Value;
 
     /// <summary>
     /// Получить текущий язык.
@@ -114,14 +104,26 @@ public class AppLocalizationService
     /// <summary>
     /// Получить текущий язык или язык по умолчанию.
     /// </summary>
-    public Lang GetCurrentOrDefaultLang() => Languages.GetValueOrDefault(_langNumber, CreateDefaultLang());
+    public Lang GetCurrentOrDefaultLang() => Languages.GetValueOrDefault(_langNumber, GetDefaultLang());
 
     /// <summary>
     /// Проверка валидности языка.
     /// </summary>
-    public Result<bool> ValidateLang(Lang lang)
+    public Result<bool> ValidateLang(Lang? lang)
     {
-        return Languages.KeyByValue(lang, out _)
+        return lang != null && Languages.KeyByValue(lang, out _)
+            ? Result<bool>.Done(true)
+            : Result<bool>.Fail(GetCurrentOrDefaultLang().GetCultureInfo().IsRu()
+                ? "Данный язык отсутствует в списке доступных языков."
+                : "This language is missing in the list of available languages.");
+    }
+
+    /// <summary>
+    /// Проверка валидности языка по его имени.
+    /// </summary>
+    public Result<bool> ValidateLang(string? langName)
+    {
+        return GetFromName(langName) != null
             ? Result<bool>.Done(true)
             : Result<bool>.Fail(GetCurrentOrDefaultLang().GetCultureInfo().IsRu()
                 ? "Данный язык отсутствует в списке доступных языков."
@@ -134,13 +136,13 @@ public class AppLocalizationService
     /// <remarks>
     /// Если язык не найден и isExceptionIfNotFound = true, генерируется исключение.
     /// </remarks>
-    public Lang? GetFromName(string? name, bool isExceptionIfNotFound = false)
+    public Lang? GetFromName(string? langName, bool isExceptionIfNotFound = false)
     {
-        var lang = Languages.Values.FirstOrDefault(x => x.Name == name);
+        var lang = Languages.Values.FirstOrDefault(x => x.Name == langName);
 
         if (lang is null && isExceptionIfNotFound)
             throw new AppException(GetCurrentOrDefaultLang().GetCultureInfo().IsRu()
-                ? $"Локализация с именем {name} не найдена."
+                ? $"Локализация с именем {langName} не найдена."
                 : "Localization with name {name} is not found.");
 
         return lang;
@@ -149,9 +151,9 @@ public class AppLocalizationService
     /// <summary>
     /// Получить язык по его имени или язык по умолчанию.
     /// </summary>
-    public Lang GetFromNameOrDefault(string? name)
+    public Lang GetFromNameOrDefault(string? langName)
     {
-        return GetFromName(name!) ?? GetDefaultLang();
+        return GetFromName(langName!) ?? GetDefaultLang();
     }
 
     /// <summary>
@@ -160,9 +162,9 @@ public class AppLocalizationService
     /// <remarks>
     /// Если язык <paramref name="lang"/> не найден, то текущий язык не изменяется.
     /// </remarks>
-    public Lang SetCurrentLang(Lang lang, bool isExceptionIfNotFound = false)
+    public Lang SetCurrentLang(Lang? lang, bool isExceptionIfNotFound = false)
     {
-        var langNumber = Languages.FirstOrDefault(x =>  x.Value.Name == lang.Name).Key;
+        var langNumber = Languages.FirstOrDefault(x =>  lang != null && x.Value.Name == lang.Name).Key;
         switch (langNumber)
         {
             case 0 when isExceptionIfNotFound:
@@ -171,7 +173,7 @@ public class AppLocalizationService
                     : $"Localization {nameof(lang)} is not found.");
             case > 0:
                 _langNumber = langNumber;
-                SetLangToSetting(lang.Name);        // сохраняем локализацию в настройках
+                SetLangToSetting(lang!.Name);        // сохраняем локализацию в настройках
                 break;
         }
 
@@ -182,11 +184,11 @@ public class AppLocalizationService
     /// Установить текущий язык по его имени.
     /// </summary>
     /// <remarks>
-    /// Если язык с именем <paramref name="name"/> не найден, то текущий язык не изменяется.
+    /// Если язык с именем <paramref name="langName"/> не найден, то текущий язык не изменяется.
     /// </remarks>
-    public Lang SetCurrentLangFromName(string? name, bool isExceptionIfNotFound = false)
+    public Lang SetCurrentLangFromName(string? langName, bool isExceptionIfNotFound = false)
     {
-        var lang = GetFromName(name, isExceptionIfNotFound);
+        var lang = GetFromName(langName, isExceptionIfNotFound);
 
         return lang != null
             ? SetCurrentLang(lang)

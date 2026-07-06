@@ -1,5 +1,6 @@
 ﻿using System.Windows.Input;
 using System.Windows.Media;
+using AppDomain.Phrases;
 using AppDomain.Setting.Services;
 using AppDomain.UseCases.Services;
 using Common.BaseComponents.Components.Exceptions;
@@ -39,7 +40,7 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     /// </summary>
     public StatusBarService StatusBarService { get; } = null!;
 
-    // TODO: Временная команда (кнопка панели быстрого доступа)
+    // TODO: Временная команда PinkCommand (кнопка панели быстрого доступа)
     public ICommand PinkCommand { get; } = null!;
 
     /// <summary>
@@ -60,7 +61,6 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
         StatusBarService = statusBarService;
         _logger = logger;
         
-        //TODO: Заменить название PinkCommand
         PinkCommand = new AsyncRelayCommand(OnPink);
     }
 
@@ -70,7 +70,7 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     /// <param name="view">Представление, реализующее ресурсы.</param>
     /// <param name="statusBarService">Сервис статус-бара.</param>
     /// <param name="logger">Логгер.</param>
-    /// <param name="appSetting">Настройки приложения.</param>
+    /// <param name="appSettingService">Настройки приложения.</param>
     /// <param name="exceptionsProvider">Поставщик исключения.</param>
     /// <param name="competitionDataService">Сервис для работы с Данными о соревнованиях.</param>
     /// <param name="refereeService">Сервис для работы с Судьями.</param>
@@ -79,7 +79,7 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
         StatusBarService statusBarService,
         ILogger logger, 
         IExceptionsProvider exceptionsProvider,
-        AppSettingService appSetting,
+        AppSettingService appSettingService,
         CompetitionDataService competitionDataService,
         RefereeService refereeService,
         SportEventService sportEventService)
@@ -90,9 +90,9 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
             Brushes.LightSalmon);
 
         // Создаем ViewModel's. Последовательность создания важна!
-        var settingVM = new SettingVM(view, statusBarService, logger, exceptionsProvider, appSetting,
+        var settingVM = new SettingVM(view, statusBarService, logger, exceptionsProvider, appSettingService,
             competitionDataService, refereeService, sportEventService);
-        var backstageVM = new BackstageVM(statusBarService, logger, exceptionsProvider, appSetting, 
+        var backstageVM = new BackstageVM(statusBarService, logger, exceptionsProvider, appSettingService, 
             competitionDataService);
         var mainVM = new MainVM(backstageVM, settingVM, statusBarService, logger);
 
@@ -106,11 +106,14 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     {
         // Пишем в статус-бар
         await StatusBarService.SetProgressAsync(50);
-        await StatusBarService.SetTextAsync("OnPink" + 
-            " Если нужно добавить всплывающие подсказки, иконки и кликабельность" + 
-            " Если нужно добавить всплывающие подсказки, иконки и кликабельность" + 
-            " Если нужно добавить всплывающие подсказки, иконки и кликабельность", 
-                BaseException.ExcptnType.Info, 0, false);
+        // await StatusBarService.SetTextAsync("OnPink" + 
+        //     " Если нужно добавить всплывающие подсказки, иконки и кликабельность" + 
+        //     " Если нужно добавить всплывающие подсказки, иконки и кликабельность" + 
+        //     " Если нужно добавить всплывающие подсказки, иконки и кликабельность", 
+        //         BaseException.ExcptnType.Info, 0, false);
+        await StatusBarService.SetTextAsync("OnPink " + AppPhrases.UnknownError, 
+            BaseException.ExcptnType.Info, 0, false);
+
         await Task.Delay(2000);
         await StatusBarService.SetProgressAsync(100);
         await Task.Delay(3000);

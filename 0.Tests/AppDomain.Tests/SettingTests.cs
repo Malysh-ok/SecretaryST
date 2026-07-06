@@ -31,6 +31,14 @@ public class SettingTests
         var lang4 = appLocalization.GetCurrentLang();
 
         var lang5 = currLang.Clone();
-        lang5.Translate(CultureInfo.GetCultureInfo("fr-FR"));
+        lang5.Translate(CultureInfo.GetCultureInfo("ru-RU"));
+        var ci = CultureInfo.GetCultureInfo("ru-RU");
+        
+        var lang6 = appLocalization.GetFromNameOrDefault("ru-RU");
+        // appLocalization.SetLangToSetting(lang6.Name);
+        // appSetting.SaveConfig();
+
+        var lang7 = new Lang(CultureInfo.GetCultureInfo("ru-RU"), CultureInfo.GetCultureInfo("en-EN"));
+        lang7.Translate(CultureInfo.GetCultureInfo("ru-RU"));
     }
 }

@@ -15,7 +15,7 @@ public class LocalizationMessage
     /// <summary>
     /// Текущий (старый) язык локализации.
     /// </summary>
-    public Lang OldLang { get; }
+    public Lang? OldLang { get; }
 
     /// <summary>
     /// Конструктор, запрещающий создание экземпляра без параметров.
@@ -32,7 +32,7 @@ public class LocalizationMessage
     /// </summary>
     /// <param name="lang">Язык, на который происходит локализация приложения.</param>
     /// <param name="oldLang">Текущий (старый) язык локализации.</param>
-    public LocalizationMessage(Lang lang, Lang oldLang)
+    public LocalizationMessage(Lang lang, Lang? oldLang)
     {
         Lang = lang;
         OldLang = oldLang;

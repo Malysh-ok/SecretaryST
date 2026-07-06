@@ -28,6 +28,78 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     private readonly CompetitionDataService _competitionDataService = null!;
     
     /// <summary>
+    /// Конструктор, запрещающий создания экземпляра без параметров.
+    /// </summary>
+    // ReSharper disable once UnusedMember.Local
+    private BackstageVM()
+    {
+    }
+
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    public BackstageVM(
+        StatusBarService statusBarService,
+        ILogger logger,
+        IExceptionsProvider exceptionsProvider,
+        AppSettingService appSetting,
+        CompetitionDataService competitionDataService)
+    {
+        StatusBarService = statusBarService;
+        _logger = logger;
+        _exceptionsProvider = exceptionsProvider;
+        _appSetting = appSetting;
+        _competitionDataService = competitionDataService;
+
+        GetAllCompetitionsCommand = new AsyncRelayCommand(GetAllCompetitionsAsync);
+        CreateCompetitionCommand = new AsyncRelayCommand(CreateCompetitionAsync);
+        RemoveCompetitionCommand =  new AsyncRelayCommand(RemoveCompetitionAsync);
+
+        ShowAppSettingCommand = new RelayCommand(ShowAppSetting);
+        
+        // Подписываемся на получение сообщений
+        Messenger.Register(this);
+        
+        // Обработка исключений "сверху", запуск инициализации если исключений нет
+        ViewModelHelper.HandleExceptionsProvider(
+            exceptionsProvider, InitAsync, StatusBarService, _logger);
+    }
+    
+    /// <summary>
+    /// Получаем сообщение с экземпляром <see cref="CompetitionMessage"/>.
+    /// </summary>
+    public void Receive(CompetitionMessage message)
+    {
+        CurrentCompetition = message.CurrentCompetition;
+    }
+
+    /// <summary>
+    /// Инициализация - получение всех необходимых данных.
+    /// </summary>
+    private async Task InitAsync()
+    {
+        await GetAllCompetitionsAsync();
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <inheritdoc cref="Dispose"/>
+    private void Dispose(bool disposing)
+    {
+    }
+    
+    /// <inheritdoc />
+    ~BackstageVM() => Dispose(false);
+
+    
+    #region [---------- Соревнования ----------]
+    
+    /// <summary>
     /// Коллекция соревнований.
     /// </summary>
     public ObservableCollection<CompetitionData> Competitions { get; set; } = [];
@@ -62,62 +134,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
 
     #endregion
 
-    
-    /// <summary>
-    /// Конструктор, запрещающий создания экземпляра без параметров.
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
-    private BackstageVM()
-    {
-    }
-
-    /// <summary>
-    /// Конструктор.
-    /// </summary>
-    public BackstageVM(
-        StatusBarService statusBarService,
-        ILogger logger,
-        IExceptionsProvider exceptionsProvider,
-        AppSettingService appSetting,
-        CompetitionDataService competitionDataService)
-    {
-        StatusBarService = statusBarService;
-        _logger = logger;
-        _exceptionsProvider = exceptionsProvider;
-        _appSetting = appSetting;
-        _competitionDataService = competitionDataService;
-
-        GetAllCompetitionsCommand = new AsyncRelayCommand(GetAllCompetitionsAsync);
-        CreateCompetitionCommand = new AsyncRelayCommand(CreateCompetitionAsync);
-        RemoveCompetitionCommand =  new AsyncRelayCommand(RemoveCompetitionAsync);
-
-        // Подписываемся на получение сообщений
-        Messenger.Register(this);
-        
-        // Обработка исключений "сверху", запуск инициализации если исключений нет
-        ViewModelHelper.HandleExceptionsProvider(
-            exceptionsProvider, InitAsync, StatusBarService, _logger);
-    }
-    
-    /// <summary>
-    /// Получаем сообщение с экземпляром <see cref="CompetitionMessage"/>.
-    /// </summary>
-    public void Receive(CompetitionMessage message)
-    {
-        CurrentCompetition = message.CurrentCompetition;
-    }
-
-    /// <summary>
-    /// Инициализация - получение всех необходимых данных.
-    /// </summary>
-    private async Task InitAsync()
-    {
-        await GetAllCompetitionsAsync();
-    }
-
-    #region [---------- Функции для команд ----------]
-
-    /// <summary>
+        /// <summary>
     /// Получение (обновление) коллекции соревнований.
     /// </summary>
     private async Task GetAllCompetitionsAsync()
@@ -256,21 +273,25 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             }
         }
     }
-
+    
     #endregion
-    
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
 
-    /// <inheritdoc cref="Dispose"/>
-    private void Dispose(bool disposing)
+
+    #region [---------- Работа с приложением ----------]
+
+    /// <summary>
+    /// Команда показа окна настроек приложения.
+    /// </summary>
+    public ICommand ShowAppSettingCommand { get; } = null!;
+
+    /// <summary>
+    /// Показываем окно настроек приложения (используя сообщение для code-behind представления MainView).
+    /// </summary>
+    private void ShowAppSetting()
     {
+        // Отправляем сообщение
+        Messenger.Send(new OpenAppSettingMessage());
     }
     
-    /// <inheritdoc />
-    ~BackstageVM() => Dispose(false);
+    #endregion
 }

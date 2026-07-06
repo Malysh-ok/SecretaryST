@@ -7,9 +7,9 @@ using Serilog;
 namespace Presentation.Shell.Views;
 
 /// <summary>
-/// Представление (окно) с настройками.
+/// Представление (окно) с настройками приложения.
 /// </summary>
-public partial class OtherSettingView : IViewWithResources
+public partial class AppSettingView : IViewWithResources
 {
     /// <summary>
     /// Закрыть представление (окно).
@@ -22,10 +22,10 @@ public partial class OtherSettingView : IViewWithResources
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public OtherSettingView(ILogger logger, AppSettingService appSetting)
+    public AppSettingView(ILogger logger, AppSettingService appSetting)
     {
         InitializeComponent();
 
-        DataContext = new OtherSettingVM(this, logger, appSetting);
+        DataContext = new AppSettingVM(this, logger, appSetting);
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using AppDomain.Setting.Services;
@@ -9,8 +8,9 @@ using Common.BaseExtensions;
 using Common.BaseExtensions.ValueTypes;
 using Common.WpfModule.Ui.Services;
 using Common.WpfModule.Ui.Views;
-using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Presentation.ViewModels._Contracts;
+using Presentation.ViewModels.Common.Messages;
 using Presentation.ViewModels.MainView;
 using Serilog;
 
@@ -19,41 +19,29 @@ namespace Presentation.Shell.Views;
 /// <summary>
 /// Основное представление (окно).
 /// </summary>
-public partial class MainView : IViewWithResources
+public partial class MainView : IViewWithResources, IRecipient<OpenAppSettingMessage>
 {
+    /// <summary>
+    /// Последнее активное дочернее окно.
+    /// </summary>
+    private Window? _lastActiveChild;
+    
+    /// <summary>
+    /// Флаг, указывающий, что при следующей активации главного окна нужно
+    /// принудительно активировать дочернее окно.
+    /// Устанавливается при открытии дочернего окна и сбрасывается после активации.
+    /// Это предотвращает перехват фокуса при каждом клике на главное окно.
+    /// </summary>
+    private bool _shouldActivateChild;
+
     private static ILogger _logger = null!;
     private static AppSettingService _appSetting = null!;       // настройки приложения
     
     /// <summary>
-    /// Представление (окно) дополнительных настроек.
+    /// Представление (окно) настроек приложения.
     /// </summary>
-    private static OtherSettingView? _otherSettingView;
+    private static AppSettingView? _appSettingView;
 
-    /// <summary>
-    /// Создание команды показа представления дополнительных настроек.
-    /// </summary>
-    // TODO: Попытаться сделать НЕ статическую команду
-    public static ICommand ShowOtherSettingViewCommand { get; } = new AsyncRelayCommand(() =>
-    {
-        if (_otherSettingView is { IsVisible: true })
-        {
-            // Если окно доп. настоек отображено
-            _otherSettingView.Activate();
-            
-            return Task.CompletedTask;
-        }
-
-        // Удаляем старое и создаем новое окно доп. настроек
-        _otherSettingView?.Close();
-        _otherSettingView = new OtherSettingView(_logger, _appSetting)
-        {
-            Owner = Application.Current.MainWindow
-        };
-        _otherSettingView.Show();
-        
-        return Task.CompletedTask;
-    });
-    
 
     /// <summary>
     /// Конструктор.
@@ -76,16 +64,93 @@ public partial class MainView : IViewWithResources
         var mainVm = MainVM.Create(this, statusBarService, logger, exceptionsProvider,
             appSetting, competitionDataService, refereeService, sportEventService);
         
-        // mainVm.StatusBarData=new StatusBarData(StatusBarData.StatusBarTextType.Info, 
-        //     "Инициализация.");
-        
         // Привязываем данные главной модели представления
         DataContext = mainVm;
 
-        // TODO: Пример CommandBinding
-        // var dialogCommandBinding =
-        //      new CommandBinding(ShowOtherSettingViewCommand, ExecuteShowDialogCommand, CanExecuteShowDialogCommand);
-        // CommandBindings.Add(dialogCommandBinding);
+        // Подписываемся на сообщение
+        WeakReferenceMessenger.Default.Register<MainView, OpenAppSettingMessage>(this, (r, m) =>
+            r.Receive(m));
+        
+        // REMARK: Костыль - при закрытии Backstage фокус возвращается в главное окно,
+        // и нам нужно перехватить это событие, чтобы активировать дочернее окно.
+        this.Activated += OnMainWindowActivated;
+    }
+    
+    public void Receive(OpenAppSettingMessage message)
+    {
+        // Если окно уже открыто — активируем его
+        if (_appSettingView is { IsVisible: true })
+        {
+            _appSettingView.Activate();
+            return;
+        }
+
+        // Закрываем старое окно (если есть)
+        _appSettingView?.Close();
+
+        // Создаём новое окно, передаём ViewModel
+        _appSettingView = new AppSettingView(_logger, _appSetting);
+        
+        // Вызываем универсальный метод открытия окна
+        OpenChildWindow(_appSettingView,
+            message.DataContext ?? _appSettingView.DataContext);
+    }
+    
+    /// <summary>
+    /// Универсальный метод открытия любого дочернего окна
+    /// </summary>
+    public void OpenChildWindow(Window childWindow, object? dataContext = null)
+    {
+        childWindow.Owner = this;
+        childWindow.DataContext = dataContext;
+
+        // Подписываемся на активацию дочернего окна
+        childWindow.Activated += OnChildWindowActivated;
+        // При закрытии отписываемся
+        childWindow.Closed += OnChildWindowClosed;
+
+        childWindow.Show();
+        
+        // Устанавливаем флаг — нужно активировать дочернее окно при следующей активации главного
+        _shouldActivateChild = true;
+    }
+    
+    /// <summary>
+    /// Перехватывает активацию главного окна (после закрытия Backstage или переключения).
+    /// Если флаг _shouldActivateChild установлен, активирует последнее дочернее окно и сбрасывает флаг.
+    /// </summary>
+    private void OnMainWindowActivated(object? sender, EventArgs e)
+    {
+        // Если есть последнее активное дочернее окно, оно видимо, но не активно — активируем его
+        if (_shouldActivateChild && _lastActiveChild != null && _lastActiveChild.IsVisible && !_lastActiveChild.IsActive)
+        {
+            _shouldActivateChild = false; 
+            
+            // Активируем дочернее окно
+            _lastActiveChild.Activate();
+            _lastActiveChild.Focus();
+              
+        }
+    }
+
+    private void OnChildWindowActivated(object? sender, EventArgs e)
+    {
+        // Запоминаем последнее активное дочернее окно
+        _lastActiveChild = sender as Window;
+    }
+
+    private void OnChildWindowClosed(object? sender, EventArgs e)
+    {
+        if (sender is Window closingWindow)
+        {
+            // Если закрывается окно, которое было последним активным — обнуляем ссылку
+            if (_lastActiveChild == closingWindow)
+                _lastActiveChild = null;
+
+            // Отписываемся от событий
+            closingWindow.Activated -= OnChildWindowActivated;
+            closingWindow.Closed -= OnChildWindowClosed;
+        }
     }
         
     /// <summary>

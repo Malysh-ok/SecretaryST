@@ -50,15 +50,15 @@ public partial class App
         var appSettingService = startupItemsFactory.CreateAppSettingService();
         
         services
-            .AddSingleton<MainView>()        // регистрируем главное представление
-            .AddSingleton(appSettingService) // регистрируем сервис настроек приложения
-            .AddSingleton(dbConfigurator)    // регистрируем конфигуратор БД
+            .AddSingleton<MainView>()                                   // регистрируем главное представление
+            .AddSingleton(appSettingService)                            // регистрируем сервис настроек приложения
+            .AddSingleton(dbConfigurator)                               // регистрируем конфигуратор БД
             
             .AddDbContext<AppDbContext>(options =>
                 dbConfigurator.UseProvider<AppDbContext>(options),
-                ServiceLifetime.Transient)                       // регистрируем контекст БД
-            .AddScoped<IRepository, Repository<AppDbContext>>()  // регистрируем репозиторий
-            .AddTransient<IRepositoryHelper, RepositoryHelper>() // регистрируем "помощник" репозитория
+                ServiceLifetime.Transient)                              // регистрируем контекст БД
+            .AddScoped<IRepository, Repository<AppDbContext>>()         // регистрируем репозиторий
+            .AddTransient<IRepositoryHelper, RepositoryHelper>()        // регистрируем "помощник" репозитория
             
             // .AddLogging(builder => builder.AddSerilog(dispose: true))
             .AddSingleton<ILogger>
@@ -86,8 +86,19 @@ public partial class App
         var exceptionsProvider = _serviceProvider.GetService<IExceptionsProvider>()!;
         try
         {
-            // Создаем каталоги приложения
             var appSettingService = _serviceProvider.GetService<AppSettingService>();
+            
+            // Берем название языка из настроек и устанавливаем язык культуры и фраз
+            var lang = appSettingService?.AppLocalization.GetLangFromSetting();
+            if (appSettingService?.AppLocalization.ValidateLang(lang) ?? false)
+            {
+                var ci = CultureInfo.GetCultureInfo(lang!); 
+                CultureInfo.CurrentUICulture = ci;
+                CultureInfo.CurrentCulture = ci;
+                AppPhrases.Culture = ci;
+            }
+            
+            // Создаем каталоги приложения
             var result = appSettingService?.AppDir.CreateAppDirs();
             if (result != null && ! result)
             {

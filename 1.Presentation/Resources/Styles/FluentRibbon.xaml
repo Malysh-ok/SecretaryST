@@ -69,22 +69,18 @@
     
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Foreground" 
                      Color="{StaticResource DefaultDarkBackgroundColor}" options:Freeze="True" />
-    <!--
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Background" 
-                     Color="{StaticResource AccentColor}" options:Freeze="True" />
-    -->
-    <!--
+    <!-- <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.Background"  -->
+    <!--                  Color="{StaticResource AccentColor}" options:Freeze="True" /> -->
+    <!-- <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.BackButton.Background"  -->
+    <!--                  Color="{StaticResource HighlightColor}" options:Freeze="True" /> -->
+    <!-- <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground"  -->
+    <!--                  Color="{{Fluent.Ribbon.Brushes.Backstage.BackButton.Foreground}}" options:Freeze="True" /> -->
+    <!-- <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.ItemsPanelBackground" -->
+    <!--                  Color="{StaticResource Fluent.Ribbon.Colors.Accent80}" options:Freeze="True" /> -->
+    
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.ItemsPanelBackground"
-                     Color="{StaticResource Fluent.Ribbon.Colors.Accent80}" options:Freeze="True" />
-    -->
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.ItemsPanelBackground"
-                     Color="{markups:Color BaseColor={StaticResource HighlightColor}, 
+                     Color="{markups:Color BaseColor={StaticResource HighlightColor},
                      DeltaBrightness=0.1, DeltaSaturation=-0.4}" />
-    <!--
-    <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabControl.ItemsPanelBackground" 
-                     Color="{markups:Color BaseColor={StaticResource Fluent.Ribbon.Colors.AccentBase}, 
-                     DeltaBrightness=0.05, DeltaSaturation=-0.2}" />
-                     -->
     <SolidColorBrush x:Key="Fluent.Ribbon.Brushes.BackstageTabItem.MouseOver.Background" 
                      Color="{markups:Color BaseColor={StaticResource HighlightColor}, 
                         DeltaBrightness=0.3, DeltaSaturation=-0.4, DeltaAlpha=-100}" options:Freeze="True" />
@@ -132,6 +128,12 @@
         <Style.Resources>
             <!-- Стиль будет применяться ко всем элементам внутри этой группы -->
             
+            <!-- Стиль для вкладок ленты -->
+            <Style TargetType="fluent:RibbonTabItem">
+                <!-- Убираем рамку фокуса -->
+                <Setter Property="Focusable" Value="False"/>
+            </Style>
+            
             <!-- Кнопки -->
             <Style TargetType="fluent:Button">
                 <!-- Делаем маленькую иконку + текст -->
@@ -172,17 +174,44 @@
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
             
+            <!-- Стиль будет применяться ко всем RadioButton внутри этой группы -->
             <Style TargetType="fluent:RadioButton">
                 <Setter Property="Margin" Value="0,0,-2,0" />
             </Style>
         </Style.Resources>
     </Style>
         
-    <Style TargetType="fluent:RibbonTabItem">
-        <!-- Убираем рамку фокуса -->
-        <Setter Property="Focusable" Value="False"/>
+    <!-- Стиль для TabControl со скрытыми заголовками -->
+    <Style x:Key="HiddenTabControlStyle" TargetType="TabControl">
+        <Setter Property="Padding" Value="10 5 10 10" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid>
+                        <ContentPresenter x:Name="PART_SelectedContentHost"
+                                          ContentSource="SelectedContent"
+                                          Margin="{TemplateBinding Padding}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        
+        <!-- Скрываем заголовки TabItems -->
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="TabItem">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0" />
+                </Style>
+            </Setter.Value>
+        </Setter>
     </Style>
-    
+
     <!-- Стиль для стандартного вертикального сепаратора в ленте -->
     <Style x:Key="Fluent.Ribbon.Styles.GroupBoxSeparator"
            TargetType="Separator" 
@@ -215,6 +244,23 @@
            TargetType="Separator" >
         <Setter Property="Height" Value="1" />
         <Setter Property="Background" Value="{StaticResource Fluent.Ribbon.Brushes.Separator.Background}" />
+    </Style>
+    
+    <!-- Стиль для горизонтального сепаратора в Backstage -->
+    <Style x:Key="HorizontalSeparatorTabItem" TargetType="fluent:SeparatorTabItem">
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Margin" Value="12,0,12,0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="fluent:SeparatorTabItem">
+                    <Rectangle
+                        Height="1"
+                        Fill="{StaticResource Fluent.Ribbon.Brushes.Button.MouseOver.Background}"
+                        Margin="{TemplateBinding Margin}"
+                        VerticalAlignment="Center" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- TODO: Временное решение: отображение в ToolTip ошибки валидации в представлении -->

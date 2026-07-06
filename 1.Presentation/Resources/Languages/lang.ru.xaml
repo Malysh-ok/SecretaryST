@@ -97,7 +97,7 @@
 
     
     <!-- Представление дополнительных настроек ============================= -->
-    <v:String x:Key="OtherSettingView">SecretaryST - Дополнительные настройки</v:String>
-    <v:String x:Key="OtherSettingView_Exit">Выход</v:String>
+    <v:String x:Key="AppSettingView">SecretaryST - Настройки программы</v:String>
+    <v:String x:Key="AppSettingView_Exit">Выход</v:String>
 
 </ResourceDictionary>

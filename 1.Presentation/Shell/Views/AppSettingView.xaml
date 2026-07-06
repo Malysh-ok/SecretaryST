@@ -1,0 +1,53 @@
+﻿<Window x:Class="Presentation.Shell.Views.AppSettingView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:viewModels="clr-namespace:Presentation.ViewModels;assembly=ViewModels"
+
+        d:DataContext="{ d:DesignInstance viewModels:AppSettingVM }"
+        mc:Ignorable="d"
+        Title="{DynamicResource AppSettingView}"
+        WindowStartupLocation="CenterOwner"
+        Height="450"
+        Width="600">
+    
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Close"
+                        Executed="CloseView"/>
+    </Window.CommandBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal"
+                    Height="70">
+            <Label x:Name="LblLanguage" 
+                   VerticalAlignment="Center"
+                   Content="{DynamicResource MainView_Ribbon_Setting_Language}" />
+            <ComboBox
+                x:Name="CmbBoxLanguage"
+                Style="{StaticResource BaseComboBox}"
+                Width="150"
+                ItemsSource="{Binding Languages,
+                    Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                SelectedItem="{Binding  CurrLang,
+                    Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        </StackPanel>
+        <Label Grid.Row="1"
+               Background="LightGray" 
+               Content="{Binding DisplayMsg, Mode=OneWay}" />
+        <Label Grid.Row="2" 
+               Height="100" />
+        <Button  Grid.Row="2" 
+                 x:Name="BtnTmp"
+                 Content="{DynamicResource AppSettingView_Exit}"
+                 Width="100" 
+                 Margin="15"
+                 Style="{StaticResource WebButton}"
+                 Command="ApplicationCommands.Close"  />
+    </Grid>
+</Window>

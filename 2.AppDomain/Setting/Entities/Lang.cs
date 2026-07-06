@@ -11,6 +11,12 @@ namespace AppDomain.Setting.Entities;
 public class Lang : IEquatable<Lang>, ICloneable
 {
     /// <summary>
+    /// Идентификатор.
+    /// </summary>
+    // ReSharper disable once InconsistentNaming
+    public int LCID { get; }
+    
+    /// <summary>
     /// Название языка в формате "en-EN", "ru-RU".
     /// </summary>
     public string Name { get; }
@@ -37,6 +43,7 @@ public class Lang : IEquatable<Lang>, ICloneable
     // ReSharper disable once UnusedMember.Local
     private Lang()
     {
+        LCID = 0!;
         Name = null!;
         ShortName = null!;
         DisplayName = null!;
@@ -47,19 +54,22 @@ public class Lang : IEquatable<Lang>, ICloneable
     /// </summary>
     private Lang(Lang lang)
     {
+        LCID = lang.LCID;
         Name = lang.Name;
         ShortName = lang.ShortName;
         DisplayName = lang.DisplayName;
     }
 
+
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="cultureInfo"><see cref="CultureInfo"/>, в соответствии с которой устанавливаем локализацию.</param>
+    /// <param name="cultureInfo"><see cref="CultureInfo"/>, в соответствии с которой устанавливаем язык.</param>
     /// <param name="currentCultureInfo"><see cref="CultureInfo"/>, в соответствии с которой локализуем
-    /// свойство <see cref="ShortName"/>.</param>
+    /// свойство <see cref="DisplayName"/>.</param>
     public Lang(CultureInfo cultureInfo, CultureInfo? currentCultureInfo = null)
     {
+        LCID = cultureInfo.LCID;
         Name = cultureInfo.Name;
         ShortName = cultureInfo.TwoLetterISOLanguageName;
         
@@ -92,7 +102,6 @@ public class Lang : IEquatable<Lang>, ICloneable
         return this;
     }
 
-    
     /// <inheritdoc />
     public override bool Equals(object? obj)
     {
@@ -101,15 +110,12 @@ public class Lang : IEquatable<Lang>, ICloneable
         return Equals((Lang)obj);
     }
 
-    
     /// <inheritdoc />
     public bool Equals(Lang? other)
     {
         return string.Equals(Name, other?.Name, StringComparison.OrdinalIgnoreCase)
-               && string.Equals(ShortName, other?.ShortName, StringComparison.OrdinalIgnoreCase)
-               && string.Equals(DisplayName, other?.DisplayName, StringComparison.OrdinalIgnoreCase);
+               && string.Equals(ShortName, other?.ShortName, StringComparison.OrdinalIgnoreCase);
     }
-
     
     /// <inheritdoc />
     public override int GetHashCode()
@@ -123,12 +129,10 @@ public class Lang : IEquatable<Lang>, ICloneable
     public Lang Clone()
         => new(this);
     
-    
     /// <inheritdoc />
     object ICloneable.Clone() {
         return Clone();
     }
-
 
     /// <inheritdoc />
     public override string ToString() 

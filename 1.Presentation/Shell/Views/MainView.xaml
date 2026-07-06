@@ -37,7 +37,8 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <fluent:Ribbon x:Name="MainView_Ribbon">
+        <fluent:Ribbon Grid.Row="0" 
+                       x:Name="MainView_Ribbon">
 
             <!-- Панель быстрого доступа -->
             <fluent:Ribbon.QuickAccessItems>
@@ -56,8 +57,10 @@
 
             <!--Backstage-->
             <fluent:Ribbon.Menu>
-                <fluent:Backstage Header="{DynamicResource MainView_Ribbon_File}"
-                                  DataContext="{Binding BackstageVM}">
+                <fluent:Backstage
+                    x:Name="BackstageMainView"
+                    Header="{DynamicResource MainView_Ribbon_File}"
+                    DataContext="{Binding BackstageVM}">
                     <fluent:BackstageTabControl>
                         <fluent:Button x:Name="BtnBstgUpdate"
                                        Icon="{DynamicResource RotateDrawingImage}"
@@ -72,9 +75,22 @@
                                        Header="{DynamicResource MainView_Ribbon_File_Remove}" 
                                        Command="{Binding RemoveCompetitionCommand}" />
 
+                        <!-- Разделитель -->
+                        <fluent:SeparatorTabItem Style="{StaticResource HorizontalSeparatorTabItem}" />
+
+                        <!-- Печать -->
                         <fluent:BackstageTabItem x:Name="BstgTabPrint"
                                                  Icon="{DynamicResource PrintDrawingImage}"
                                                  Header="{DynamicResource MainView_Ribbon_File_Print}" /> <!--Может тоже кнопка?-->
+                        <!-- Открытие окна настроек приложения -->
+                        <fluent:Button x:Name="BtnBstgShowAppSetting"
+                                       Icon="{DynamicResource GearDrawingImage}"
+                                       Header="{DynamicResource MainView_Ribbon_Setting_ProgramSetting}"
+                                       Command="{Binding ShowAppSettingCommand}" />
+                        
+                        <!-- Разделитель -->
+                        <fluent:SeparatorTabItem Style="{StaticResource HorizontalSeparatorTabItem}" />
+
                         <!-- Выход -->
                         <fluent:Button x:Name="BtnBstgExit"
                                        Icon="{DynamicResource ExitDrawingImage}"
@@ -220,25 +236,6 @@
                     </fluent:RibbonToolBar>
                 </fluent:RibbonGroupBox>
                 
-                <!-- Дополнительные -->
-                <fluent:RibbonGroupBox x:Name="SettingOptionally" 
-                                       Header="{DynamicResource MainView_Ribbon_Setting_Optionally}">
-                    <fluent:Button x:Name="BtnProgramSetting"
-                                   Icon="{DynamicResource GearDrawingImage}"
-                                   Header="{DynamicResource MainView_Ribbon_Setting_ProgramSetting}"
-                                   Command="{x:Static local:MainView.ShowOtherSettingViewCommand}" 
-                                   />
-                    <StackPanel Orientation="Horizontal">
-                        <Label x:Name="LblLanguage" 
-                               Content="{DynamicResource MainView_Ribbon_Setting_Language}" />
-                        <fluent:ComboBox x:Name="CmbBoxLanguage"
-                                         ItemsSource="{Binding Languages,
-                                            Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                                         SelectedItem="{Binding  CurrLang,
-                                            Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    </StackPanel>
-                </fluent:RibbonGroupBox>
-                
                 <!-- TODO: Пример группа -->
                 <fluent:RibbonGroupBox Header="Ваша группа">
                     <StackPanel>
@@ -321,42 +318,17 @@
         </fluent:Ribbon>
 
         <!-- Основной контент -->
-        <TabControl x:Name="MainView_TabControl"
-                    Background="Transparent" 
-                    Grid.Row="1"
-                    SelectedIndex="{Binding ElementName=MainView_Ribbon, Path=SelectedTabIndex}"
-        >
+        <TabControl Grid.Row="1"
+                    x:Name="MainView_TabControl"
+                    Style="{StaticResource HiddenTabControlStyle}"
+                    SelectedIndex="{Binding ElementName=MainView_Ribbon, Path=SelectedTabIndex}" >
+            
             <b:Interaction.Triggers>
                 <b:EventTrigger EventName="SelectionChanged">
                     <!-- <b:InvokeCommandAction Command="{Binding SelectedItemChangedCommand}"/> -->
                 </b:EventTrigger>
             </b:Interaction.Triggers>
             
-            <TabControl.Style>
-                <Style TargetType="{x:Type TabControl}">
-                    <!-- <Setter Property="HorizontalAlignment" Value="Stretch" /> -->
-                    <!-- <Setter Property="VerticalAlignment" Value="Stretch" /> -->
-                    <!-- <Setter Property="HorizontalContentAlignment" Value="Stretch" /> -->
-                    <!-- <Setter Property="VerticalContentAlignment" Value="Stretch" /> -->
-                    
-                    <!-- <Setter Property="Margin" Value="0" /> -->
-                    <!-- <Setter Property="Padding" Value="0" /> -->
-                    <Setter Property="Padding" Value="10 5 10 10" />
-                    <Setter Property="BorderThickness" Value="0" />
-                </Style>
-            </TabControl.Style>
-
-            <!-- Скрываем заголовки TabItems -->
-            <TabControl.ItemContainerStyle>
-                <Style TargetType="{x:Type TabItem}">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                    
-                    <Setter Property="Padding" Value="0" />
-                    <Setter Property="Margin" Value="0" />
-                    
-                </Style>
-            </TabControl.ItemContainerStyle>
-
             <!-- Индивидуальный контент для каждой вкладки -->
             <TabItem DataContext="{Binding SettingVM}">
                 <!-- Настройки -->
@@ -372,7 +344,8 @@
         </TabControl>
 
         <!-- Статус-бар -->
-        <fluent:StatusBar Grid.Row="2" Height="36" >
+        <fluent:StatusBar Grid.Row="2" 
+                          Height="36" >
             <StatusBar.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Grid>

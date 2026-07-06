@@ -96,8 +96,8 @@
     <v:String x:Key="SettingControl_RefereeList_Description">Description</v:String>
 
     
-    <!-- Представление дополнительных настроек ============================= -->
-    <v:String x:Key="OtherSettingView">SecretaryST - Other setting</v:String>
-    <v:String x:Key="OtherSettingView_Exit">Exit</v:String>
+    <!-- Представление настроек приложения ============================= -->
+    <v:String x:Key="AppSettingView">SecretaryST - Application setting</v:String>
+    <v:String x:Key="AppSettingView_Exit">Exit</v:String>
 
 </ResourceDictionary>
