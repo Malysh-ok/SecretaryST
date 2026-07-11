@@ -132,6 +132,12 @@ public sealed partial class AppDbContext : ICommonDbContext
                 .WithMany(r => r.Delegations)
                 .HasForeignKey(d => d.RepresentativeId)
                 .HasConstraintName("FK_Delegations_RepresentativeId");
+            
+            // Вторичный ключ - Соревнования
+            entity.HasOne(d => d.CompetitionData)
+                  .WithMany(cd => cd.Delegations)
+                  .HasForeignKey(d => d.CompetitionDataId)
+                  .HasConstraintName("FK_Delegations_CompetitionDataId");
         });
     }
 
@@ -170,6 +176,12 @@ public sealed partial class AppDbContext : ICommonDbContext
                 .WithMany(rl => rl.Referees)
                 .HasForeignKey(r => r.RefereeLevelId)
                 .HasConstraintName("FK_Referees_RefereeLevelId");
+            
+            // Вторичный ключ - Соревнования
+            entity.HasOne(r => r.CompetitionData)
+                  .WithMany(cd => cd.Referees)
+                  .HasForeignKey(r => r.CompetitionDataId)
+                  .HasConstraintName("FK_Referees_CompetitionDataId");
                 
             // Вторичный ключ (один-к-одному) - Судейская должность
             entity.HasOne(r => r.RefereeJobTitle)

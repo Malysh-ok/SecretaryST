@@ -64,6 +64,12 @@ public sealed partial class AppDbContext : IDistanceDbContext
                 .WithMany(d => d.SportEvents)
                 .HasForeignKey(se => se.DisciplineId)
                 .HasConstraintName("FK_SportEvents_DisciplineId");
+            
+            // Вторичный ключ - Соревнования
+            entity.HasOne(se => se.CompetitionData)
+                  .WithMany(cd => cd.SportEvents)
+                  .HasForeignKey(se => se.CompetitionDataId)
+                  .HasConstraintName("FK_SportEvents_CompetitionDataId");
         });
     }
         
