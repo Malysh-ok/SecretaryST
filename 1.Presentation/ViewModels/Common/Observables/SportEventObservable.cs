@@ -1,11 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using AppDomain.UseCases.Services;
 using Cogs.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ProblemDomain.Entities.DistanceEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
+using ProblemDomain.UseCases.Services;
 
 namespace Presentation.ViewModels.Common.Observables;
 

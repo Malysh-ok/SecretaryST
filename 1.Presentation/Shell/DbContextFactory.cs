@@ -1,6 +1,8 @@
 using DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Presentation.Shell.Common;
+using Presentation.DesignTime.Services;
 
 namespace Presentation.Shell;
 
@@ -15,8 +17,13 @@ public class DbContextFactory() : IDesignTimeDbContextFactory<AppDbContext>
 {
     /// <inheritdoc />
     public AppDbContext CreateDbContext(string[] args)
-        => new(
-            new DbContextOptionsBuilder<AppDbContext>().Options,
-            new StartupItemsFactory().CreateDbConfigurator()
-        );
+    {
+        var errorMsgProvider = new DesignTimeErrorMsgProvider();
+        var appDir = ServiceFactory.CreateAppDirService(errorMsgProvider);
+        var dbConfigurator = ServiceFactory.CreateDbConfigurator(appDir);
+
+        var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+        dbConfigurator.UseProvider<AppDbContext>(optionsBuilder);
+        return new AppDbContext(optionsBuilder.Options, dbConfigurator);
+    }
 }

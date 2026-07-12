@@ -1,20 +1,21 @@
 using System.Reflection;
-using AppDomain.Setting.Services;
-using AppDomain.UseCases._Contracts;
-using AppDomain.UseCases.Services;
+using AppDomain.AppAssets.Services;
+using AppDomain.AppUseCases._Contracts;
 using Common.BaseComponents.Components;
 using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions.ValueTypes;
+using DataAccess.DataAccessAssets.Services;
 using DataAccess.DbContexts;
-using DataAccess.DbContexts.DbConfigure;
 using DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Presentation.Shell;
+using Presentation.Shell.Common;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.DistanceEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
+using ProblemDomain.UseCases._Contracts;
+using ProblemDomain.UseCases.Services;
 
 namespace DataAccess.Tests;
 
@@ -229,12 +230,16 @@ public class RepositoryTests
         {
             // Создаем сервис настроек приложения и создаем необходимые каталоги
             // (без каталога метод dbContext.Database.MigrateAsync вызовет ошибку)
-            var appSettingService = new AppSettingService();
-            var result = appSettingService.AppDir.CreateAppDirs();
+            IAppErrorMsgProvider appErrorMsgProvider = new DomainErrorMsgProvider();
+            var testAppInfo = ServiceFactory.CreateAppInfo("Test", new Version(1,0,0,0), DateTime.Now);
+            var appDirService = ServiceFactory.CreateAppDirService(appErrorMsgProvider);
+            var appSettingService = ServiceFactory.CreateAppSettingService(appErrorMsgProvider, appDirService, testAppInfo);
+            var result = appDirService.CreateAppDirs();
             Assert.That(result.Excptn, Is.Null, result.Excptn?.Message);
         
             var dbContext = new DbContextFactory().CreateDbContext([]);
-            repository = new Repository<AppDbContext>(dbContext);
+            var dbErrorMsgProvider = new DataAccessErrorMsgProvider();
+            repository = new Repository<AppDbContext>(dbContext, dbErrorMsgProvider);
             var repositoryHelper = new RepositoryHelper(repository, dbContext);
 
             result = await repositoryHelper.RebuildRepository(isUseMigrations: true);
@@ -257,7 +262,8 @@ public class RepositoryTests
     public async Task ReloadRangeTest()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
-        var repository = new Repository<AppDbContext>(dbContext);
+        var dbErrorMsgProvider = new DataAccessErrorMsgProvider();
+        var repository = new Repository<AppDbContext>(dbContext,  dbErrorMsgProvider);
         const string description = "Проверка";
     
         var detailedCompetitionStatuses =
@@ -277,7 +283,8 @@ public class RepositoryTests
     public async Task TmpTest()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
-        var repository = new Repository<AppDbContext>(dbContext);
+        var dbErrorMsgProvider = new DataAccessErrorMsgProvider();
+        var repository = new Repository<AppDbContext>(dbContext, dbErrorMsgProvider);
         const string description = "Проверка";
 
         var competitionDataResult =
@@ -291,20 +298,19 @@ public class RepositoryTests
     [Test, Order(0)]
     public void CreatingDbContextTest()
     {
-        // Создаем сервис настроек приложения
-        var appSettingService = new AppSettingService();
-        
-        // Создаем конфигурацию, наполняем ее данными из файла конфигурации
-        var configuration = new ConfigurationManager();
-        configuration.AddXmlFile(appSettingService.SettingFilePath, optional: true).Build();
+        IAppErrorMsgProvider appErrorMsgProvider = new DomainErrorMsgProvider();
 
+        // Создаем сервис директорий приложения
+        var appDirService = ServiceFactory.CreateAppDirService(appErrorMsgProvider);
+        
         // Создаем конфигуратор БД
-        var dbConfigurator = new DbConfigurator(configuration, appSettingService.AppDir.DatabasePath);
+        var dbConfigurator = ServiceFactory.CreateDbConfigurator(appDirService);
 
-        var provider = new DbContextOptionsBuilder<AppDbContext>();
-        
         // Контекст БД
-        var dbContext = new AppDbContext(provider.Options, dbConfigurator);
+        var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+        dbConfigurator.UseProvider<AppDbContext>(optionsBuilder);
+        var dbContext = new AppDbContext(optionsBuilder.Options, dbConfigurator);
+        
         using (Assert.EnterMultipleScope())
         {
             Assert.That(dbContext.IsNullOrEmptyConnectionString, Is.False, "Пустая строка подключения.");
@@ -339,7 +345,8 @@ public class RepositoryTests
     public async Task Delegations_Test()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
-        var repository = new Repository<AppDbContext>(dbContext);
+        var dbErrorMsgProvider = new DataAccessErrorMsgProvider();
+        var repository = new Repository<AppDbContext>(dbContext,  dbErrorMsgProvider);
         Result<int> result;
 
         // Удаляем все сущности при атрибуте RecreateEntities
@@ -380,7 +387,8 @@ public class RepositoryTests
     public async Task SportEvent_SportUnit_Test()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
-        var repository = new Repository<AppDbContext>(dbContext);
+        var dbErrorMsgProvider = new DataAccessErrorMsgProvider();
+        var repository = new Repository<AppDbContext>(dbContext,  dbErrorMsgProvider);
         Result<int> result;
 
         // Удаляем все сущности при атрибуте RecreateEntities
@@ -438,7 +446,8 @@ public class RepositoryTests
     public async Task Athletes_Test()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
-        var repository = new Repository<AppDbContext>(dbContext);
+        var dbErrorMsgProvider = new DataAccessErrorMsgProvider();
+        var repository = new Repository<AppDbContext>(dbContext,   dbErrorMsgProvider);
         Result<int> result;
 
         // Удаляем все сущности при атрибуте RecreateEntities
@@ -482,7 +491,8 @@ public class RepositoryTests
     public async Task Referees_Test()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
-        var repository = new Repository<AppDbContext>(dbContext);
+        var dbErrorMsgProvider = new DataAccessErrorMsgProvider();
+        var repository = new Repository<AppDbContext>(dbContext,  dbErrorMsgProvider);
         Result<int> result;
 
         // Удаляем все сущности при атрибуте RecreateEntities
@@ -527,8 +537,10 @@ public class RepositoryTests
     public async Task CompetitionData_Test()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
-        var repository = new Repository<AppDbContext>(dbContext);
-        var competitionService = new CompetitionDataService(repository);
+        var dbErrorMsgProvider = new DataAccessErrorMsgProvider();
+        var repository = new Repository<AppDbContext>(dbContext, dbErrorMsgProvider);
+        IProblemErrorMsgProvider problemErrorMsgProvider = new DomainErrorMsgProvider();
+        var competitionService = new CompetitionDataService(repository, problemErrorMsgProvider);
         Result<int> result;
         
         // Удаляем все сущности при атрибуте RecreateEntities
@@ -547,7 +559,7 @@ public class RepositoryTests
             (await repository.FindAsync<CompetitionsStatus>(CompetitionsStatusEnm.AllRussian)).Value!,
             (await repository.FindAsync<DetailedCompetitionStatus>(DetailedCompetitionStatusEnm.RussianCup)).Value!
             );
-        Assert.That(resultCompetition.Excptn, Is.Null, resultCompetition?.Excptn?.Message);
+        Assert.That(resultCompetition.Excptn, Is.Null, resultCompetition.Excptn?.Message);
         
         // Создаем данные о соревновании 2
         resultCompetition = await competitionService.CreateCompetitionDataAsync(
@@ -558,11 +570,11 @@ public class RepositoryTests
             (await repository.FindAsync<CompetitionsStatus>(CompetitionsStatusEnm.Regional)).Value!,
             (await repository.FindAsync<DetailedCompetitionStatus>(DetailedCompetitionStatusEnm.RegionalChampionship)).Value!
         );
-        Assert.That(resultCompetition.Excptn, Is.Null, resultCompetition?.Excptn?.Message);
+        Assert.That(resultCompetition.Excptn, Is.Null, resultCompetition.Excptn?.Message);
 
         // Проверяем
         var competitionsResult = await repository.GetAllAsync<CompetitionData>();
-        Assert.That(competitionsResult.Excptn, Is.Null,  competitionsResult?.Excptn?.Message);
+        Assert.That(competitionsResult.Excptn, Is.Null,  competitionsResult.Excptn?.Message);
         
         repository.Dispose();
     }

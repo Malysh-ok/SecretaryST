@@ -1,14 +1,13 @@
-﻿using System.Globalization;
-using System.Linq.Expressions;
-using AppDomain.UseCases._Contracts;
+﻿using System.Linq.Expressions;
 using Common.BaseComponents.Components;
 using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions;
-using Common.BasePhrases;
+using DataAccess.DataAccessAssets.Services;
+using DataAccess.DataAccessExceptions;
 using DataAccess.DbContexts._Contracts;
-using DataAccess.Repositories.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using ProblemDomain.Entities._Contracts;
+using ProblemDomain.UseCases._Contracts;
 
 namespace DataAccess.Repositories;
 
@@ -33,7 +32,13 @@ public class Repository<TDbContext> : IRepository
     private readonly bool _autoDetectChangesState = false;
 
     /// <summary>
-    /// TODO: Удалить - Контекст БД.
+    /// Провайдер сообщений об ошибках.
+    /// </summary>
+    // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
+    private readonly DataAccessErrorMsgProvider _dataAccessErrorMsgProvider;
+
+    /// <summary>
+    /// Контекст БД.
     /// </summary>
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once FieldCanBeMadeReadOnly.Global
@@ -81,24 +86,25 @@ public class Repository<TDbContext> : IRepository
     {
         DbContext = null!;
         ContextFactory = null!;
-        DbPhrases.Culture = CultureInfo.CurrentUICulture;       // устанавливаем языковой стандарт для фраз
+        _dataAccessErrorMsgProvider = null!;
         ExceptionsList = new ExceptionList<BaseException>();
     }
         
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public Repository(TDbContext dbContext) : this()
+    public Repository(TDbContext dbContext, DataAccessErrorMsgProvider dataAccessErrorMsgProvider) : this()
     {
         DbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
-        
+        _dataAccessErrorMsgProvider = dataAccessErrorMsgProvider;
+
         // Отключаем AutoDetectChanges при создании для производительности
         _autoDetectChangesState = DbContext.ChangeTracker.AutoDetectChangesEnabled;
         DbContext.ChangeTracker.AutoDetectChangesEnabled = false;
             
         if (dbContext.IsNullOrEmptyConnectionString || !dbContext.IsPossibleConnect)
         {
-            var ex = DbException.CreateException(DbPhrases.DbСonnectiontError);
+            var ex = _dataAccessErrorMsgProvider.CreateException(DataAccessErrorCodes.DbConnectionError);
             ExceptionsList.Add(ex);
         }
     }
@@ -109,12 +115,6 @@ public class Repository<TDbContext> : IRepository
     internal Repository(IDbContextFactory<TDbContext> contextFactory) : this()
     {
         ContextFactory = contextFactory;
-    }
-    
-    /// <inheritdoc />
-    public DbContext GetDbContext()
-    {
-        return DbContext;
     }
     
     #region [---------- Получение ----------]
@@ -129,7 +129,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -143,7 +144,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<TEntity?>.Fail(ex);
+            return Result<TEntity?>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     
@@ -161,7 +163,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<TEntity?>.Fail(ex);
+            return Result<TEntity?>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -179,7 +182,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<TEntity?>.Fail(ex);
+            return Result<TEntity?>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -197,7 +201,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<TEntity?>.Fail(ex);
+            return Result<TEntity?>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     
@@ -216,7 +221,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<TEntity?>.Fail(ex);
+            return Result<TEntity?>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -238,7 +244,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<IList<TEntity>>.Fail(ex);
+            return Result<IList<TEntity>>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     
@@ -265,7 +272,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<IList<TEntity>>.Fail(ex);
+            return Result<IList<TEntity>>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     
@@ -289,7 +297,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<IList<TEntity>>.Fail(ex);
+            return Result<IList<TEntity>>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -324,14 +333,17 @@ public class Repository<TDbContext> : IRepository
                     else
                     {
                         // Ошибка
-                        return Result<int>.Fail(DbException.CreateException(
-                            $"It is not possible to add an entity of type {typeof(TEntity).Name} with Id = {entity.Id} " +
-                            "An entity with this Id already exists.",
-                            null,
-                            "ru",
-                            $"Невозможно добавить сущность типа {typeof(TEntity).Name} с Id = {entity.Id}. " +
-                            "Сущность с таким Id уже существует.")
-                        );
+                        // return Result<int>.Fail(DbException.Create(
+                        //     $"It is not possible to add an entity of type {typeof(TEntity).Name} with Id = {entity.Id} " +
+                        //     "An entity with this Id already exists.",
+                        //     null,
+                        //     "ru",
+                        //     $"Невозможно добавить сущность типа {typeof(TEntity).Name} с Id = {entity.Id}. " +
+                        //     "Сущность с таким Id уже существует.")
+                        // );
+                        return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                            DataAccessErrorCodes.EntityAlreadyExistsError, null, 
+                            $"{typeof(TEntity).Name}", $"{entity.Id}"));
                     }
 
                     break;
@@ -349,7 +361,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     
@@ -373,7 +386,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -391,7 +405,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -430,19 +445,23 @@ public class Repository<TDbContext> : IRepository
 
                 case EntityState.Deleted:
                     // Ошибка
-                    return Result<int>.Fail(DbException.CreateException(
-                        $"It is not possible to update a deleted entity of type {typeof(TEntity).Name}.",
-                        null,
-                        "ru",
-                        $"Невозможно обновить удалённую сущность типа {typeof(TEntity).Name}.")
-                    );
+                    // return Result<int>.Fail(DbException.Create(
+                    //     $"It is not possible to update a deleted entity of type {typeof(TEntity).Name}.",
+                    //     null,
+                    //     "ru",
+                    //     $"Невозможно обновить удалённую сущность типа {typeof(TEntity).Name}.")
+                    // );
+                    return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                        DataAccessErrorCodes.UpdateDeletedEntityError, null,
+                        $"{typeof(TEntity).Name}"));
             }
             
             return Result<int>.Done(1);
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     
@@ -466,7 +485,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -484,7 +504,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -534,7 +555,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     
@@ -558,7 +580,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     
@@ -576,7 +599,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -591,7 +615,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     
@@ -618,7 +643,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -639,7 +665,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     
@@ -658,7 +685,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     
@@ -679,7 +707,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     
@@ -696,7 +725,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<EntityState>.Fail(ex);
+            return Result<EntityState>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -719,11 +749,13 @@ public class Repository<TDbContext> : IRepository
                 await entry.ReloadAsync();
             }
 
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
         finally
         {
@@ -756,7 +788,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -780,7 +813,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
 
@@ -802,7 +836,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     
@@ -825,7 +860,8 @@ public class Repository<TDbContext> : IRepository
         }
         catch (Exception ex)
         {
-            return Result<int>.Fail(ex);
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
         }
     }
     

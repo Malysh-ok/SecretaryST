@@ -15,7 +15,7 @@
                      mc:Ignorable="d"
                      Title="{DynamicResource MainView}"
                      Height="800"
-                     Width="1200"
+                     Width="1250"
                      MinHeight="610"
                      MinWidth="800" >
     <!-- TODO: откорректировать MinHeight -->
@@ -380,9 +380,9 @@
                              Height="20" 
                              Minimum="0"
                              Maximum="100"
-                             Value="{Binding StatusBarService.ProgressValue, 
+                             Value="{Binding _statusBarService.ProgressValue, 
                                 Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                             Visibility="{Binding StatusBarService.IsProgressVisible,
+                             Visibility="{Binding _statusBarService.IsProgressVisible,
                                 Converter={StaticResource BooleanToVisibilityConverter}}" />
             </fluent:StatusBarItem>
 
@@ -393,8 +393,8 @@
                 <TextBlock MinWidth="200"
                            TextTrimming="CharacterEllipsis"
                            TextWrapping="Wrap"
-                           Text="{Binding  StatusBarService.StatusText}"
-                           Foreground="{Binding  StatusBarService.Brush}"/>
+                           Text="{Binding  _statusBarService.StatusText}"
+                           Foreground="{Binding  _statusBarService.Brush}"/>
             </fluent:StatusBarItem>
 
             <!-- Separator -->

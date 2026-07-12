@@ -1,14 +1,15 @@
 ﻿using System.Windows.Input;
 using System.Windows.Media;
-using AppDomain.Phrases;
-using AppDomain.Setting.Services;
-using AppDomain.UseCases.Services;
+using AppDomain.AppExceptions;
+using AppDomain.AppUseCases._Contracts;
+using AppDomain.AppUseCases.Services;
 using Common.BaseComponents.Components.Exceptions;
 using Common.WpfModule.Ui.Services;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Presentation.ViewModels._Contracts;
+using ProblemDomain.UseCases.Services;
 using Serilog;
 // ReSharper disable InconsistentNaming
 
@@ -17,13 +18,18 @@ namespace Presentation.ViewModels.MainView;
 /// <summary>
 /// ViewModel для основного представления.
 /// </summary>
-public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDisposable
+public sealed class MainVM : ObservableRecipient, IDisposable
 {
     /// <summary>
     /// Логгер.
     /// </summary>
     // ReSharper disable once NotAccessedField.Local
     private ILogger _logger = null!;
+
+    /// <summary>
+    /// Провайдер сообщений об ошибках предметной области приложения.
+    /// </summary>
+    private readonly IAppErrorMsgProvider _appErrorMsgProvider = null!;
 
     /// <summary>
     /// Модель представления Backstage.
@@ -38,7 +44,7 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     /// <summary>
     /// Сервис статус-бара.
     /// </summary>
-    public StatusBarService StatusBarService { get; } = null!;
+    public StatusBarService _statusBarService { get; } = null!;
 
     // TODO: Временная команда PinkCommand (кнопка панели быстрого доступа)
     public ICommand PinkCommand { get; } = null!;
@@ -54,13 +60,16 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     /// <summary>
     /// Конструктор.
     /// </summary>
-    private MainVM(BackstageVM backstageVm, SettingVM settingVm, StatusBarService statusBarService, ILogger logger)
+    private MainVM(ILogger logger, IAppErrorMsgProvider appErrorMsgProvider,
+            StatusBarService statusBarService, BackstageVM backstageVm, SettingVM settingVm 
+        )
     {
         BackstageVM = backstageVm;
         SettingVM = settingVm;
-        StatusBarService = statusBarService;
+        _statusBarService = statusBarService;
         _logger = logger;
-        
+        _appErrorMsgProvider = appErrorMsgProvider;
+
         PinkCommand = new AsyncRelayCommand(OnPink);
     }
 
@@ -72,14 +81,16 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     /// <param name="logger">Логгер.</param>
     /// <param name="appSettingService">Настройки приложения.</param>
     /// <param name="exceptionsProvider">Поставщик исключения.</param>
-    /// <param name="competitionDataService">Сервис для работы с Данными о соревнованиях.</param>
-    /// <param name="refereeService">Сервис для работы с Судьями.</param>
-    /// <param name="sportEventService">Сервис для работы с Видами программы</param>
+    /// <param name="competitionDataService">Сервис для работы с соревнованиями.</param>
+    /// <param name="refereeService">Сервис для работы с судьями.</param>
+    /// <param name="sportEventService">Сервис для работы с видами программы.</param>
+    /// <param name="appErrorMsgProvider">Провайдер сообщений об ошибках слоя приложения.</param>
     public static MainVM Create(IViewWithResources view, 
-        StatusBarService statusBarService,
         ILogger logger, 
         IExceptionsProvider exceptionsProvider,
+        IAppErrorMsgProvider appErrorMsgProvider,
         AppSettingService appSettingService,
+        StatusBarService statusBarService,
         CompetitionDataService competitionDataService,
         RefereeService refereeService,
         SportEventService sportEventService)
@@ -90,11 +101,11 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
             Brushes.LightSalmon);
 
         // Создаем ViewModel's. Последовательность создания важна!
-        var settingVM = new SettingVM(view, statusBarService, logger, exceptionsProvider, appSettingService,
-            competitionDataService, refereeService, sportEventService);
-        var backstageVM = new BackstageVM(statusBarService, logger, exceptionsProvider, appSettingService, 
-            competitionDataService);
-        var mainVM = new MainVM(backstageVM, settingVM, statusBarService, logger);
+        var settingVM = new SettingVM(view, logger, exceptionsProvider, appErrorMsgProvider, appSettingService,
+            statusBarService, competitionDataService, refereeService, sportEventService);
+        var backstageVM = new BackstageVM(logger, exceptionsProvider, appErrorMsgProvider, 
+            appSettingService, statusBarService, competitionDataService);
+        var mainVM = new MainVM(logger, appErrorMsgProvider, statusBarService, backstageVM, settingVM);
 
         return mainVM;
     }
@@ -105,19 +116,19 @@ public sealed class MainVM : ObservableRecipient, IStatusBarDataProvider, IDispo
     private async Task OnPink()
     {
         // Пишем в статус-бар
-        await StatusBarService.SetProgressAsync(50);
+        await _statusBarService.SetProgressAsync(50);
         // await StatusBarService.SetTextAsync("OnPink" + 
         //     " Если нужно добавить всплывающие подсказки, иконки и кликабельность" + 
         //     " Если нужно добавить всплывающие подсказки, иконки и кликабельность" + 
         //     " Если нужно добавить всплывающие подсказки, иконки и кликабельность", 
         //         BaseException.ExcptnType.Info, 0, false);
-        await StatusBarService.SetTextAsync("OnPink " + AppPhrases.UnknownError, 
+        await _statusBarService.SetTextAsync("OnPink " + _appErrorMsgProvider.GetMessage(AppErrorCodes.UnknownError),
             BaseException.ExcptnType.Info, 0, false);
 
         await Task.Delay(2000);
-        await StatusBarService.SetProgressAsync(100);
+        await _statusBarService.SetProgressAsync(100);
         await Task.Delay(3000);
-        await StatusBarService.SetProgressAsync(0);
+        await _statusBarService.SetProgressAsync(0);
     }
     
     public void Dispose()

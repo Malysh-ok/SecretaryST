@@ -19,9 +19,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\2.AppDomain\UseCases\UseCases.csproj" />
+      <ProjectReference Include="..\..\3.ProblemDomain\UseCases\UseCases.csproj" />
       <ProjectReference Include="..\..\5.Common\BaseComponents\BaseComponents.csproj" />
+      <ProjectReference Include="..\DataAccessAssets\DataAccessAssets.csproj" />
       <ProjectReference Include="..\DbContexts\DbContexts.csproj" />
+      <ProjectReference Include="..\DataAccessExceptions\DataAccessExceptions.csproj" />
     </ItemGroup>
 
     <ItemGroup>

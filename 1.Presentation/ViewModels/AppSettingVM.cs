@@ -2,11 +2,12 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Threading;
+using AppDomain.AppAssets.Strings;
+using AppDomain.AppEntities;
 using AppDomain.AppExceptions;
-using AppDomain.Phrases;
-using AppDomain.Setting.Entities;
-using AppDomain.Setting.Services;
-using Common.BaseExtensions;
+using AppDomain.AppUseCases._Contracts;
+using AppDomain.AppUseCases.Services;
+using Common.WpfModule.Ui.Services;
 using Common.WpfModule.Ui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
@@ -24,8 +25,11 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
 {
     private readonly IViewWithResources _view;
     private readonly ILogger _logger;
-    private readonly AppSettingService _appSetting;
+    private readonly StatusBarService _statusBarService;
+    private readonly AppSettingService _appSettingService;
+    private readonly IAppErrorMsgProvider _appErrorMsgProvider;
     private readonly LocalizationHelper _localizationHelper;
+    private readonly ViewModelHelper _viewModelHelper;
     
     /// <summary>
     /// Подавляет отправку сообщения <see cref="LocalizationMessage"/> при установке <see cref="CurrLang"/>.
@@ -54,7 +58,7 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
             if (SetProperty(ref field, value) && ! _suppressSend)
             {
                 // Оповещаем все представления (окна) приложения о смене локализации
-                Messenger.Send(new LocalizationMessage(value ?? _appSetting.AppLocalization.GetDefaultLang(), oldLang));
+                Messenger.Send(new LocalizationMessage(value ?? _appSettingService.AppLocalization.GetDefaultLang(), oldLang));
             }
         }
     }
@@ -69,20 +73,26 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public AppSettingVM(IViewWithResources view, 
-        ILogger logger, 
-        AppSettingService appSetting)
+    public AppSettingVM(
+        IViewWithResources view,
+        ILogger logger,
+        IAppErrorMsgProvider appErrorMsgProvider,
+        AppSettingService appSettingService,
+        StatusBarService statusBarService)
     {
         _view = view;
         _logger = logger;
-        _appSetting = appSetting;
-        _localizationHelper = new LocalizationHelper(appSetting);
+        _appErrorMsgProvider = appErrorMsgProvider;
+        _appSettingService = appSettingService;
+        _statusBarService = statusBarService;
+        _localizationHelper = new LocalizationHelper(appSettingService);
+        _viewModelHelper = new ViewModelHelper(logger, appErrorMsgProvider, statusBarService);
 
         // Подписываемся на получение сообщений
         Messenger.Register(this);
         
         // Отправляем начальное сообщение
-        var localization = appSetting.AppLocalization;
+        var localization = appSettingService.AppLocalization;
         var initialLang = localization.GetCurrentOrDefaultLang();
         Messenger.Send(new LocalizationMessage(initialLang, null));
     }
@@ -100,7 +110,7 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
             // Визуализируем язык
             DisplayMsg = message.Lang;
             
-            var localization = _appSetting.AppLocalization;
+            var localization = _appSettingService.AppLocalization;
             var lang = message.Lang;       // устанавливаемый язык
             var oldLang = message.OldLang; // предыдущий язык
         
@@ -137,10 +147,9 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
         catch (Exception ex)
         {
             // Пишем в и лог об ошибке
-            var exception = new AppException(AppPhrases.LocalizingError.Format(nameof(AppSettingVM)), ex);
-            _logger.Error(exception,
-                "{class}.{method}.",
-                typeof(AppSettingVM), nameof(Receive));
+            var exception =
+                _appErrorMsgProvider.CreateException(AppErrorCodes.LocalizingError, ex, this.GetType().Name);
+            _viewModelHelper.HandleException(exception, this.ToString(), nameof(Receive));
         }
     }
 }

@@ -1,16 +1,13 @@
 ﻿using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using AppDomain.AppEntities;
 using AppDomain.AppExceptions;
-using AppDomain.Phrases;
-using AppDomain.Setting.Entities;
-using AppDomain.Setting.Services;
-using AppDomain.UseCases.Services;
+using AppDomain.AppUseCases._Contracts;
+using AppDomain.AppUseCases.Services;
 using Cogs.Collections;
 using Common.BaseComponents.Components.Exceptions;
-using Common.BaseExtensions;
 using Common.BaseExtensions.Collections;
 using Common.WpfModule.Components.Collections;
 using Common.WpfModule.Components.Wrappers;
@@ -26,6 +23,7 @@ using Presentation.ViewModels.Common.Observables;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
+using ProblemDomain.UseCases.Services;
 using Serilog;
 
 namespace Presentation.ViewModels.MainView;
@@ -35,15 +33,17 @@ namespace Presentation.ViewModels.MainView;
 /// </summary>
 // ReSharper disable once InconsistentNaming
 public sealed class SettingVM : ObservableRecipient, 
-    IRecipient<LocalizationMessage>, IRecipient<AllCompetitionsMessage>, IStatusBarDataProvider, IDisposable
+    IRecipient<LocalizationMessage>, IRecipient<AllCompetitionsMessage>, IDisposable
 {
-    private readonly LocalizationHelper _localizationHelper = null!;
     private readonly IViewWithResources _view = null!;
-    private readonly ILogger _logger = null!;
-    private readonly AppSettingService _appSetting = null!;
+    private readonly IAppErrorMsgProvider _appErrorMsgProvider = null!;
+    private readonly AppSettingService _appSettingService = null!;
+    private readonly StatusBarService _statusBarService = null!;
     private readonly CompetitionDataService _competitionDataService = null!;
     private readonly RefereeService _refereeService = null!;
     private readonly SportEventService _sportEventService = null!;
+    private readonly LocalizationHelper _localizationHelper = null!;
+    private readonly ViewModelHelper _viewModelHelper = null!;
 
     /// <summary>
     /// Коллекция доступных языков.
@@ -62,17 +62,13 @@ public sealed class SettingVM : ObservableRecipient,
             if (SetProperty(ref field, value))
             {
                 // Оповещаем все представления (окна) приложения о смене локализации
-                Messenger.Send(new LocalizationMessage(value ?? _appSetting.AppLocalization.GetDefaultLang(), oldLang));
+                // TODO: Доработать!!! Не локализуется DatePicker.
+                Messenger.Send(new LocalizationMessage(value ?? _appSettingService.AppLocalization.GetDefaultLang(), oldLang));
             }
         }
     }
 
-    /// <summary>
-    /// Сервис статус-бара.
-    /// </summary>
-    public StatusBarService StatusBarService { get; } = null!;
-    
-        
+
     /// <summary>
     /// Конструктор, запрещающий создания экземпляра без параметров.
     /// </summary>
@@ -84,27 +80,30 @@ public sealed class SettingVM : ObservableRecipient,
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public SettingVM(IViewWithResources view, 
-        StatusBarService statusBarService, 
-        ILogger logger, 
+    public SettingVM(
+        IViewWithResources view,
+        ILogger logger,
         IExceptionsProvider exceptionsProvider,
-        AppSettingService appSetting,
+        IAppErrorMsgProvider appErrorMsgProvider,
+        AppSettingService appSettingService,
+        StatusBarService statusBarService,
         CompetitionDataService competitionDataService,
         RefereeService refereeService,
-        SportEventService  sportEventService)
+        SportEventService sportEventService)
     {
         _view = view;
-        StatusBarService = statusBarService;
-        _logger = logger;
-        _appSetting = appSetting;
+        _appErrorMsgProvider = appErrorMsgProvider;
+        _appSettingService = appSettingService;
+        _statusBarService = statusBarService;
         _competitionDataService = competitionDataService;
         _refereeService = refereeService;
         _sportEventService =  sportEventService;
-        _localizationHelper = new LocalizationHelper(appSetting);
+        _localizationHelper = new LocalizationHelper(appSettingService);
+        _viewModelHelper = new ViewModelHelper(logger, appErrorMsgProvider, statusBarService);
 
         // Соревнования
-        CreateConductingOrganizationCommand = new AsyncRelayCommand(CreateConductingOrganization);
-        RemoveConductingOrganizationCommand = new AsyncRelayCommand(RemoveConductingOrganization);
+        CreateConductingOrganizationCommand = new RelayCommand(CreateConductingOrganization);
+        RemoveConductingOrganizationCommand = new RelayCommand(RemoveConductingOrganization);
         GetCompetitionCommand = new AsyncRelayCommand<int>(
             GetCompetitionDataAsync,
             id => id > 0 // CanExecute: только если Id корректный);
@@ -114,7 +113,7 @@ public sealed class SettingVM : ObservableRecipient,
         // Виды программы
         GetSportEventsCommand = new AsyncRelayCommand(GetSportEventObservablesAsync);
         CreateSportEventCommand = new AsyncRelayCommand(CreateSportEventAsync);
-        RemoveSportEventCommand =  new AsyncRelayCommand(RemoveSportEvent);
+        RemoveSportEventCommand =  new RelayCommand(RemoveSportEvent);
         
         // Судьи
         GetRefereesCommand = new AsyncRelayCommand(GetRefereesAsync);
@@ -127,14 +126,12 @@ public sealed class SettingVM : ObservableRecipient,
         Messenger.Register<AllCompetitionsMessage>(this);
 
         // Получение языка локализации из настроек
-        var localization = appSetting.AppLocalization;
+        var localization = appSettingService.AppLocalization;
         var langName = localization.GetLangFromSetting();
         CurrLang = localization.SetCurrentLangFromName(langName);
         
         // Обработка исключений "сверху", запуск инициализации если исключений нет
-        ViewModelHelper.HandleExceptionsProvider(
-            exceptionsProvider, InitAsync,
-            StatusBarService, _logger);
+        _viewModelHelper.HandleExceptionsProvider(exceptionsProvider, InitAsync);
     }
     
     /// <summary>
@@ -157,12 +154,9 @@ public sealed class SettingVM : ObservableRecipient,
         catch (Exception ex)
         {
             // Пишем в статус-бар и лог об ошибке
-            var exception = new AppException(AppPhrases.LocalizingError.Format(nameof(SettingVM)), ex);
-            _ = StatusBarService.SetTextAsync(exception.Message,
-                BaseException.ExcptnType.Error, 0);
-            _logger.Error(exception,
-                "{class}.{method}.",
-                typeof(SettingVM), nameof(Receive));
+            var exception =_appErrorMsgProvider.CreateException(AppErrorCodes.LocalizingError, ex, this.GetType().Name);
+
+            _viewModelHelper.HandleException(exception, this.ToString(), nameof(Receive));
         }
     }
 
@@ -202,7 +196,7 @@ public sealed class SettingVM : ObservableRecipient,
     {
         if (disposing)
         {
-            _appSetting.SaveConfig();
+            _appSettingService.SaveConfig();
         }
     }
     
@@ -276,29 +270,34 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private async Task SaveCompetitionAsync()
     {
-        // Сохраняем проводящие организации
-        _competitionDataService.SetConductingOrganizations(ConductingOrganizations, CurrentCompetition);
-        
-        // Сохраняем изменения
-        var intResult = await _competitionDataService.SaveCompetitionDataAsync();
-        if (intResult)
+        Exception? exception = null;
+        try
         {
+            // Сохраняем проводящие организации
+            var intResult = _competitionDataService.SetConductingOrganizations(ConductingOrganizations, CurrentCompetition);
+            if (! intResult)
+            {
+                exception = intResult.Excptn;
+                return;
+            }
+        
+            // Сохраняем изменения
+            intResult = await _competitionDataService.SaveCompetitionDataAsync();
+            if (! intResult)
+            {
+                exception = intResult.Excptn;
+                return;
+            }
+
             // TODO: возможно изменим - Обновляем соревнование, хотя бы потому, чтобы обновилась коллекция сорев, при изменении ShortName одного из них
-            if (CurrentCompetition != null) 
+            if (CurrentCompetition != null)
                 // await GetCompetitionDataAsync(CurrentCompetition.Id);
                 CurrentCompetition = CurrentCompetition;
-
-            // Уведомляем UI об изменении
-            // OnPropertyChanged(nameof(CurrentCompetition));
         }
-        else
+        finally
         {
-            // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(intResult.Excptn?.Message,
-                BaseException.ExcptnType.Error, 0);
-            _logger.Error(intResult.Excptn,
-                "{class}.{method}.",
-                typeof(SettingVM), nameof(SaveCompetitionAsync));
+            // Пишем в статус-бар и лог об ошибке при ее наличии
+            _viewModelHelper.HandleException(exception, this.ToString(), nameof(SaveCompetitionAsync));
         }
     }
 
@@ -318,18 +317,15 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(detailedCompetitionsStatusesResult.Excptn?.Message, 
-                BaseException.ExcptnType.Error, 0);            
-            _logger.Error(detailedCompetitionsStatusesResult.Excptn, 
-                "{class}.{method}.", 
-                typeof(SettingVM), nameof(GetDetailedCompetitionStatusesAsync));
+            _viewModelHelper.HandleException(detailedCompetitionsStatusesResult.Excptn, 
+                this.ToString(), nameof(GetDetailedCompetitionStatusesAsync));
         }
     }
 
     /// <summary>
     /// Создание проводящей организации.
     /// </summary>
-    private Task CreateConductingOrganization()
+    private void CreateConductingOrganization()
     {
         // Создаем новую организацию
         var newIndexResult = _competitionDataService.CreateConductingOrganization(ConductingOrganizations, 
@@ -342,19 +338,15 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(newIndexResult.Excptn?.Message,
-                BaseException.ExcptnType.Error, 0);
-            _logger.Error(newIndexResult.Excptn, "{class}.{method}",
-                typeof(SettingVM), nameof(CreateConductingOrganization));
+            _viewModelHelper.HandleException(newIndexResult.Excptn, 
+                this.ToString(), nameof(CreateConductingOrganization));
         }
-
-        return Task.CompletedTask;
     }
     
     /// <summary>
     /// Удаление проводящей организации.
     /// </summary>
-    private Task RemoveConductingOrganization()
+    private void RemoveConductingOrganization()
     {
         // Удаляем организацию
         var newIndexResult = _competitionDataService.RemoveConductingOrganization(ConductingOrganizations, 
@@ -368,13 +360,9 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(newIndexResult.Excptn?.Message,
-                BaseException.ExcptnType.Error, 0);
-            _logger.Error(newIndexResult.Excptn, "{class}.{method}",
-                typeof(SettingVM), nameof(RemoveConductingOrganization));
+            _viewModelHelper.HandleException(newIndexResult.Excptn, 
+                this.ToString(), nameof(RemoveConductingOrganization));
         }
-
-        return Task.CompletedTask;
     }
     
     /// <summary>
@@ -428,15 +416,8 @@ public sealed class SettingVM : ObservableRecipient,
         }
         finally
         {
-            if (exception != null)
-            {
-                // Пишем в статус-бар и лог об ошибке
-                _ = StatusBarService.SetTextAsync(exception.Message,
-                    BaseException.ExcptnType.Error, 0);
-                _logger.Error(exception,
-                    "{class}.{method}.",
-                    typeof(SettingVM), nameof(GetCompetitionDataAsync));
-            }
+            // Пишем в статус-бар и лог об ошибке при ее наличии
+            _viewModelHelper.HandleException(exception, this.ToString(), nameof(GetCompetitionDataAsync));
         }
     }
     
@@ -449,7 +430,6 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private readonly ObservableDictionary<(DisciplineGroupEnm, Difficulty.IdEnm), string> _difficultiesDic = [];
 
-    
     /// <summary>
     /// Коллекция Observable-видов программы.
     /// </summary>
@@ -551,10 +531,8 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(difficultiesResult.Excptn?.Message,
-                BaseException.ExcptnType.Error, 0);
-            _logger.Error(difficultiesResult.Excptn, "{class}.{method}",
-                typeof(SettingVM), nameof(GetSportEventObservablesAsync));
+            _viewModelHelper.HandleException(difficultiesResult.Excptn, 
+                this.ToString(), nameof(GetSportEventObservablesAsync));
         }
     }
 
@@ -578,27 +556,24 @@ public sealed class SettingVM : ObservableRecipient,
             SportEventObservables.SelectedIndex = ++index;
             
             // TODO: Временно (без ожидания окончания)
-            _ = StatusBarService.SetTextAsync("Добавили вид программы.", BaseException.ExcptnType.Info);
+            _ = _statusBarService.SetTextAsync("Добавили вид программы.", BaseException.ExcptnType.Info);
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(sportEventResult.Excptn?.Message, 
-                BaseException.ExcptnType.Error, 0);
-            _logger.Error(sportEventResult.Excptn, "{class}.{method}", 
-                typeof(SettingVM), nameof(CreateSportEventAsync));
+            _viewModelHelper.HandleException(sportEventResult.Excptn, this.ToString(), nameof(CreateSportEventAsync));
         }
     }
 
     /// <summary>
     /// Удаление Observable-вида программы.
     /// </summary>
-    private Task RemoveSportEvent()
+    private void RemoveSportEvent()
     {
         // Индекс
         var index = SportEventObservables.SelectedIndex;
         if (index < 0)
-            return Task.CompletedTask;
+            return;
         
         // Удаляем из репозитория
         var intResult = _sportEventService.RemoveSportEvent(SportEventObservables[index].SportEvent);
@@ -612,18 +587,13 @@ public sealed class SettingVM : ObservableRecipient,
             SportEventObservables.SelectedIndex = index == 0 ? 0 : --index;
 
             // TODO: Временно (без ожидания окончания)
-            _ = StatusBarService.SetTextAsync("Удалили вид программы.", BaseException.ExcptnType.Error);
-
-            return Task.CompletedTask;
+            _ = _statusBarService.SetTextAsync("Удалили вид программы.", BaseException.ExcptnType.Error);
         }
-        
-        // Пишем в статус-бар и лог об ошибке
-        _ = StatusBarService.SetTextAsync(intResult.Excptn?.Message, 
-            BaseException.ExcptnType.Error, 0);
-        _logger.Error(intResult.Excptn, "{class}.{method}", 
-            typeof(SettingVM), nameof(RemoveSportEvent));
-        
-        return Task.CompletedTask;
+        else
+        {
+            // Пишем в статус-бар и лог об ошибке
+            _viewModelHelper.HandleException(intResult.Excptn, this.ToString(), nameof(RemoveSportEvent));
+        }
     }
 
     /// <summary>
@@ -665,10 +635,8 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(disciplineGroupsResult.Excptn?.Message,
-                BaseException.ExcptnType.Error, 0);
-            _logger.Error(disciplineGroupsResult.Excptn, "{class}.{method}",
-                typeof(SettingVM), nameof(GetDisciplineGroupsAsync));
+            _viewModelHelper.HandleException(disciplineGroupsResult.Excptn, 
+                this.ToString(), nameof(GetDisciplineGroupsAsync));        
         }
     }
     
@@ -701,10 +669,8 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(disciplineSubGroupsResult.Excptn?.Message,
-                BaseException.ExcptnType.Error, 0);
-            _logger.Error(disciplineSubGroupsResult.Excptn, "{class}.{method}",
-                typeof(SettingVM), nameof(GetDisciplineSubGroupsAsync));
+            _viewModelHelper.HandleException(disciplineSubGroupsResult.Excptn, 
+                this.ToString(), nameof(GetDisciplineSubGroupsAsync));        
         }
     }
     
@@ -723,10 +689,7 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(disciplinesResult.Excptn?.Message,
-                BaseException.ExcptnType.Error, 0);
-            _logger.Error(disciplinesResult.Excptn, "{class}.{method}",
-                typeof(SettingVM), nameof(GetDisciplinesAsync));
+            _viewModelHelper.HandleException(disciplinesResult.Excptn, this.ToString(), nameof(GetDisciplinesAsync));        
         }
     }
     
@@ -746,10 +709,8 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(difficultiesResult.Excptn?.Message,
-                BaseException.ExcptnType.Error, 0);
-            _logger.Error(difficultiesResult.Excptn, "{class}.{method}",
-                typeof(SettingVM), nameof(GetDifficultiesDicAsync));
+            _viewModelHelper.HandleException(difficultiesResult.Excptn, 
+                this.ToString(), nameof(GetDifficultiesDicAsync));        
         }
     }
     
@@ -811,11 +772,8 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(refereeLevelsResult.Excptn?.Message, 
-                BaseException.ExcptnType.Error, 0);            
-            _logger.Error(refereeLevelsResult.Excptn, 
-                "{class}.{method}.", 
-                typeof(SettingVM), nameof(GetRefereeLevels));
+            _viewModelHelper.HandleException(refereeLevelsResult.Excptn, 
+                this.ToString(), nameof(GetRefereeLevels));        
         }
     }
     
@@ -834,10 +792,8 @@ public sealed class SettingVM : ObservableRecipient,
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(refereeJobTitlesResult.Excptn?.Message, 
-                BaseException.ExcptnType.Error, 0);            
-            _logger.Error(refereeJobTitlesResult.Excptn, "{class}.{method}", 
-                typeof(SettingVM), nameof(GetRefereeJobTitles));
+            _viewModelHelper.HandleException(refereeJobTitlesResult.Excptn, 
+                this.ToString(), nameof(GetRefereeJobTitles));        
         }
     }
     
@@ -850,10 +806,7 @@ public sealed class SettingVM : ObservableRecipient,
         if (! refereesResult)
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(refereesResult.Excptn?.Message,
-                BaseException.ExcptnType.Error, 0);
-            _logger.Error(refereesResult.Excptn, "{class}.{method}",
-                typeof(SettingVM), nameof(GetRefereesAsync));
+            _viewModelHelper.HandleException(refereesResult.Excptn, this.ToString(), nameof(GetRefereesAsync));        
         }
     }
 
@@ -870,15 +823,12 @@ public sealed class SettingVM : ObservableRecipient,
             Referees.SelectedIndex = refereeResult.Value;
             
             // TODO: Временно (без ожидания окончания)
-            _ = StatusBarService.SetTextAsync("Добавили судью.", BaseException.ExcptnType.Info);
+            _ = _statusBarService.SetTextAsync("Добавили судью.", BaseException.ExcptnType.Info);
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(refereeResult.Excptn?.Message, 
-                BaseException.ExcptnType.Error, 0);
-            _logger.Error(refereeResult.Excptn, "{class}.{method}", 
-                typeof(SettingVM), nameof(CreateRefereeAsync));
+            _viewModelHelper.HandleException(refereeResult.Excptn, this.ToString(), nameof(CreateRefereeAsync));        
         }
     }
 
@@ -895,15 +845,12 @@ public sealed class SettingVM : ObservableRecipient,
             
             // TODO: Временно (без ожидания окончания)
             if (refereeResult.Value >= 0)
-                _ = StatusBarService.SetTextAsync("Удалили судью.", BaseException.ExcptnType.Error);
+                _ = _statusBarService.SetTextAsync("Удалили судью.", BaseException.ExcptnType.Error);
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(refereeResult.Excptn?.Message, 
-                BaseException.ExcptnType.Error, 0);            
-            _logger.Error(refereeResult.Excptn, "{class}.{method}", 
-                typeof(SettingVM), nameof(RemoveReferee));
+            _viewModelHelper.HandleException(refereeResult.Excptn, this.ToString(), nameof(RemoveReferee));        
         }
     }
 

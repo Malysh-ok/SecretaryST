@@ -1,16 +1,14 @@
-using System.Diagnostics;
 using System.Globalization;
+using AppDomain.AppAssets.Services;
 using AppDomain.AppExceptions;
+using AppDomain.AppUseCases._Contracts;
 using Common.BaseComponents.Components;
 using Common.BaseComponents.Components.Colors;
 using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions;
-using Common.BaseExtensions.Collections;
-using Common.BaseExtensions.ValueTypes;
-using Common.WpfModule.Components.Collections;
-using DataAccess.Repositories.Exceptions;
-using ProblemDomain.Entities._Contracts;
-using ProblemDomain.Entities.CommonEntities;
+using DataAccess.DataAccessExceptions;
+using ProblemDomain.ProblemExceptions;
+using ProblemDomain.UseCases._Contracts;
 
 namespace Common.Tests;
 
@@ -19,6 +17,7 @@ public class BaseComponentsTests
     [SetUp]
     public void Setup()
     {
+        ;
     }
     
     [Test]
@@ -26,25 +25,25 @@ public class BaseComponentsTests
     {
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
         
-        var ex11 = BaseException.CreateException<SystemException>(
+        var ex11 = BaseException.Create<SystemException>(
             "Exception...", null, "ru", "Исключение");
-        var ex12 =  BaseException.CreateException<BaseException>(
+        var ex12 =  BaseException.Create<BaseException>(
             "Exception", null, "ru", "Исключение");
-        var ex13 =  BaseException.CreateException<AppException>(
+        var ex13 =  BaseException.Create<AppException>(
             "Exception", null, "ru", "Исключение");
-        var ex14 =  BaseException.CreateException<DbException>(
+        var ex14 =  BaseException.Create<DataAccessException>(
             "Exception", null, "ru", "Исключение");
         
         // ------------------------
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("ru");
         
-        var ex21 = BaseException.CreateException<SystemException>(
+        var ex21 = BaseException.Create<SystemException>(
             "Exception", null, "ru", "Исключение");
-        var ex22 =  BaseException.CreateException<BaseException>(
+        var ex22 =  BaseException.Create<BaseException>(
             "Exception", null, "ru", "Исключение");
-        var ex23 =  BaseException.CreateException<AppException>(
+        var ex23 =  BaseException.Create<AppException>(
             "Exception", null, "ru", "Исключение");
-        var ex24 =  BaseException.CreateException<DbException>(
+        var ex24 =  BaseException.Create<DataAccessException>(
             "Exception", null, "ru", "Исключение");
 
         var result1 = ex11.Message.IsOnlyLatinChars() &&
@@ -61,60 +60,25 @@ public class BaseComponentsTests
     }
 
     [Test]
-    public void ExceptionTest()
+    public void AppAndProblemExceptionTest()
     {
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
-        var be11 = new BaseException();
-        var be12 = new BaseException("Два");
-        var be13 = new BaseException("Check.", new Exception("Проверка - Inner."),
-            "ru", "Проверка.");
+        IProblemErrorMsgProvider problemErrorMsgProvider = new DomainErrorMsgProvider();
+        IAppErrorMsgProvider appErrorMsgProvider = new DomainErrorMsgProvider();
 
-        /*
-        var m1 = BaseException.ConvertMessage(typeof(Exception), 
-            DbPhrases.DbСonnectiontError, "en");
-        var m2 = BaseException.ConvertMessage(typeof(DbPhrases), 
-            DbPhrases.DbСonnectiontError, "ru");
-        var m3 = BaseException.ConvertMessage(typeof(DbPhrases), 
-            "Ла-ла-ла", "ru");
-        var m4 = BaseException.ConvertMessage(typeof(DbPhrases), 
-            null, "ru");
-        */
+        // var innerEx1 = ProblemException.CreateFromErrorCode(ProblemErrorCodes.SportEventCreateError);
+        var innerEx1 = problemErrorMsgProvider.CreateException(ProblemErrorCodes.SportEventCreateError);
+        var innerEx2 = ProblemException.CreateFromErrorCode("0", innerEx1, "=== innerEx2 ===");
+        // var innerEx3 = AppException.CreateFromErrorCode(ProblemErrorCodes.CompetitionDataCreateError,  innerEx2);
+        var innerEx3 = appErrorMsgProvider.CreateException(AppErrorCodes.LocalizingError, innerEx2, args: "TestView");
+        var ex = AppException.CreateFromErrorCode(AppErrorCodes.UnknownError, innerEx3, "Верхнее исключение");
 
-        var dfe11 = new DbFatalException();
-        var dfe12 = new DbFatalException("Fatal Exception");
-        
-        var dfe13 = new DbFatalException("Fatal Exception", 
-            null, "ru", "Фатальное исключение");
-        var dfe14 = new DbFatalException(innerException: 
-            new Exception("Проверка - Inner"));
-        
-        // ------------------------
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("ru");
-        
-        var be21 = new BaseException("Check.", new Exception("Проверка - Inner."),
-            "ru", "Проверка.");
-        
-        var dfe21 = new DbFatalException();
-        var dfe22 = new DbFatalException("Fatal Exception", 
-            null, "ru", "Фатальное исключение");
-        var dfe23 = new DbFatalException(innerException: 
-            new Exception("Проверка - Inner"));
-
-        var result1 = be11.Message.IsOnlyLatinChars() &&
-                      ! be12.Message.IsOnlyLatinChars() &&
-                      be13.Message.IsOnlyLatinChars() &&
-                      dfe11.Message.IsOnlyLatinChars() &&
-                      dfe12.Message.IsOnlyLatinChars() &&
-                      dfe13.Message.IsOnlyLatinChars() &&
-                      dfe14.Message.IsOnlyLatinChars();
-        Assert.That(result1, Is.True, "Ошибка при работе с исключениями.");
-
-        var result2 = be21.Message.IsOnlyCyrillicChars() &&
-                      dfe21.Message.IsOnlyCyrillicChars() &&
-                      dfe22.Message.IsOnlyCyrillicChars() &&
-                      dfe23.Message.IsOnlyCyrillicChars();
-        Assert.That(result2, Is.True, "Ошибка при работе с исключениями.");
-
+        Exception? currEx = ex;
+        do
+        {
+            Assert.That(currEx.Message, Does.Not.StartWith("Exception of type"), 
+                "Одно из внутренних исключений содержит код ошибки, но не содержит соответствующего ей сообщения.");
+            currEx = currEx.InnerException;
+        } while (currEx != null);
     }
 
     [Test]

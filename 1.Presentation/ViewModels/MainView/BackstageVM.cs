@@ -1,8 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
-using AppDomain.Setting.Services;
-using AppDomain.UseCases.Services;
+using AppDomain.AppUseCases._Contracts;
+using AppDomain.AppUseCases.Services;
 using Common.BaseComponents.Components.Exceptions;
 using Common.WpfModule.Ui.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -12,6 +12,7 @@ using Presentation.ViewModels._Contracts;
 using Presentation.ViewModels.Common;
 using Presentation.ViewModels.Common.Messages;
 using ProblemDomain.Entities.CommonEntities;
+using ProblemDomain.UseCases.Services;
 using Serilog;
 
 namespace Presentation.ViewModels.MainView;
@@ -20,13 +21,15 @@ namespace Presentation.ViewModels.MainView;
 /// ViewModel для специфичного меню "File" (для Backstage).
 /// </summary>
 // ReSharper disable once InconsistentNaming
-public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMessage>, IStatusBarDataProvider, IDisposable
+public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMessage>, IDisposable
 {
     private readonly ILogger _logger = null!;
-    private readonly IExceptionsProvider _exceptionsProvider = null!;
-    private readonly AppSettingService _appSetting = null!;
+    private readonly StatusBarService _statusBarService = null!;
+    private readonly AppSettingService _appSettingService = null!;
     private readonly CompetitionDataService _competitionDataService = null!;
-    
+    private readonly IAppErrorMsgProvider _appErrorMsgProvider = null!;
+    private readonly ViewModelHelper _viewModelHelper = null!;
+
     /// <summary>
     /// Конструктор, запрещающий создания экземпляра без параметров.
     /// </summary>
@@ -39,17 +42,19 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     /// Конструктор.
     /// </summary>
     public BackstageVM(
-        StatusBarService statusBarService,
         ILogger logger,
         IExceptionsProvider exceptionsProvider,
-        AppSettingService appSetting,
+        IAppErrorMsgProvider appErrorMsgProvider,
+        AppSettingService appSettingService,
+        StatusBarService statusBarService,
         CompetitionDataService competitionDataService)
     {
-        StatusBarService = statusBarService;
         _logger = logger;
-        _exceptionsProvider = exceptionsProvider;
-        _appSetting = appSetting;
+        _appErrorMsgProvider = appErrorMsgProvider;
+        _appSettingService = appSettingService;
+        _statusBarService = statusBarService;
         _competitionDataService = competitionDataService;
+        _viewModelHelper = new ViewModelHelper(logger, appErrorMsgProvider, statusBarService);
 
         GetAllCompetitionsCommand = new AsyncRelayCommand(GetAllCompetitionsAsync);
         CreateCompetitionCommand = new AsyncRelayCommand(CreateCompetitionAsync);
@@ -61,8 +66,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
         Messenger.Register(this);
         
         // Обработка исключений "сверху", запуск инициализации если исключений нет
-        ViewModelHelper.HandleExceptionsProvider(
-            exceptionsProvider, InitAsync, StatusBarService, _logger);
+        _viewModelHelper.HandleExceptionsProvider(exceptionsProvider, InitAsync);
     }
     
     /// <summary>
@@ -108,13 +112,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     /// Текущее соревнование.
     /// </summary>
     public CompetitionData? CurrentCompetition { get; set; }
-    
-    /// <summary>
-    /// Сервис статус-бара.
-    /// </summary>
-    public StatusBarService StatusBarService { get; } = null!;
 
-    
     #region [---------- Команды ----------]
     
     /// <summary>
@@ -134,7 +132,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
 
     #endregion
 
-        /// <summary>
+    /// <summary>
     /// Получение (обновление) коллекции соревнований.
     /// </summary>
     private async Task GetAllCompetitionsAsync()
@@ -147,12 +145,11 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             if (Competitions.Any())
             {
                 // Если коллекция не пуста
-                
                 var newCurrentCompetitionData = Competitions.First();
                 if (CurrentCompetition != null)
                 {
                     var id = CurrentCompetition.Id;
-                    // Если CurrentCompetitionData создано (не из репозитория) -
+                    // Если текущее соревнование создано (не из репозитория) -
                     // присваиваем последний, иначе - находим по id
                     newCurrentCompetitionData = id == 0 
                         ? Competitions.Last()  
@@ -171,10 +168,8 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _ = StatusBarService.SetTextAsync(competitionsResult.Excptn?.Message,
-                BaseException.ExcptnType.Error, 0);
-            _logger.Error(competitionsResult.Excptn, "{class}.{method}",
-                typeof(SettingVM), nameof(GetAllCompetitionsAsync));
+            _viewModelHelper.HandleException(competitionsResult.Excptn, 
+                this.ToString(), nameof(GetAllCompetitionsAsync));
         }
     }
     
@@ -201,19 +196,13 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             Messenger.Send(new AllCompetitionsMessage(Competitions, CurrentCompetition));
             
             // TODO: Временно (без ожидания окончания)
-            _ = StatusBarService.SetTextAsync("Добавили соревнование.", BaseException.ExcptnType.Info);
+            _ = _statusBarService.SetTextAsync("Добавили соревнование.", BaseException.ExcptnType.Info);
         }
         finally
         {
-            if (exception != null)
-            {
-                // Пишем в статус-бар и лог об ошибке
-                _ = StatusBarService.SetTextAsync(exception.Message,
-                    BaseException.ExcptnType.Error, 0);
-                _logger.Error(exception,
-                    "{class}.{method}.",
-                    typeof(SettingVM), nameof(CreateCompetitionAsync));
-            }
+            // Пишем в статус-бар и лог об ошибке при ее наличии
+            _viewModelHelper.HandleException(exception, 
+                this.ToString(), nameof(CreateCompetitionAsync));
         }
     }
     
@@ -228,7 +217,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             // TODO: Временно, возможно будет отдельное окно
             var result = MessageBox.Show(
                 $"Вы уверены, что хотите удалить соревнование '{CurrentCompetition!.ShortName}'?",
-                _appSetting.AppName, 
+                _appSettingService.AppName, 
                 MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
             if (result == MessageBoxResult.No)
                 return;
@@ -255,22 +244,16 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             CurrentCompetition = competitionResult.Value;
             
             // TODO: Временно (без ожидания окончания)
-            _ = StatusBarService.SetTextAsync("Удалили соревнование.", BaseException.ExcptnType.Warning);
+            _ = _statusBarService.SetTextAsync("Удалили соревнование.", BaseException.ExcptnType.Warning);
         }
         finally
         {
             // Посылаем сообщение о загрузке соревнований
             Messenger.Send(new AllCompetitionsMessage(Competitions, CurrentCompetition));
             
-            if (exception != null)
-            {
-                // Пишем в статус-бар и лог об ошибке
-                _ = StatusBarService.SetTextAsync(exception.Message,
-                    BaseException.ExcptnType.Error, 0);
-                _logger.Error(exception,
-                    "{class}.{method}.",
-                    typeof(SettingVM), nameof(RemoveCompetitionAsync));
-            }
+            // Пишем в статус-бар и лог об ошибке при ее наличии
+            _viewModelHelper.HandleException(exception, 
+                this.ToString(), nameof(RemoveCompetitionAsync));
         }
     }
     

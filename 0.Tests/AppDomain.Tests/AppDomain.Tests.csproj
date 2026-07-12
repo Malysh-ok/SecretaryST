@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net10.0-windows</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
@@ -33,7 +33,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\2.AppDomain\Setting\Setting.csproj" />
+      <ProjectReference Include="..\..\1.Presentation\Shell\Shell.csproj" />
+      <ProjectReference Include="..\..\2.AppDomain\AppEntities\AppEntities.csproj" />
+      <ProjectReference Include="..\..\2.AppDomain\AppUseCases\AppUseCases.csproj" />
     </ItemGroup>
 
     <ItemGroup>

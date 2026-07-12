@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="RefereesLoadError" xml:space="preserve">
+        <value>Failed to retrieve the list of referees from the repository.</value>
+    </data>
+    <data name="CompetitionDataLoadError" xml:space="preserve">
+        <value>Failed to retrieve the competition from the repository.</value>
+    </data>
+    <data name="RefereeLevelsLoadError" xml:space="preserve">
+        <value>Failed to retrieve the list of referee levels from the repository.</value>
+    </data>
+    <data name="RefereeJobTitlesLoadError" xml:space="preserve">
+        <value>Failed to get a list of referee job titles from the repository.</value>
+    </data>
+    <data name="CompetitionStatusesLoadError" xml:space="preserve">
+        <value>Failed to retrieve the list of competition statuses in the repository.</value>
+    </data>
+    <data name="DetailedCompetitionStatusesLoadError" xml:space="preserve">
+        <value>Failed to retrieve the list of competition statuses and names from the repository.</value>
+    </data>
+    <data name="CompetitionDataSaveError" xml:space="preserve">
+        <value>Failed to save the competition to the repository.</value>
+    </data>
+    <data name="CompetitionDataCreateError" xml:space="preserve">
+        <value>Failed to create the new competition in the repository.</value>
+    </data>
+    <data name="CompetitionDataRemoveError" xml:space="preserve">
+        <value>Failed to remove the competition from the repository.</value>
+    </data>
+    <data name="RefereeLevelFindError" xml:space="preserve">
+        <value>Failed to find the referee level in the repository.</value>
+    </data>
+    <data name="RefereeCreateError" xml:space="preserve">
+        <value>Failed to create the new referee in the repository.</value>
+    </data>
+    <data name="RefereeJobTitleFindError" xml:space="preserve">
+        <value>Failed to find the referee job titles in the repository.</value>
+    </data>
+    <data name="RefereeRemoveError" xml:space="preserve">
+        <value>Failed to remove the referee from the repository.</value>
+    </data>
+    <data name="UnknownError" xml:space="preserve">
+        <value>Unknown Error. For more information, see the log file.</value>
+    </data>
+    <data name="CompetitionStatusFindError" xml:space="preserve">
+        <value>Failed to find the competition status in the repository.</value>
+    </data>
+    <data name="DetailedCompetitionStatusFindError" xml:space="preserve">
+        <value>Failed to find the detailed competitions status in the repository.</value>
+    </data>
+    <data name="CompetitionDataIsNull" xml:space="preserve">
+        <value>The competition is missing.</value>
+    </data>
+    <data name="CompetitionDataNotFound" xml:space="preserve">
+        <value>The competition was not found  in the repository.</value>
+    </data>
+    <data name="ConductingOrganizationsLoadError" xml:space="preserve">
+        <value>Failed to retrieve the list of event organizers.</value>
+    </data>
+    <data name="ConductingOrganizationsSetError" xml:space="preserve">
+        <value>Failed to set a event organizers.</value>
+    </data>
+    <data name="ConductingOrganizationCreateError" xml:space="preserve">
+        <value>Failed to create the new event organizer.</value>
+    </data>
+    <data name="ConductingOrganizationRemoveError" xml:space="preserve">
+        <value>Failed to remove a event organizer.</value>
+    </data>
+    <data name="AppDirsCreateError" xml:space="preserve">
+        <value>Failed to create the application directories.</value>
+    </data>
+    <data name="LocalizingError" xml:space="preserve">
+        <value>Localizing '{0}' view error.</value>
+    </data>
+    <data name="SportEventsLoadError" xml:space="preserve">
+        <value>Failed to retrieve the list of sport events from the repository.</value>
+    </data>
+    <data name="SportEventCreateError" xml:space="preserve">
+        <value>Failed to create the new sport event in the repository.</value>
+    </data>
+    <data name="DisciplineLoadError" xml:space="preserve">
+        <value>Failed to retrieve the discipline from the repository.</value>
+    </data>
+    <data name="SportEventRemoveError" xml:space="preserve">
+        <value>Failed to remove the sport event from the repository.</value>
+    </data>
+    <data name="CompetitionDataListLoadError" xml:space="preserve">
+        <value>Failed to retrieve the list of competition from the repository.</value>
+    </data>
+    <data name="DisciplinesLoadError" xml:space="preserve">
+        <value>Failed to retrieve the list of disciplines from the repository.</value>
+    </data>
+    <data name="DisciplineGroupsLoadError" xml:space="preserve">
+        <value>Failed to retrieve the list of discipline groups from the repository.</value>
+    </data>
+    <data name="DisciplineSubGroupsLoadError" xml:space="preserve">
+        <value>Failed to retrieve the list of discipline subgroups from the repository.</value>
+    </data>
+    <data name="FatalError" xml:space="preserve">
+        <value>Fatal error occurred. For more information, see the log file.</value>
+    </data>
+    <data name="LanguageNotFound" xml:space="preserve">
+        <value>Language '{0}' not found in the available languages list.</value>
+    </data>
+</root>

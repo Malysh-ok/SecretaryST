@@ -1,0 +1,57 @@
+﻿using System.Globalization;
+using System.Resources;
+using Common.BaseExtensions;
+using DataAccess.DataAccessAssets.Strings;
+using DataAccess.DataAccessExceptions;
+
+namespace DataAccess.DataAccessAssets.Services;
+
+/// <summary>
+/// Обеспечивает получение сообщений по кодам ошибок и их применение к исключениям
+/// для слоя доступа к данным (4.DataAccess).
+/// </summary>
+/// <remarks>
+/// Реализация читает ресурсы <see cref="DbPhrases"/>.
+/// </remarks>
+public class DataAccessErrorMsgProvider
+{
+    private readonly ResourceManager _resourceManager;
+
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    public DataAccessErrorMsgProvider()
+    {
+        DbPhrases.Culture = CultureInfo.CurrentUICulture;       // устанавливаем языковой стандарт для фраз
+        _resourceManager = DbPhrases.ResourceManager;
+    }
+    
+    /// <summary>
+    /// Возвращает сообщение по коду ошибки с подстановкой аргументов.
+    /// </summary>
+    /// <param name="errCode">Код ошибки.</param>
+    /// <param name="args">Аргументы для форматирования сообщения.</param>
+    public string? GetMessage(string? errCode, params object[]? args)
+    {
+        if (errCode.IsNullOrEmpty())
+            return null;
+        
+        var format = _resourceManager.GetString(errCode!);
+        
+        return format != null && args is { Length: > 0 } 
+            ? string.Format(format, args) 
+            : format;
+    }
+
+    /// <summary>
+    /// Создаёт <see cref="DataAccessException"/> с сообщением по коду ошибки.
+    /// </summary>
+    /// <param name="code">Код ошибки.</param>
+    /// <param name="inner">Исключение, вызвавшее текущее исключение, или null.</param>
+    /// <param name="args">Аргументы для форматирования сообщения.</param>
+    public DataAccessException CreateException(string code, Exception? inner = null, params object[] args)
+    {
+        var message = GetMessage(code, args);
+        return DataAccessException.CreateFromErrorCode(code, inner, message);
+    }
+}

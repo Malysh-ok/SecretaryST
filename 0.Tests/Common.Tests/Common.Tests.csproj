@@ -29,6 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\2.AppDomain\AppAssets\AppAssets.csproj" />
       <ProjectReference Include="..\..\4.DataAccess\Repositories\Repositories.csproj" />
       <ProjectReference Include="..\..\5.Common\BaseComponents\BaseComponents.csproj" />
     </ItemGroup>

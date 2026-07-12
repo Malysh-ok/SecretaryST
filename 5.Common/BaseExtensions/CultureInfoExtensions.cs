@@ -29,12 +29,14 @@ public static class CultureInfoExtensions
     /// <summary>
     /// Получить признак того, что языковой стандарт с заданным именем существует.
     /// </summary>
-    public static bool IsExists(this string name)
+    public static bool IsValidCulture(this string name)
     {
         try
         {
+            if (name.IsNullOrWhiteSpace())
+                return false;
+            
             _ = CultureInfo.GetCultureInfo(name);
-
             return true;
         }
         catch

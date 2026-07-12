@@ -136,16 +136,16 @@
     <value>Недопустимое строковое представление даты и времени.</value>
   </data>
   <data name="Exception_ParamIsNotNumber" xml:space="preserve">
-    <value>Аргумент "{0}" не является числом.</value>
+    <value>Аргумент '{0}' не является числом.</value>
   </data>
   <data name="Exception_ParamIsNotHex" xml:space="preserve">
-    <value>Аргумент "{0}" не является  16-ричной записью.</value>
+    <value>Аргумент '{0}' не является  16-ричной записью.</value>
   </data>
   <data name="Exception_ParamIsTooLong" xml:space="preserve">
-    <value>Аргумент "{0}" должен быть &lt; {1}.</value>
+    <value>Аргумент '{0}' должен быть &lt; '{1}'.</value>
   </data>
   <data name="Exception_InvalidCharInParam" xml:space="preserve">
-    <value>Аргумент "{0}" содержит недопустимый символ "{1}".</value>
+    <value>Аргумент '{0}' содержит недопустимый символ '{1}'.</value>
   </data>
   <data name="Exception_ParamInvalidLowerBound " xml:space="preserve">
     <value>Нижняя граница не может быть больше верхней.</value>
@@ -154,16 +154,16 @@
     <value>Аргумент должен быть неотрицательным.</value>
   </data>
   <data name="Exception_ParamIsNotConvertToDouble" xml:space="preserve">
-    <value>Аргумент "{0}" не может быть преобразован в double.</value>
+    <value>Аргумент '{0}' не может быть преобразован в double.</value>
   </data>
   <data name="Exception_ParamIsNotEnum" xml:space="preserve">
-    <value>Тип "{0}" аргумента "{1}" должен быть перечисляемым.</value>
+    <value>Тип '{0}' аргумента '{1}' должен быть перечисляемым.</value>
   </data>
   <data name="Exception_EnumTypeMismatchInParam" xml:space="preserve">
-    <value>Несоответствие типа перечисления. Флаг имеет тип "{0}", а ожидался "{1}".</value>
+    <value>Несоответствие типа перечисления. Флаг имеет тип '{0}', а ожидался '{1}'.</value>
   </data>
   <data name="Exception_SeekError" xml:space="preserve">
-    <value>Ошибка при изменении позиции указателя в потоке {0}.</value>
+    <value>Ошибка при изменении позиции указателя в потоке '{0}'.</value>
   </data>
   <data name="Exception_ArrayBoundsError" xml:space="preserve">
     <value>Выход за границы исходного массива.</value>
@@ -181,7 +181,7 @@
     <value>XML-узел равен null.</value>
   </data>
   <data name="Exception_ParamIsNotConvertToEnum" xml:space="preserve">
-    <value>Аргумент "{0}" не может быть преобразован в перечислимый тип.</value>
+    <value>Аргумент '{0}' не может быть преобразован в перечислимый тип.</value>
   </data>
   <data name="Exception_ParamBoundsError" xml:space="preserve">
     <value>Выход аргумента за границы допустимого диапазона.</value>

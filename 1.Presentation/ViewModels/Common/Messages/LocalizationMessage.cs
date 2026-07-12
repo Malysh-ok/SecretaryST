@@ -1,4 +1,4 @@
-﻿using AppDomain.Setting.Entities;
+﻿using AppDomain.AppEntities;
 
 namespace Presentation.ViewModels.Common.Messages;
 

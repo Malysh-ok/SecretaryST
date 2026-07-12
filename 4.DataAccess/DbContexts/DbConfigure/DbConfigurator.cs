@@ -46,8 +46,12 @@ public class DbConfigurator
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public DbConfigurator(ConfigurationManager configuration, string databasePath)
+    public DbConfigurator(string settingFilePath, string databasePath)
     {
+        // Создаем конфигурацию, наполняем ее данными из файла конфигурации
+        var configuration = new ConfigurationManager();
+        configuration.AddXmlFile(settingFilePath, optional: true).Build();
+
         ProviderOptions = GetProviderOptions();
         IsEncryptedConnectionString = false;
 

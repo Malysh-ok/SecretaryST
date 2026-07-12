@@ -40,16 +40,16 @@
         <value>Invalid Key Name.</value>
     </data>
     <data name="Exception_ParamIsNotNumber" xml:space="preserve">
-        <value>Argument "{0}" is not a number.</value>
+        <value>Argument '{0}' is not a number.</value>
     </data>
     <data name="Exception_ParamIsNotHex" xml:space="preserve">
-        <value>Argument "{0}" is not hexadecimal.</value>
+        <value>Argument '{0}' is not hexadecimal.</value>
     </data>
     <data name="Exception_ParamIsTooLong" xml:space="preserve">
-        <value>Argument "{0}" must be &lt; {1}.</value>
+        <value>Argument '{0}' must be &lt; '{1}'.</value>
     </data>
     <data name="Exception_InvalidCharInParam" xml:space="preserve">
-        <value>The argument "{0}" contains an invalid character  "{1}".</value>
+        <value>The argument '{0}' contains an invalid character  '{1}'.</value>
     </data>
     <data name="Exception_ParamInvalidLowerBound " xml:space="preserve">
         <value>The lower bound cannot be larger than the upper one.</value>
@@ -58,16 +58,16 @@
         <value>Argument must be nonnegative.</value>
     </data>
     <data name="Exception_ParamIsNotConvertToDouble" xml:space="preserve">
-        <value>Argument "{0}" can't be converted to double.</value>
+        <value>Argument '{0}' can't be converted to double.</value>
     </data>
     <data name="Exception_ParamIsNotEnum" xml:space="preserve">
-        <value>The type "{0}" of the argument "{1}" must be enumerable.</value>
+        <value>The type '{0}' of the argument '{1}' must be enumerable.</value>
     </data>
     <data name="Exception_EnumTypeMismatchInParam" xml:space="preserve">
-        <value>Enumeration type mismatch. The flag is of type "{0}", was expecting "{1}".</value>
+        <value>Enumeration type mismatch. The flag is of type '{0}', was expecting '{1}'.</value>
     </data>
     <data name="Exception_SeekError" xml:space="preserve">
-        <value>Error when changing the pointer position in the stream {0}.</value>
+        <value>Error when changing the pointer position in the stream '{0}'.</value>
     </data>
     <data name="Exception_ArrayBoundsError" xml:space="preserve">
         <value>Output beyond the boundaries of the source array.</value>
@@ -82,7 +82,7 @@
         <value>The XML node is null.</value>
     </data>
     <data name="Exception_ParamIsNotConvertToEnum" xml:space="preserve">
-        <value>Argument "{0}" can't be converted to enumerable.</value>
+        <value>Argument '{0}' can't be converted to enumerable.</value>
     </data>
     <data name="Exception_ParamBoundsError" xml:space="preserve">
         <value>Argument out of range.</value>

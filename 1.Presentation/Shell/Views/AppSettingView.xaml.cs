@@ -1,5 +1,7 @@
 ﻿using System.Windows.Input;
-using AppDomain.Setting.Services;
+using AppDomain.AppUseCases._Contracts;
+using AppDomain.AppUseCases.Services;
+using Common.WpfModule.Ui.Services;
 using Common.WpfModule.Ui.Views;
 using Presentation.ViewModels;
 using Serilog;
@@ -22,10 +24,14 @@ public partial class AppSettingView : IViewWithResources
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public AppSettingView(ILogger logger, AppSettingService appSetting)
+    public AppSettingView(
+        ILogger logger,
+        IAppErrorMsgProvider appErrorMsgProvider,
+        AppSettingService appSettingService,
+        StatusBarService statusBarService)
     {
         InitializeComponent();
 
-        DataContext = new AppSettingVM(this, logger, appSetting);
+        DataContext = new AppSettingVM(this, logger, appErrorMsgProvider, appSettingService, statusBarService);
     }
 }

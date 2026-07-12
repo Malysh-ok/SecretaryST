@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AppDomain.AppAssets</RootNamespace>
+        <LangVersion>default</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="Strings\AppPhrases.resx">
+        <Generator>PublicResXFileCodeGenerator</Generator>
+        <LastGenOutput>AppPhrases.Designer.cs</LastGenOutput>
+        <CustomToolNamespace>AppDomain.AppAssets.Strings</CustomToolNamespace>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Strings\AppPhrases.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>AppPhrases.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\3.ProblemDomain\UseCases\UseCases.csproj" />
+      <ProjectReference Include="..\AppUseCases\AppUseCases.csproj" />
+    </ItemGroup>
+
+</Project>

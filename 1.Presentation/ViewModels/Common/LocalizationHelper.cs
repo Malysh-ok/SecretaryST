@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using System.Windows;
-using AppDomain.Setting.Entities;
-using AppDomain.Setting.Services;
+using AppDomain.AppEntities;
+using AppDomain.AppUseCases.Services;
 using Common.WpfModule.Ui.Views;
 
 namespace Presentation.ViewModels.Common;

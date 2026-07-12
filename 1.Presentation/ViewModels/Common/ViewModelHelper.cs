@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using AppDomain.AppExceptions;
-using AppDomain.Phrases;
+using AppDomain.AppUseCases._Contracts;
 using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions;
 using Common.WpfModule.Ui.Services;
@@ -12,7 +12,14 @@ namespace Presentation.ViewModels.Common;
 /// <summary>
 /// Общие методы для различных ViewModel.
 /// </summary>
-public class ViewModelHelper
+/// <param name="logger">Логгер.</param>
+/// <param name="statusBarService">Сервис статус-бара.</param>
+/// <param name="appErrorMsgProvider">Провайдер сообщений об ошибках доменного слоя.</param>
+// ReSharper disable once ClassNeverInstantiated.Global
+public class ViewModelHelper(
+    ILogger logger,
+    IAppErrorMsgProvider appErrorMsgProvider,
+    StatusBarService? statusBarService)
 {
     /// <summary>
     /// Обрабатывает исключение (если есть) и асинхронно запускает задачу,
@@ -20,18 +27,13 @@ public class ViewModelHelper
     /// </summary>
     /// <param name="exceptionsProvider">Провайдер с исключением и флагом фатальности.</param>
     /// <param name="taskFactory">Фабрика, создающая асинхронную задачу.</param>
-    /// <param name="statusBarService">Сервис статус-бара.</param>
-    /// <param name="logger">Логгер.</param>
     /// <remarks>
     /// Метод определяет имя вызывающего класса и метода через стек. При наличии исключения оно
     /// отображается в статус-баре и логируется. Если исключение отсутствует или не фатально,
     /// запускается задача, ошибки которой обрабатываются через ContinueWith.
     /// </remarks>
-    public static void HandleExceptionsProvider(
-            IExceptionsProvider exceptionsProvider, 
-            Func<Task> taskFactory,
-            StatusBarService statusBarService,
-            ILogger logger)
+    public void HandleExceptionsProvider(IExceptionsProvider exceptionsProvider,
+        Func<Task> taskFactory)
     {
         // Получаем имя вызывающего метода и его имя класса
         var frame = new StackFrame(1);  // вызывающий метод
@@ -42,10 +44,8 @@ public class ViewModelHelper
         // 1. Обработка синхронного исключения (если есть)
         if (exceptionsProvider.Exception is not null)
         {
-            _ = statusBarService.SetTextAsync(exceptionsProvider.Exception.Message, 
-                BaseException.ExcptnType.Error, 0);
-            logger.Error(exceptionsProvider.Exception, "{class}.{method}",
-                className, methodName);
+            // Пишем в статус-бар и лог об ошибке
+            HandleException(exceptionsProvider.Exception, className, methodName);
         }
         
         // 2. Если исключения нет или оно не фатально — запускаем асинхронную задачу
@@ -56,13 +56,35 @@ public class ViewModelHelper
             {
                 if (t.IsFaulted)
                 {
-                    var exception = new AppException(AppPhrases.UnknownError, t.Exception);
-                    _ = statusBarService.SetTextAsync(exception.Message, 
-                        BaseException.ExcptnType.Error, 0);
-                    logger.Error(exception, "{class}.{method}",
-                        className, methodName);
+                    // Пишем в статус-бар и лог об ошибке
+                    var exception = appErrorMsgProvider.CreateException(AppErrorCodes.UnknownError, t.Exception);
+                    HandleException(exception, className, methodName);
                 }
             }, TaskContinuationOptions.OnlyOnFaulted);
         }
+    }
+
+    /// <summary>
+    /// Обрабатывает исключение (если есть).
+    /// </summary>
+    /// <param name="exception">Исключение.</param>
+    /// <param name="callerClassName">Имя вызывающего класса.</param>
+    /// <param name="callerMethodName">Имя вызывающего метода.</param>
+    /// <remarks>
+    /// При наличии исключения оно отображается в статус-баре и логируется.
+    /// </remarks>
+    public void HandleException(Exception? exception,
+        string? callerClassName,
+        string? callerMethodName)
+    {
+        if (exception == null) 
+            return;
+        
+        // Пишем в статус-бар и лог об ошибке
+        logger.Error(exception, 
+            "{CallerClassName}.{CallerMethodName}", callerClassName, callerMethodName);
+        if (statusBarService != null)
+            _ = statusBarService.SetTextAsync(exception.Message,
+                BaseException.ExcptnType.Error, 0);
     }
 }

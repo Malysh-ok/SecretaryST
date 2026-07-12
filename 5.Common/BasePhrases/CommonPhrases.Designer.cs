@@ -105,7 +105,7 @@ namespace Common.BasePhrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enumeration type mismatch. The flag is of type &quot;{0}&quot;, was expecting &quot;{1}&quot;..
+        ///   Looks up a localized string similar to Enumeration type mismatch. The flag is of type &apos;{0}&apos;, was expecting &apos;{1}&apos;..
         /// </summary>
         public static string Exception_EnumTypeMismatchInParam {
             get {
@@ -123,7 +123,7 @@ namespace Common.BasePhrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The argument &quot;{0}&quot; contains an invalid character  &quot;{1}&quot;..
+        ///   Looks up a localized string similar to The argument &apos;{0}&apos; contains an invalid character  &apos;{1}&apos;..
         /// </summary>
         public static string Exception_InvalidCharInParam {
             get {
@@ -204,7 +204,7 @@ namespace Common.BasePhrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Argument &quot;{0}&quot; can&apos;t be converted to double..
+        ///   Looks up a localized string similar to Argument &apos;{0}&apos; can&apos;t be converted to double..
         /// </summary>
         public static string Exception_ParamIsNotConvertToDouble {
             get {
@@ -213,7 +213,7 @@ namespace Common.BasePhrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Argument &quot;{0}&quot; can&apos;t be converted to enumerable..
+        ///   Looks up a localized string similar to Argument &apos;{0}&apos; can&apos;t be converted to enumerable..
         /// </summary>
         public static string Exception_ParamIsNotConvertToEnum {
             get {
@@ -222,7 +222,7 @@ namespace Common.BasePhrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The type &quot;{0}&quot; of the argument &quot;{1}&quot; must be enumerable..
+        ///   Looks up a localized string similar to The type &apos;{0}&apos; of the argument &apos;{1}&apos; must be enumerable..
         /// </summary>
         public static string Exception_ParamIsNotEnum {
             get {
@@ -231,7 +231,7 @@ namespace Common.BasePhrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Argument &quot;{0}&quot; is not hexadecimal..
+        ///   Looks up a localized string similar to Argument &apos;{0}&apos; is not hexadecimal..
         /// </summary>
         public static string Exception_ParamIsNotHex {
             get {
@@ -240,7 +240,7 @@ namespace Common.BasePhrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Argument &quot;{0}&quot; is not a number..
+        ///   Looks up a localized string similar to Argument &apos;{0}&apos; is not a number..
         /// </summary>
         public static string Exception_ParamIsNotNumber {
             get {
@@ -249,7 +249,7 @@ namespace Common.BasePhrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Argument &quot;{0}&quot; must be &lt; {1}..
+        ///   Looks up a localized string similar to Argument &apos;{0}&apos; must be &lt; &apos;{1}&apos;..
         /// </summary>
         public static string Exception_ParamIsTooLong {
             get {
@@ -258,7 +258,7 @@ namespace Common.BasePhrases {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error when changing the pointer position in the stream {0}..
+        ///   Looks up a localized string similar to Error when changing the pointer position in the stream &apos;{0}&apos;..
         /// </summary>
         public static string Exception_SeekError {
             get {

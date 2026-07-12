@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AppDomain.AppUseCases</RootNamespace>
+        <LangVersion>default</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\3.ProblemDomain\ProblemExceptions\ProblemExceptions.csproj" />
+      <ProjectReference Include="..\..\5.Common\BaseComponents\BaseComponents.csproj" />
+      <ProjectReference Include="..\..\5.Common\WpfModule\Components\Components.csproj" />
+      <ProjectReference Include="..\AppEntities\AppEntities.csproj" />
+      <ProjectReference Include="..\AppExceptions\AppExceptions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
+    </ItemGroup>
+
+</Project>

@@ -2,8 +2,8 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
-using AppDomain.Setting.Services;
-using AppDomain.UseCases.Services;
+using AppDomain.AppUseCases._Contracts;
+using AppDomain.AppUseCases.Services;
 using Common.BaseExtensions;
 using Common.BaseExtensions.ValueTypes;
 using Common.WpfModule.Ui.Services;
@@ -12,6 +12,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Presentation.ViewModels._Contracts;
 using Presentation.ViewModels.Common.Messages;
 using Presentation.ViewModels.MainView;
+using ProblemDomain.UseCases.Services;
 using Serilog;
 
 namespace Presentation.Shell.Views;
@@ -34,9 +35,11 @@ public partial class MainView : IViewWithResources, IRecipient<OpenAppSettingMes
     /// </summary>
     private bool _shouldActivateChild;
 
-    private static ILogger _logger = null!;
-    private static AppSettingService _appSetting = null!;       // настройки приложения
-    
+    private readonly ILogger _logger;
+    private readonly StatusBarService _statusBarService;
+    private readonly AppSettingService _appSetting;
+    private readonly IAppErrorMsgProvider _appErrorMsgProvider;
+
     /// <summary>
     /// Представление (окно) настроек приложения.
     /// </summary>
@@ -48,7 +51,8 @@ public partial class MainView : IViewWithResources, IRecipient<OpenAppSettingMes
     /// </summary>
     public MainView(StatusBarService statusBarService,
         ILogger logger, 
-        IExceptionsProvider exceptionsProvider, 
+        IExceptionsProvider exceptionsProvider,
+        IAppErrorMsgProvider appErrorMsgProvider,
         AppSettingService appSetting,
         CompetitionDataService competitionDataService,
         RefereeService refereeService,
@@ -56,13 +60,15 @@ public partial class MainView : IViewWithResources, IRecipient<OpenAppSettingMes
 
     {
         _logger = logger;
+        _statusBarService = statusBarService;
         _appSetting = appSetting;
+        _appErrorMsgProvider = appErrorMsgProvider;
 
         InitializeComponent();
         
         // Получаем главную модель представления
-        var mainVm = MainVM.Create(this, statusBarService, logger, exceptionsProvider,
-            appSetting, competitionDataService, refereeService, sportEventService);
+        var mainVm = MainVM.Create(this, logger, exceptionsProvider, _appErrorMsgProvider,
+            appSetting, statusBarService, competitionDataService, refereeService, sportEventService);
         
         // Привязываем данные главной модели представления
         DataContext = mainVm;
@@ -89,7 +95,7 @@ public partial class MainView : IViewWithResources, IRecipient<OpenAppSettingMes
         _appSettingView?.Close();
 
         // Создаём новое окно, передаём ViewModel
-        _appSettingView = new AppSettingView(_logger, _appSetting);
+        _appSettingView = new AppSettingView(_logger, _appErrorMsgProvider, _appSetting, _statusBarService);
         
         // Вызываем универсальный метод открытия окна
         OpenChildWindow(_appSettingView,

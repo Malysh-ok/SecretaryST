@@ -1,7 +1,8 @@
 using System.Globalization;
-using AppDomain.Setting;
-using AppDomain.Setting.Entities;
-using AppDomain.Setting.Services;
+using AppDomain.AppAssets.Services;
+using AppDomain.AppEntities;
+using AppDomain.AppUseCases._Contracts;
+using Presentation.Shell.Common;
 
 namespace AppDomain.Tests;
 
@@ -20,8 +21,11 @@ public class SettingTests
     [Test]
     public void LocalizationTest()
     {
-        var appSetting = new AppSettingService();
-        var appLocalization = appSetting.AppLocalization;
+        IAppErrorMsgProvider appErrorMsgProvider = new DomainErrorMsgProvider();
+        var testAppInfo = ServiceFactory.CreateAppInfo("Test", new Version(1,0,0,0), DateTime.Now);
+        var appDirService = ServiceFactory.CreateAppDirService(appErrorMsgProvider);
+        var appSettingService = ServiceFactory.CreateAppSettingService(appErrorMsgProvider, appDirService, testAppInfo);
+        var appLocalization = appSettingService.AppLocalization;
 
         var lang1 = appLocalization.GetCurrentLang();
         var currLang = appLocalization.GetCurrentOrDefaultLang();

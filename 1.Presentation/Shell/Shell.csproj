@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>WinExe</OutputType>
+        <!--<OutputType>WinExe</OutputType>-->
+        <OutputType>Exe</OutputType>
         <Nullable>enable</Nullable>
         <UseWPF>true</UseWPF>
         <RootNamespace>Presentation.Shell</RootNamespace>
@@ -15,8 +16,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\2.AppDomain\Setting\Setting.csproj" />
-      <ProjectReference Include="..\..\2.AppDomain\UseCases\UseCases.csproj" />
+      <ProjectReference Include="..\..\2.AppDomain\AppEntities\AppEntities.csproj" />
+      <ProjectReference Include="..\..\2.AppDomain\AppUseCases\AppUseCases.csproj" />
+      <ProjectReference Include="..\..\4.DataAccess\DataAccessAssets\DataAccessAssets.csproj" />
       <ProjectReference Include="..\..\4.DataAccess\DbContexts\DbContexts.csproj" />
       <ProjectReference Include="..\..\4.DataAccess\Repositories\Repositories.csproj" />
       <ProjectReference Include="..\..\5.Common\BaseExtensions\BaseExtensions.csproj" />
@@ -25,6 +27,7 @@
       <ProjectReference Include="..\..\5.Common\WpfModule\Components\Components.csproj" />
       <ProjectReference Include="..\..\5.Common\WpfModule\Extensions\Extensions.csproj" />
       <ProjectReference Include="..\..\5.Common\WpfModule\Ui\Ui.csproj" />
+      <ProjectReference Include="..\DesignTime\DesignTime.csproj" />
       <ProjectReference Include="..\Resources\Resources.csproj" />
       <ProjectReference Include="..\ViewModels\ViewModels.csproj" />
     </ItemGroup>

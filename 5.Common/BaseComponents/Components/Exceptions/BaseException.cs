@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using Common.BaseExtensions;
@@ -9,8 +8,6 @@ namespace Common.BaseComponents.Components.Exceptions;
 /// <summary>
 /// Класс базового исключения.
 /// </summary>
-[SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
-[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public class BaseException : Exception
 {
     /// <summary>
@@ -42,10 +39,15 @@ public class BaseException : Exception
         : base(message, innerException)
     {
     }
-        
+
     /// <summary>
     /// Конструктор.
     /// </summary>
+    /// /// <remarks>
+    /// Подставляется либо сообщение об ошибке <see cref="localMessage" />
+    /// (если наименование текущей локализации равно <see cref="localLangName" />),
+    /// либо <see cref="message" /> (в противном случае).
+    /// </remarks>
     /// <param name="message">Сообщение об ошибке в текущей локализации,
     /// указывающее причину создания исключения.</param>
     /// <param name="innerException">Исключение, вызвавшее текущее исключение, или null.</param>
@@ -58,7 +60,6 @@ public class BaseException : Exception
     {
     }
 
-    
     /// <summary>
     /// Создает новый экземпляр исключения <see cref="BaseException" /> (фабричный метод).
     /// </summary>
@@ -73,18 +74,17 @@ public class BaseException : Exception
     /// <param name="localLangName">Наименование альтернативной локализации.</param>
     /// <param name="localMessage">Сообщение об ошибке в альтернативной локализации,
     /// указывающее причину создания исключения.</param>
-    public static BaseException CreateException(
+    public static BaseException Create(
         string? message = null, Exception? innerException = null,
         string? localLangName = null, string? localMessage = null)
         => new(message, innerException, localLangName, localMessage);
 
-    
-    /// <inheritdoc cref="CreateException(string, Exception, string, string)"/>
+    /// <inheritdoc cref="Create"/>
     /// <summary>
     /// Создает новый экземпляр исключения <see cref="TEx"/> (фабричный метод).
     /// Тип <see cref="TEx"/> должен быть в цепи предков-потомков класса <see cref="BaseException"/>.
     /// </summary>
-    public static TEx CreateException<TEx>(
+    public static TEx Create<TEx>(
         string? message = null, Exception? innerException = null,
         string? localLangName = null, string? localMessage = null) where TEx: Exception
     {
@@ -119,11 +119,11 @@ public class BaseException : Exception
             return (TEx)constructor.Invoke(null);
 
         // Ошибка
-        throw CreateException($"Unable to instantiate {typeof(TEx)}.", null,
+        throw Create($"Unable to instantiate {typeof(TEx)}.", null,
             "ru", $"Невозможно создать экземпляр {typeof(TEx)}.");
     }
 
-    
+
     #region [---------- НЕ публичные члены ----------]
 
     /// <summary>
@@ -145,17 +145,16 @@ public class BaseException : Exception
     /// </summary>
     /// <param name="resourceClassType">Тип класса ресурсов.</param>
     /// <param name="message">Сообщение.</param>
-    /// <param name="localLangName">Название локализации, к которой преобразукем сообщение.</param>
+    /// <param name="localLangName">Название локализации, к которой преобразуем сообщение.</param>
     protected static string? ConvertMessage(Type resourceClassType, string? message, string? localLangName)
     {
-        if (localLangName is null)
+        if (localLangName.IsNullOrEmpty() || ! localLangName.IsValidCulture())
             return message;
 
         string? messagePropName = null;
         string? cultureInfoPropName = null;
         const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Static;
 
-            
         var propertyInfos = resourceClassType.GetProperties(bindingFlags);
         foreach (var prop in propertyInfos)
         {
@@ -172,9 +171,9 @@ public class BaseException : Exception
 
         if (messagePropName is null || cultureInfoPropName is null)
             return message;
-            
+
         resourceClassType.GetProperty(cultureInfoPropName)?
-            .SetValue(cultureInfoPropName, CultureInfo.GetCultureInfo(localLangName));
+            .SetValue(cultureInfoPropName, CultureInfo.GetCultureInfo(localLangName!));
         var result = resourceClassType.GetProperty(messagePropName)?.GetValue(messagePropName) as string;
 
         return result;

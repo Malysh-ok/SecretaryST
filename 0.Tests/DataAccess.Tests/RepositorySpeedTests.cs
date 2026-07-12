@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using DataAccess.DataAccessAssets.Services;
 using DataAccess.DbContexts;
 using DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +35,8 @@ public class RepositorySpeedTests
         stopwatch.Start();
 
         var dbContext = new DbContextFactory().CreateDbContext([]);
-        var repository = new Repository<AppDbContext>(dbContext);
+        var dbErrorMsgProvider = new DataAccessErrorMsgProvider();
+        var repository = new Repository<AppDbContext>(dbContext, dbErrorMsgProvider);
 
         for (var i = 0; i < 10000; i++)
         {
@@ -48,22 +50,15 @@ public class RepositorySpeedTests
         // Резюме: Тест при количестве равным 10000 выполняется за 1.390 сек.
     }
 
-
-    private class AppDbContextFactory : IDbContextFactory<AppDbContext>
-    {
-        public AppDbContext CreateDbContext()
-        {
-            return new DbContextFactory().CreateDbContext([]);
-        }
-    }
-    
     [Test]
     public async Task UseDbContextFactoryTest()
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        var repository = new Repository<AppDbContext>(new AppDbContextFactory());
+        var dbContext = new DbContextFactory().CreateDbContext([]);
+        var dbErrorMsgProvider = new DataAccessErrorMsgProvider();
+        var repository = new Repository<AppDbContext>(dbContext,   dbErrorMsgProvider);
 
         for (var i = 0; i < 10000; i++)
         {
