@@ -3,6 +3,7 @@ using AppDomain.AppUseCases._Contracts;
 using AppDomain.AppUseCases.Services;
 using Common.WpfModule.Ui.Services;
 using Common.WpfModule.Ui.Views;
+using Common.WpfModule.Ui.Views._Contracts;
 using Presentation.ViewModels;
 using Serilog;
 
@@ -24,14 +25,8 @@ public partial class AppSettingView : IViewWithResources
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public AppSettingView(
-        ILogger logger,
-        IAppErrorMsgProvider appErrorMsgProvider,
-        AppSettingService appSettingService,
-        StatusBarService statusBarService)
+    public AppSettingView()
     {
         InitializeComponent();
-
-        DataContext = new AppSettingVM(this, logger, appErrorMsgProvider, appSettingService, statusBarService);
     }
 }

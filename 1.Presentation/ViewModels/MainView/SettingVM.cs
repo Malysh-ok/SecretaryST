@@ -12,7 +12,7 @@ using Common.BaseExtensions.Collections;
 using Common.WpfModule.Components.Collections;
 using Common.WpfModule.Components.Wrappers;
 using Common.WpfModule.Ui.Services;
-using Common.WpfModule.Ui.Views;
+using Common.WpfModule.Ui.Views._Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -44,11 +44,6 @@ public sealed class SettingVM : ObservableRecipient,
     private readonly SportEventService _sportEventService = null!;
     private readonly LocalizationHelper _localizationHelper = null!;
     private readonly ViewModelHelper _viewModelHelper = null!;
-
-    /// <summary>
-    /// Коллекция доступных языков.
-    /// </summary>
-    public ObservableCollection<Lang> Languages { get; } = null!;
 
     /// <summary>
     /// Текущая локализация.
@@ -145,7 +140,7 @@ public sealed class SettingVM : ObservableRecipient,
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 _localizationHelper.LocalizeView(_view, message.Lang);
-            }, DispatcherPriority.Background);
+            }, DispatcherPriority.Normal);
         
             // Дополнительные обновления данных
             await GetDisciplineGroupsAsync();

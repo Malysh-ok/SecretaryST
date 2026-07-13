@@ -23,11 +23,11 @@ namespace Presentation.ViewModels.MainView;
 // ReSharper disable once InconsistentNaming
 public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMessage>, IDisposable
 {
-    private readonly ILogger _logger = null!;
-    private readonly StatusBarService _statusBarService = null!;
-    private readonly AppSettingService _appSettingService = null!;
-    private readonly CompetitionDataService _competitionDataService = null!;
+    // ReSharper disable once NotAccessedField.Local
     private readonly IAppErrorMsgProvider _appErrorMsgProvider = null!;
+    private readonly AppSettingService _appSettingService = null!;
+    private readonly StatusBarService _statusBarService = null!;
+    private readonly CompetitionDataService _competitionDataService = null!;
     private readonly ViewModelHelper _viewModelHelper = null!;
 
     /// <summary>
@@ -49,7 +49,6 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
         StatusBarService statusBarService,
         CompetitionDataService competitionDataService)
     {
-        _logger = logger;
         _appErrorMsgProvider = appErrorMsgProvider;
         _appSettingService = appSettingService;
         _statusBarService = statusBarService;
@@ -93,6 +92,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     }
 
     /// <inheritdoc cref="Dispose"/>
+    // ReSharper disable once UnusedParameter.Local
     private void Dispose(bool disposing)
     {
     }

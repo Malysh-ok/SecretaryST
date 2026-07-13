@@ -18,10 +18,7 @@
       <ProjectReference Include="..\..\2.AppDomain\AppAssets\AppAssets.csproj" />
       <ProjectReference Include="..\..\2.AppDomain\AppEntities\AppEntities.csproj" />
       <ProjectReference Include="..\..\3.ProblemDomain\Entities\Entities.csproj" />
-      <ProjectReference Include="..\..\4.DataAccess\Repositories\Repositories.csproj" />
-      <ProjectReference Include="..\..\5.Common\WpfModule\Components\Components.csproj" />
       <ProjectReference Include="..\..\5.Common\WpfModule\Ui\Ui.csproj" />
-      <ProjectReference Include="..\Resources\Resources.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,4 +1,6 @@
-﻿namespace Presentation.ViewModels.Common.Messages;
+﻿using CommunityToolkit.Mvvm.Messaging;
+
+namespace Presentation.ViewModels.Common.Messages;
 
 /// <summary>
 /// Сообщение для открытия окна настроек приложения.

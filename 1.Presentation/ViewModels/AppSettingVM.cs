@@ -8,7 +8,7 @@ using AppDomain.AppExceptions;
 using AppDomain.AppUseCases._Contracts;
 using AppDomain.AppUseCases.Services;
 using Common.WpfModule.Ui.Services;
-using Common.WpfModule.Ui.Views;
+using Common.WpfModule.Ui.Views._Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Presentation.ViewModels.Common;
@@ -24,7 +24,6 @@ namespace Presentation.ViewModels;
 public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
 {
     private readonly IViewWithResources _view;
-    private readonly ILogger _logger;
     private readonly StatusBarService _statusBarService;
     private readonly AppSettingService _appSettingService;
     private readonly IAppErrorMsgProvider _appErrorMsgProvider;
@@ -81,7 +80,6 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
         StatusBarService statusBarService)
     {
         _view = view;
-        _logger = logger;
         _appErrorMsgProvider = appErrorMsgProvider;
         _appSettingService = appSettingService;
         _statusBarService = statusBarService;
@@ -129,7 +127,7 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
                     // в соответствии с предыдущим языком
                     localization.Translate(localization.SetCurrentLang(oldLang).GetCultureInfo());
                 }
-            }, DispatcherPriority.Background);
+            }, DispatcherPriority.Normal);
             
             // После завершения локализации обновляем культуру, UI, и фразы приложения
             var currLang = localization.GetCurrentOrDefaultLang();
@@ -146,9 +144,9 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
         }
         catch (Exception ex)
         {
-            // Пишем в и лог об ошибке
-            var exception =
-                _appErrorMsgProvider.CreateException(AppErrorCodes.LocalizingError, ex, this.GetType().Name);
+            // Пишем в статус-бар и лог об ошибке
+            var exception = _appErrorMsgProvider.CreateException(AppErrorCodes.LocalizingError, ex, this.GetType().Name);
+            
             _viewModelHelper.HandleException(exception, this.ToString(), nameof(Receive));
         }
     }

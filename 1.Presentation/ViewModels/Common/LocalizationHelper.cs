@@ -2,7 +2,7 @@
 using System.Windows;
 using AppDomain.AppEntities;
 using AppDomain.AppUseCases.Services;
-using Common.WpfModule.Ui.Views;
+using Common.WpfModule.Ui.Views._Contracts;
 
 namespace Presentation.ViewModels.Common;
 

@@ -2,15 +2,12 @@
 using System.Windows.Media;
 using AppDomain.AppExceptions;
 using AppDomain.AppUseCases._Contracts;
-using AppDomain.AppUseCases.Services;
 using Common.BaseComponents.Components.Exceptions;
 using Common.WpfModule.Ui.Services;
-using Common.WpfModule.Ui.Views;
+using Common.WpfModule.Ui.Views._Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Presentation.ViewModels._Contracts;
-using ProblemDomain.UseCases.Services;
-using Serilog;
+
 // ReSharper disable InconsistentNaming
 
 namespace Presentation.ViewModels.MainView;
@@ -21,25 +18,37 @@ namespace Presentation.ViewModels.MainView;
 public sealed class MainVM : ObservableRecipient, IDisposable
 {
     /// <summary>
-    /// Логгер.
-    /// </summary>
-    // ReSharper disable once NotAccessedField.Local
-    private ILogger _logger = null!;
-
-    /// <summary>
     /// Провайдер сообщений об ошибках предметной области приложения.
     /// </summary>
     private readonly IAppErrorMsgProvider _appErrorMsgProvider = null!;
 
     /// <summary>
-    /// Модель представления Backstage.
+    /// Фабрика создания представления <see cref="SettingVM"/>.
     /// </summary>
-    public BackstageVM BackstageVM { get; } = null!;
+    private readonly Func<IViewWithResources, SettingVM> _settingVmFactory = null!;
+    
+    /// <summary>
+    /// Фабрика создания представления <see cref="BackstageVM"/>.
+    /// </summary>
+    private readonly Func<BackstageVM> _backstageVmFactory = null!;
 
     /// <summary>
     /// Модель представления настроек.
     /// </summary>
-    public SettingVM SettingVM { get; } = null!;
+    public SettingVM SettingVM
+    {
+        get;
+        set => SetProperty(ref field, value);
+    } = null!;
+
+    /// <summary>
+    /// Модель представления Backstage.
+    /// </summary>
+    public BackstageVM BackstageVM
+    {
+        get;
+        set => SetProperty(ref field, value);
+    } = null!;
 
     /// <summary>
     /// Сервис статус-бара.
@@ -60,54 +69,39 @@ public sealed class MainVM : ObservableRecipient, IDisposable
     /// <summary>
     /// Конструктор.
     /// </summary>
-    private MainVM(ILogger logger, IAppErrorMsgProvider appErrorMsgProvider,
-            StatusBarService statusBarService, BackstageVM backstageVm, SettingVM settingVm 
-        )
+    public MainVM(
+        Func<IViewWithResources, SettingVM> settingVmFactory,
+        Func<BackstageVM> backstageVmFactory, 
+        IAppErrorMsgProvider appErrorMsgProvider,
+        StatusBarService statusBarService)
     {
-        BackstageVM = backstageVm;
-        SettingVM = settingVm;
-        _statusBarService = statusBarService;
-        _logger = logger;
+        _settingVmFactory = settingVmFactory;
+        _backstageVmFactory = backstageVmFactory;
         _appErrorMsgProvider = appErrorMsgProvider;
+        _statusBarService = statusBarService;
 
         PinkCommand = new AsyncRelayCommand(OnPink);
+        
+        // TODO: Устанавливаем цвет кистей статус-бара (возможно изменим)
+        _statusBarService.ReSetBrushes(Brushes.Azure, Brushes.Azure,
+            // new SolidColorBrush(Color.FromRgb(0xE6, 0x5C, 0x00)));
+            Brushes.LightSalmon);
     }
 
     /// <summary>
-    /// Создание экземпляра класса (фабричный метод).
+    /// Инициализирует главную модель представления, создавая дочерние ViewModel.
     /// </summary>
-    /// <param name="view">Представление, реализующее ресурсы.</param>
-    /// <param name="statusBarService">Сервис статус-бара.</param>
-    /// <param name="logger">Логгер.</param>
-    /// <param name="appSettingService">Настройки приложения.</param>
-    /// <param name="exceptionsProvider">Поставщик исключения.</param>
-    /// <param name="competitionDataService">Сервис для работы с соревнованиями.</param>
-    /// <param name="refereeService">Сервис для работы с судьями.</param>
-    /// <param name="sportEventService">Сервис для работы с видами программы.</param>
-    /// <param name="appErrorMsgProvider">Провайдер сообщений об ошибках слоя приложения.</param>
-    public static MainVM Create(IViewWithResources view, 
-        ILogger logger, 
-        IExceptionsProvider exceptionsProvider,
-        IAppErrorMsgProvider appErrorMsgProvider,
-        AppSettingService appSettingService,
-        StatusBarService statusBarService,
-        CompetitionDataService competitionDataService,
-        RefereeService refereeService,
-        SportEventService sportEventService)
+    /// <remarks>
+    /// Метод должен быть вызван после создания экземпляра <see cref="MainVM"/>
+    /// и до отображения главного окна.
+    /// </remarks>
+    /// <param name="view">Главное представление, реализующее <see cref="IViewWithResources"/>,
+    /// которое передаётся дочерним ViewModel для локализации.</param>
+    public void Initialize(IViewWithResources view)
     {
-        // TODO: Устанавливаем цвет кистей статус-бара (возможно изменим)
-        statusBarService.ReSetBrushes(Brushes.Azure, Brushes.Azure,
-            // new SolidColorBrush(Color.FromRgb(0xE6, 0x5C, 0x00)));
-            Brushes.LightSalmon);
-
-        // Создаем ViewModel's. Последовательность создания важна!
-        var settingVM = new SettingVM(view, logger, exceptionsProvider, appErrorMsgProvider, appSettingService,
-            statusBarService, competitionDataService, refereeService, sportEventService);
-        var backstageVM = new BackstageVM(logger, exceptionsProvider, appErrorMsgProvider, 
-            appSettingService, statusBarService, competitionDataService);
-        var mainVM = new MainVM(logger, appErrorMsgProvider, statusBarService, backstageVM, settingVM);
-
-        return mainVM;
+        // Последовательность создания важна!
+        SettingVM = _settingVmFactory(view);
+        BackstageVM = _backstageVmFactory();
     }
     
     /// <summary>

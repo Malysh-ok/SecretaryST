@@ -9,6 +9,9 @@ using AppDomain.AppUseCases._Contracts;
 using AppDomain.AppUseCases.Services;
 using Common.BaseExtensions;
 using Common.WpfModule.Ui.Services;
+using Common.WpfModule.Ui.Services._Contracts;
+using Common.WpfModule.Ui.Views;
+using Common.WpfModule.Ui.Views._Contracts;
 using DataAccess.DataAccessAssets.Services;
 using DataAccess.DataAccessExceptions;
 using DataAccess.DbContexts;
@@ -16,9 +19,12 @@ using DataAccess.DbContexts.DbConfigure;
 using DataAccess.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Presentation.Shell.Common;
+using Presentation.Shell.Services;
 using Presentation.Shell.Views;
+using Presentation.ViewModels;
 using Presentation.ViewModels._Contracts;
 using Presentation.ViewModels.Common;
+using Presentation.ViewModels.MainView;
 using ProblemDomain.UseCases.Services;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -48,10 +54,6 @@ public partial class App
     private static void ConfigureServices(IServiceCollection services)
     {
         services
-            // Регистрируем сервисы Presentation
-            .AddSingleton<MainView>()                                           // регистрируем главное представление
-            .AddSingleton<IExceptionsProvider, ExceptionsProvider>()
-            
             // Регистрируем сервисы предметной области приложения (AppDomain)
             .AddSingleton(ServiceFactory.CreateAppInfoFromAssembly())           // регистрируем AppInfo
             .AddSingleton<IAppErrorMsgProvider, DomainErrorMsgProvider>()       // регистрируем провайдер сообщений об ошибках
@@ -67,13 +69,14 @@ public partial class App
                 var appInfo = sp.GetRequiredService<AppInfo>();
                 return ServiceFactory.CreateAppSettingService(provider, appDir, appInfo);
             })                                                                  // регистрируем сервис настроек приложения
-            
+
             // Регистрируем сервисы предметной области (ProblemDomain)
             .AddScoped<CompetitionDataService>()
             .AddScoped<RefereeService>()
             .AddScoped<SportEventService>()
-            .AddSingleton<IProblemErrorMsgProvider, DomainErrorMsgProvider>()   // регистрируем провайдер сообщений об ошибках
-            
+            .AddSingleton<IProblemErrorMsgProvider,
+                DomainErrorMsgProvider>()                                       // регистрируем провайдер сообщений об ошибках
+
             // Регистрируем сервисы слоя доступа к данным (DataAccess)
             .AddScoped<DbConfigurator>(sp =>
             {
@@ -88,7 +91,7 @@ public partial class App
             .AddScoped<IRepository, Repository<AppDbContext>>()                 // регистрируем репозиторий
             .AddTransient<IRepositoryHelper, RepositoryHelper>()                // регистрируем "помощник" репозитория
             .AddSingleton<DataAccessErrorMsgProvider>()                         // регистрируем провайдер сообщений об ошибках
-            
+
             // Регистрируем общие сервисы (Common)
             .AddSingleton<ILogger>(sp =>
             {
@@ -105,6 +108,19 @@ public partial class App
                        .CreateLogger();
             })                                                                  // регистрируем логгер
             .AddSingleton<StatusBarService>()                                   // регистрируем сервис статус-бара
+
+            // Регистрируем сервисы Presentation
+            .AddSingleton<IExceptionsProvider, ExceptionsProvider>()            // регистрируем поставщика исключений
+            .AddSingleton<Func<IViewWithResources, SettingVM>>(sp => view =>
+                ServiceFactory.CreateSettingVM(sp, view))                       // регистрируем фабрику для создания SettingVM
+            .AddSingleton<Func<BackstageVM>>(sp => () =>
+                ServiceFactory.CreateBackstageVM(sp))                           // регистрируем фабрику для создания BackstageVM
+            .AddSingleton<MainVM>()                                             // регистрируем главную ViewModel для главного представления
+            .AddTransient<AppSettingVM>()
+            
+            .AddSingleton<IViewService, ViewService>()
+            .AddSingleton<MainView>()                                           // регистрируем главное представление
+            .AddTransient<AppSettingView>()
             ;
     }
 
@@ -118,6 +134,8 @@ public partial class App
         var domainErrorMsgProvider = _serviceProvider.GetRequiredService<IAppErrorMsgProvider>();
         try
         {
+            ViewModelLocator.Initialize(_serviceProvider);      // Инициализация ViewModelLocator
+            
             var appSettingService = _serviceProvider.GetService<AppSettingService>();
             
             // Берем название языка из настроек и устанавливаем язык культуры и фраз
@@ -171,8 +189,14 @@ public partial class App
         }
         finally
         {
-            // Получаем главное представление (окно) и показываем его
+            // Получаем главное представление (окно)
             var mainView = _serviceProvider.GetRequiredService<MainView>();
+            
+            // Получаем главную ViewModel и инициализируем
+            var mainViewModel = _serviceProvider.GetRequiredService<MainVM>();
+            mainViewModel.Initialize(mainView);
+            
+            // Показываем главное представление
             mainView.Show();
         }
     }

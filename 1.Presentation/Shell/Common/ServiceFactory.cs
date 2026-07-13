@@ -2,7 +2,12 @@
 using AppDomain.AppEntities;
 using AppDomain.AppUseCases._Contracts;
 using AppDomain.AppUseCases.Services;
+using Common.WpfModule.Ui.Views;
+using Common.WpfModule.Ui.Views._Contracts;
 using DataAccess.DbContexts.DbConfigure;
+using Microsoft.Extensions.DependencyInjection;
+using Presentation.ViewModels.MainView;
+// ReSharper disable InconsistentNaming
 
 namespace Presentation.Shell.Common;
 
@@ -10,8 +15,7 @@ namespace Presentation.Shell.Common;
 /// Фабрика для создания сервисов приложения, используемых как в рантайме, так и в дизайн-тайме (миграции).
 /// </summary>
 /// <remarks>
-/// Предоставляет методы для создания экземпляров <see cref="AppDirService"/>, <see cref="AppSettingService"/>
-/// и <see cref="DbConfigurator"/> с единой логикой.
+/// Предоставляет методы для создания экземпляров с единой логикой.
 /// </remarks>
 public static class ServiceFactory
 {
@@ -61,4 +65,30 @@ public static class ServiceFactory
     /// <returns>Сконфигурированный <see cref="DbConfigurator"/>.</returns>
     public static DbConfigurator CreateDbConfigurator(AppDirService appDirService)
         => new(appDirService.SettingFilePath, appDirService.AbsoluteDatabasePath);
+    
+    /// <summary>
+    /// Создаёт экземпляр <see cref="SettingVM"/> с использованием DI-контейнера.
+    /// </summary>
+    /// <param name="sp">Провайдер сервисов для разрешения зависимостей.</param>
+    /// <param name="view">Представление, реализующее <see cref="IViewWithResources"/>.</param>
+    /// <returns>Сконфигурированный экземпляр <see cref="SettingVM"/>.</returns>
+    /// <remarks>
+    /// Использует <see cref="ActivatorUtilities.CreateInstance{T}(IServiceProvider, object[])"/>,
+    /// что позволяет автоматически разрешать все зарегистрированные зависимости
+    /// и передавать дополнительные параметры (например, <paramref name="view"/>).
+    /// </remarks>
+    public static SettingVM CreateSettingVM(IServiceProvider sp, IViewWithResources view)
+        => ActivatorUtilities.CreateInstance<SettingVM>(sp, view);
+
+    /// <summary>
+    /// Создаёт экземпляр <see cref="BackstageVM"/> с использованием DI-контейнера.
+    /// </summary>
+    /// <param name="sp">Провайдер сервисов для разрешения зависимостей.</param>
+    /// <returns>Сконфигурированный экземпляр <see cref="BackstageVM"/>.</returns>
+    /// <remarks>
+    /// Аналогично <see cref="CreateSettingVM"/>, но без дополнительных параметров.
+    /// Все зависимости разрешаются автоматически из <paramref name="sp"/>.
+    /// </remarks>
+    public static BackstageVM CreateBackstageVM(IServiceProvider sp)
+        => ActivatorUtilities.CreateInstance<BackstageVM>(sp);
 }
