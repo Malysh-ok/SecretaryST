@@ -1,10 +1,9 @@
 using DataAccess.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Presentation.Shell.Common;
 using Presentation.DesignTime.Services;
 
-namespace Presentation.Shell;
+namespace Presentation.Shell.Infrastructure;
 
 /// <summary>
 /// Фабрика создания контекста БД (используется EF при создании миграций).

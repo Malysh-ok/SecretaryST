@@ -1,4 +1,4 @@
-﻿namespace Presentation.ViewModels._Contracts;
+﻿namespace Presentation.ViewModels.Shared.Infrastructure._Contracts;
 
 /// <summary>
 /// Интерфейс поставщика исключения.

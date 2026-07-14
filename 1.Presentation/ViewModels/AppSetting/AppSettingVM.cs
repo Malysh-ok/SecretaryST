@@ -11,11 +11,11 @@ using Common.WpfModule.Ui.Services;
 using Common.WpfModule.Ui.Views._Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Presentation.ViewModels.Common;
-using Presentation.ViewModels.Common.Messages;
+using Presentation.ViewModels.Shared.Infrastructure;
+using Presentation.ViewModels.Shared.Messages;
 using Serilog;
 
-namespace Presentation.ViewModels;
+namespace Presentation.ViewModels.AppSetting;
 
 /// <summary>
 /// ViewModel для представления с настройками приложения.
@@ -24,7 +24,6 @@ namespace Presentation.ViewModels;
 public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
 {
     private readonly IViewWithResources _view;
-    private readonly StatusBarService _statusBarService;
     private readonly AppSettingService _appSettingService;
     private readonly IAppErrorMsgProvider _appErrorMsgProvider;
     private readonly LocalizationHelper _localizationHelper;
@@ -82,7 +81,6 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
         _view = view;
         _appErrorMsgProvider = appErrorMsgProvider;
         _appSettingService = appSettingService;
-        _statusBarService = statusBarService;
         _localizationHelper = new LocalizationHelper(appSettingService);
         _viewModelHelper = new ViewModelHelper(logger, appErrorMsgProvider, statusBarService);
 

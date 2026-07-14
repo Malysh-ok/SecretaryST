@@ -1,6 +1,6 @@
-﻿using Presentation.ViewModels._Contracts;
+﻿using Presentation.ViewModels.Shared.Infrastructure._Contracts;
 
-namespace Presentation.ViewModels.Common;
+namespace Presentation.ViewModels.Shared.Infrastructure;
 
 /// <summary>
 /// Поставщик исключения.

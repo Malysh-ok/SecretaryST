@@ -4,10 +4,10 @@ using AppDomain.AppUseCases._Contracts;
 using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions;
 using Common.WpfModule.Ui.Services;
-using Presentation.ViewModels._Contracts;
+using Presentation.ViewModels.Shared.Infrastructure._Contracts;
 using Serilog;
 
-namespace Presentation.ViewModels.Common;
+namespace Presentation.ViewModels.Shared.Infrastructure;
 
 /// <summary>
 /// Общие методы для различных ViewModel.

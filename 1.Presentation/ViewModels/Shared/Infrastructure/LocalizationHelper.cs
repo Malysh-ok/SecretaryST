@@ -4,7 +4,7 @@ using AppDomain.AppEntities;
 using AppDomain.AppUseCases.Services;
 using Common.WpfModule.Ui.Views._Contracts;
 
-namespace Presentation.ViewModels.Common;
+namespace Presentation.ViewModels.Shared.Infrastructure;
 
 /// <summary>
 /// Помощник локализации представлений.

@@ -5,9 +5,9 @@
         mc:Ignorable="d">
 
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="/Resources;component/Styles/DefaultColorsAndBrushes.xaml" />
-        <ResourceDictionary Source="/Resources;component/Styles/FluentRibbon.xaml" />
-        <ResourceDictionary Source="/Resources;component/Styles/MainContent.xaml" />
+        <ResourceDictionary Source="/Resources/Styles/DefaultColorsAndBrushes.xaml" />
+        <ResourceDictionary Source="/Resources/Styles/FluentRibbon.xaml" />
+        <ResourceDictionary Source="/Resources/Styles/MainContent.xaml" />
     </ResourceDictionary.MergedDictionaries>
     
 </ResourceDictionary>

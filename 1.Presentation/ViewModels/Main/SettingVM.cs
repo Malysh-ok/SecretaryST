@@ -16,17 +16,17 @@ using Common.WpfModule.Ui.Views._Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Presentation.ViewModels._Contracts;
-using Presentation.ViewModels.Common;
-using Presentation.ViewModels.Common.Messages;
-using Presentation.ViewModels.Common.Observables;
+using Presentation.ViewModels.Shared.Infrastructure;
+using Presentation.ViewModels.Shared.Infrastructure._Contracts;
+using Presentation.ViewModels.Shared.Messages;
+using Presentation.ViewModels.Shared.Models;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 using ProblemDomain.UseCases.Services;
 using Serilog;
 
-namespace Presentation.ViewModels.MainView;
+namespace Presentation.ViewModels.Main;
 
 /// <summary>
 /// ViewModel для меню ленты "Настройки".

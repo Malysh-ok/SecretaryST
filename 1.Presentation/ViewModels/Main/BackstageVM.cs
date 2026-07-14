@@ -8,14 +8,14 @@ using Common.WpfModule.Ui.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Presentation.ViewModels._Contracts;
-using Presentation.ViewModels.Common;
-using Presentation.ViewModels.Common.Messages;
+using Presentation.ViewModels.Shared.Infrastructure;
+using Presentation.ViewModels.Shared.Infrastructure._Contracts;
+using Presentation.ViewModels.Shared.Messages;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.UseCases.Services;
 using Serilog;
 
-namespace Presentation.ViewModels.MainView;
+namespace Presentation.ViewModels.Main;
 
 /// <summary>
 /// ViewModel для специфичного меню "File" (для Backstage).

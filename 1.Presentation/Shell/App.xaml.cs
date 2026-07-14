@@ -18,19 +18,18 @@ using DataAccess.DbContexts;
 using DataAccess.DbContexts.DbConfigure;
 using DataAccess.Repositories;
 using Microsoft.Extensions.DependencyInjection;
-using Presentation.Shell.Common;
-using Presentation.Shell.Services;
-using Presentation.Shell.Views;
+using Presentation.Shell.Infrastructure.Views;
 using Presentation.ViewModels;
-using Presentation.ViewModels._Contracts;
-using Presentation.ViewModels.Common;
-using Presentation.ViewModels.MainView;
+using Presentation.ViewModels.AppSetting;
+using Presentation.ViewModels.Main;
+using Presentation.ViewModels.Shared.Infrastructure;
+using Presentation.ViewModels.Shared.Infrastructure._Contracts;
 using ProblemDomain.UseCases.Services;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 using ProblemDomain.UseCases._Contracts;
 
-namespace Presentation.Shell;
+namespace Presentation.Shell.Infrastructure;
 
 /// <summary>
 /// Interaction logic for App.xaml

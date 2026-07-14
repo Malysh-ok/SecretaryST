@@ -1,9 +1,8 @@
-<UserControl x:Class="Presentation.Shell.UserControls.SettingControl"
+<UserControl x:Class="Presentation.Shell.Views.UserControls.SettingControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mainView="clr-namespace:Presentation.ViewModels.MainView;assembly=ViewModels"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:converters="clr-namespace:Common.WpfModule.Ui.Converters;assembly=Ui"
              xmlns:dataGrids="clr-namespace:Common.WpfModule.Ui.Behaviors.DataGrids;assembly=Ui"
@@ -11,7 +10,8 @@
              xmlns:controls="clr-namespace:Common.WpfModule.Ui.Controls;assembly=Ui"
              xmlns:markups="clr-namespace:Common.WpfModule.Ui.Markups;assembly=Ui"
              xmlns:attachedProperties="clr-namespace:Common.WpfModule.Ui.AttachedProperties;assembly=Ui"
-             d:DataContext="{d:DesignInstance mainView:SettingVM}"
+             xmlns:main="clr-namespace:Presentation.ViewModels.Main;assembly=ViewModels"
+             d:DataContext="{d:DesignInstance main:SettingVM}"
              mc:Ignorable="d" >
     <UserControl.Resources>
         <converters:RowIndexConverter x:Key="RowIndexConverter" />

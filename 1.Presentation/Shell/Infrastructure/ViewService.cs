@@ -4,7 +4,7 @@ using Common.WpfModule.Ui.Services._Contracts;
 using Common.WpfModule.Ui.Views._Contracts;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Presentation.Shell.Services
+namespace Presentation.Shell.Infrastructure
 {
     /// <summary>
     /// Реализация сервиса управления представлениями с поддержкой фокуса и активации.

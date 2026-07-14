@@ -2,14 +2,14 @@
 using AppDomain.AppEntities;
 using AppDomain.AppUseCases._Contracts;
 using AppDomain.AppUseCases.Services;
-using Common.WpfModule.Ui.Views;
 using Common.WpfModule.Ui.Views._Contracts;
 using DataAccess.DbContexts.DbConfigure;
 using Microsoft.Extensions.DependencyInjection;
-using Presentation.ViewModels.MainView;
+using Presentation.ViewModels.Main;
+
 // ReSharper disable InconsistentNaming
 
-namespace Presentation.Shell.Common;
+namespace Presentation.Shell.Infrastructure;
 
 /// <summary>
 /// Фабрика для создания сервисов приложения, используемых как в рантайме, так и в дизайн-тайме (миграции).

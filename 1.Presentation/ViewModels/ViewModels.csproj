@@ -21,4 +21,8 @@
       <ProjectReference Include="..\..\5.Common\WpfModule\Ui\Ui.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Shared\Utilities\" />
+    </ItemGroup>
+
 </Project>

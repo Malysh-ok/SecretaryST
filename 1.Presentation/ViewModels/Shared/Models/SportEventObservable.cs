@@ -7,7 +7,7 @@ using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 using ProblemDomain.UseCases.Services;
 
-namespace Presentation.ViewModels.Common.Observables;
+namespace Presentation.ViewModels.Shared.Models;
 
 /// <summary>
 /// ObservableObject, инкапсулирующий свойства и методы для работы со <see cref="SportEvent"/>.

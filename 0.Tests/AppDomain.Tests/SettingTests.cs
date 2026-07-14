@@ -2,7 +2,7 @@ using System.Globalization;
 using AppDomain.AppAssets.Services;
 using AppDomain.AppEntities;
 using AppDomain.AppUseCases._Contracts;
-using Presentation.Shell.Common;
+using Presentation.Shell.Infrastructure;
 
 namespace AppDomain.Tests;
 

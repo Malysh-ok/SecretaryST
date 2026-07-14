@@ -7,7 +7,7 @@ using Common.WpfModule.Ui.Views._Contracts;
 using Presentation.ViewModels;
 using Serilog;
 
-namespace Presentation.Shell.Views;
+namespace Presentation.Shell.Infrastructure.Views;
 
 /// <summary>
 /// Представление (окно) с настройками приложения.

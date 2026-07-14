@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Presentation.ViewModels.MainView;
+using Presentation.ViewModels.AppSetting;
+using Presentation.ViewModels.Main;
 
-namespace Presentation.ViewModels.Common;
+namespace Presentation.ViewModels.Shared.Infrastructure;
 
 /// <summary>
 /// Обеспечивает доступ к ViewModel через DI-контейнер для привязки из XAML.

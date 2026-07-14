@@ -1,8 +1,7 @@
-﻿<Application x:Class="Presentation.Shell.App"
+﻿<Application x:Class="Presentation.Shell.Infrastructure.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:system="clr-namespace:System;assembly=mscorlib"
-             xmlns:common="clr-namespace:Presentation.ViewModels.Common;assembly=ViewModels"
+             xmlns:infrastructure="clr-namespace:Presentation.ViewModels.Shared.Infrastructure;assembly=ViewModels"
              Startup="OnStartup"
              >
     <Application.Resources>
@@ -10,7 +9,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- Словарь локализации (указывать обязательно! -->
                 <!-- по данному ресурсу осуществляется поиск других словарей) -->
-                <ResourceDictionary  Source="/Resources;component/Languages/lang.xaml" /> 
+                <ResourceDictionary  Source="/Resources/Languages/lang.xaml" /> 
 
                 
                 <!-- Настройка Fluent.Ribbon -->
@@ -19,16 +18,16 @@
                 <!-- <ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Themes/Dark.Steel.xaml" /> -->
                 
                 <!-- Векторные иконки -->
-                <ResourceDictionary  Source="/Resources;component/Controls/Icons.xaml" />
+                <ResourceDictionary  Source="/Resources/Controls/Icons.xaml" />
                 
                 <!-- Стили -->
-                <ResourceDictionary Source="/Resources;component/Styles/DefaultStyles.xaml" />
+                <ResourceDictionary Source="/Resources/Styles/DefaultStyles.xaml" />
                 <ResourceDictionary Source="/CommonResources;component/Styles/DefaultStyles.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
             
             <!-- Регистрируем локатор ViewModel's -->
-            <common:ViewModelLocator x:Key="Locator" />
+            <infrastructure:ViewModelLocator x:Key="Locator" />
             
         </ResourceDictionary>
     </Application.Resources>

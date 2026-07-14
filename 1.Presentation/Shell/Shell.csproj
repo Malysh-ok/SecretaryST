@@ -10,7 +10,7 @@
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
         <FileVersion>2.0.0.0</FileVersion>
         <Company>@ Malysh S. V.</Company>
-        <ApplicationIcon>..\Resources\Images\Человек на навеске.ico</ApplicationIcon>
+        <ApplicationIcon>Resources\Images\Человек на навеске.ico</ApplicationIcon>
         <TargetFramework>net10.0-windows</TargetFramework>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
@@ -28,7 +28,6 @@
       <ProjectReference Include="..\..\5.Common\WpfModule\Extensions\Extensions.csproj" />
       <ProjectReference Include="..\..\5.Common\WpfModule\Ui\Ui.csproj" />
       <ProjectReference Include="..\DesignTime\DesignTime.csproj" />
-      <ProjectReference Include="..\Resources\Resources.csproj" />
       <ProjectReference Include="..\ViewModels\ViewModels.csproj" />
     </ItemGroup>
 
@@ -37,6 +36,30 @@
         <Generator>MSBuild:Compile</Generator>
         <XamlRuntime>Wpf</XamlRuntime>
         <SubType>Designer</SubType>
+      </Page>
+      <Page Update="Views\UserControls\SettingControl.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+      <Page Update="Resources\Controls\Icons.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+      <Page Update="Resources\Languages\lang.ru.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+      <Page Update="Resources\Languages\lang.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+      <Page Update="Resources\Styles\DefaultColorsAndBrushes.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+      <Page Update="Resources\Styles\DefaultStyles.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+      <Page Update="Resources\Styles\FluentRibbon.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+      <Page Update="Resources\Styles\MainContent.xaml">
+        <Generator>MSBuild:Compile</Generator>
       </Page>
     </ItemGroup>
 
@@ -71,9 +94,8 @@
         </ContentWithTargetPath>
 -->
     </ItemGroup>
-    
     <ItemGroup>
-      <None Remove="appsettings.json" />
+      <Folder Include="Resources\" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">

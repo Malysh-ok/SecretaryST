@@ -1,6 +1,6 @@
 using System.Windows.Controls;
 
-namespace Presentation.Shell.UserControls;
+namespace Presentation.Shell.Views.UserControls;
 
 public partial class SettingControl : UserControl
 {

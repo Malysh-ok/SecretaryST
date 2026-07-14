@@ -10,7 +10,7 @@ using CommunityToolkit.Mvvm.Input;
 
 // ReSharper disable InconsistentNaming
 
-namespace Presentation.ViewModels.MainView;
+namespace Presentation.ViewModels.Main;
 
 /// <summary>
 /// ViewModel для основного представления.

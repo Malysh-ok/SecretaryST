@@ -9,10 +9,11 @@ using Common.WpfModule.Ui.Services._Contracts;
 using Common.WpfModule.Ui.Views._Contracts;
 using CommunityToolkit.Mvvm.Messaging;
 using Presentation.ViewModels;
-using Presentation.ViewModels.Common.Messages;
-using Presentation.ViewModels.MainView;
+using Presentation.ViewModels.AppSetting;
+using Presentation.ViewModels.Main;
+using Presentation.ViewModels.Shared.Messages;
 
-namespace Presentation.Shell.Views;
+namespace Presentation.Shell.Infrastructure.Views;
 
 /// <summary>
 /// Основное представление (окно).
