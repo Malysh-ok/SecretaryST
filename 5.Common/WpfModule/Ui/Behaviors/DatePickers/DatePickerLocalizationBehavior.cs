@@ -47,7 +47,7 @@ public class DatePickerLocalizationBehavior : Behavior<DatePicker>
     protected override void OnAttached()
     {
         base.OnAttached();
-        // Инициализация языка при присоединении, если LanguageCode уже задан
+        // Инициализация языка при присоединении, если LanguageTag уже задан
         if (!string.IsNullOrEmpty(LanguageTag))
         {
             ApplyLanguage(LanguageTag);

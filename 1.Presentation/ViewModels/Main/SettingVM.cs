@@ -51,16 +51,7 @@ public sealed class SettingVM : ObservableRecipient,
     public Lang? CurrLang
     {
         get;
-        set
-        {
-            var oldLang = field;
-            if (SetProperty(ref field, value))
-            {
-                // Оповещаем все представления (окна) приложения о смене локализации
-                // TODO: Доработать!!! Не локализуется DatePicker.
-                Messenger.Send(new LocalizationMessage(value ?? _appSettingService.AppLocalization.GetDefaultLang(), oldLang));
-            }
-        }
+        private set => SetProperty(ref field, value);
     }
 
 
@@ -125,6 +116,9 @@ public sealed class SettingVM : ObservableRecipient,
         var langName = localization.GetLangFromSetting();
         CurrLang = localization.SetCurrentLangFromName(langName);
         
+        // Оповещаем все представления (окна) приложения о смене языка локализации
+        Messenger.Send(new LocalizationMessage(CurrLang, null));
+        
         // Обработка исключений "сверху", запуск инициализации если исключений нет
         _viewModelHelper.HandleExceptionsProvider(exceptionsProvider, InitAsync);
     }
@@ -136,10 +130,18 @@ public sealed class SettingVM : ObservableRecipient,
     {
         try
         {
+            // Устанавливаем текущий язык
+            CurrLang = message.Lang;
+            
             // Локализация представления асинхронно в UI-потоке, но без блокировки
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                _localizationHelper.LocalizeView(_view, message.Lang);
+                if (! _localizationHelper.LocalizeView(_view, message.Lang))
+                {
+                    // Если локализовать не получилось - возвращаем предыдущий язык
+                    CurrLang = message.OldLang;
+                }
+
             }, DispatcherPriority.Normal);
         
             // Дополнительные обновления данных
@@ -204,7 +206,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// <summary>
     /// Коллекция соревнований.
     /// </summary>
-    public ObservableCollection<CompetitionData> Competitions { get; set; } = [];
+    public ObservableCollection<CompetitionData> Competitions { get; private set; } = [];
 
     private CompetitionData? _currentCompetition;
     /// <summary>
@@ -443,7 +445,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// <summary>
     /// Группа спортивных дисциплин, ограничивающая выбор возможных дисциплин.
     /// </summary>
-    public DisciplineGroup? FilteringDisciplineGroup =>
+    private DisciplineGroup? FilteringDisciplineGroup =>
         DisciplineGroupsWithNull.SelectedIndex >= 0
             ? DisciplineGroupsWithNull[DisciplineGroupsWithNull.SelectedIndex].Key
             : null;
@@ -451,7 +453,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// <summary>
     /// Подгруппа спортивных дисциплин, ограничивающая выбор возможных дисциплин.
     /// </summary>
-    public DisciplineSubGroup? FilteringDisciplineSubGroup =>
+    private DisciplineSubGroup? FilteringDisciplineSubGroup =>
         DisciplineSubGroupsWithNull.SelectedIndex >= 0
             ? DisciplineSubGroupsWithNull[DisciplineSubGroupsWithNull.SelectedIndex].Key
             : null;
@@ -459,6 +461,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// <summary>
     /// Коллекция дисциплин.
     /// </summary>
+    // ReSharper disable once MemberCanBePrivate.Global
     public ObservableCollectionEx<Discipline> Disciplines { get; } = [];
     
     /// <summary>

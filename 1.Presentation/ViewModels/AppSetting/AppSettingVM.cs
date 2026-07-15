@@ -107,11 +107,9 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
             DisplayMsg = message.Lang;
             
             var localization = _appSettingService.AppLocalization;
-            var lang = message.Lang;       // устанавливаемый язык
-            var oldLang = message.OldLang; // предыдущий язык
         
             // Перевод наименований всех доступных языков приложения в соответствии с устанавливаемым языком
-            localization.Translate(localization.SetCurrentLang(lang).GetCultureInfo());
+            localization.Translate(localization.SetCurrentLang(message.Lang).GetCultureInfo());
         
             // Локализация представления асинхронно в UI-потоке, но без блокировки
             await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -123,7 +121,7 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
                     
                     // Если локализовать не получилось - переводим доступные языки обратно,
                     // в соответствии с предыдущим языком
-                    localization.Translate(localization.SetCurrentLang(oldLang).GetCultureInfo());
+                    localization.Translate(localization.SetCurrentLang(message.OldLang).GetCultureInfo());
                 }
             }, DispatcherPriority.Normal);
             
