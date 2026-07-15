@@ -25,7 +25,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
 {
     // ReSharper disable once NotAccessedField.Local
     private readonly IAppErrorMsgProvider _appErrorMsgProvider = null!;
-    private readonly AppSettingService _appSettingService = null!;
+    private readonly AppSettingsService _appSettingsService = null!;
     private readonly StatusBarService _statusBarService = null!;
     private readonly CompetitionDataService _competitionDataService = null!;
     private readonly ViewModelHelper _viewModelHelper = null!;
@@ -45,12 +45,12 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
         ILogger logger,
         IExceptionsProvider exceptionsProvider,
         IAppErrorMsgProvider appErrorMsgProvider,
-        AppSettingService appSettingService,
+        AppSettingsService appSettingsService,
         StatusBarService statusBarService,
         CompetitionDataService competitionDataService)
     {
         _appErrorMsgProvider = appErrorMsgProvider;
-        _appSettingService = appSettingService;
+        _appSettingsService = appSettingsService;
         _statusBarService = statusBarService;
         _competitionDataService = competitionDataService;
         _viewModelHelper = new ViewModelHelper(logger, appErrorMsgProvider, statusBarService);
@@ -217,7 +217,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             // TODO: Временно, возможно будет отдельное окно
             var result = MessageBox.Show(
                 $"Вы уверены, что хотите удалить соревнование '{CurrentCompetition!.ShortName}'?",
-                _appSettingService.AppName, 
+                _appSettingsService.AppName, 
                 MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
             if (result == MessageBoxResult.No)
                 return;

@@ -46,13 +46,13 @@ public static class ServiceFactory
         => new(errorMsgProvider);
 
     /// <summary>
-    /// Создаёт экземпляр <see cref="AppSettingService"/>.
+    /// Создаёт экземпляр <see cref="AppSettingsService"/>.
     /// </summary>
     /// <param name="errorMsgProvider">Провайдер сообщений об ошибках.</param>
     /// <param name="appDirService">Сервис для работы с путями.</param>
     /// <param name="appInfo">Информация о приложении.</param>
-    /// <returns>Сконфигурированный <see cref="AppSettingService"/>.</returns>
-    public static AppSettingService CreateAppSettingService(
+    /// <returns>Сконфигурированный <see cref="AppSettingsService"/>.</returns>
+    public static AppSettingsService CreateAppSettingService(
         IAppErrorMsgProvider errorMsgProvider,
         AppDirService appDirService,
         AppInfo appInfo)

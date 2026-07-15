@@ -1,13 +1,7 @@
 ﻿using System.Windows.Input;
-using AppDomain.AppUseCases._Contracts;
-using AppDomain.AppUseCases.Services;
-using Common.WpfModule.Ui.Services;
-using Common.WpfModule.Ui.Views;
 using Common.WpfModule.Ui.Views._Contracts;
-using Presentation.ViewModels;
-using Serilog;
 
-namespace Presentation.Shell.Infrastructure.Views;
+namespace Presentation.Shell.Views;
 
 /// <summary>
 /// Представление (окно) с настройками приложения.

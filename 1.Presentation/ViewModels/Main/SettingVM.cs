@@ -37,7 +37,7 @@ public sealed class SettingVM : ObservableRecipient,
 {
     private readonly IViewWithResources _view = null!;
     private readonly IAppErrorMsgProvider _appErrorMsgProvider = null!;
-    private readonly AppSettingService _appSettingService = null!;
+    private readonly AppSettingsService _appSettingsService = null!;
     private readonly StatusBarService _statusBarService = null!;
     private readonly CompetitionDataService _competitionDataService = null!;
     private readonly RefereeService _refereeService = null!;
@@ -71,7 +71,7 @@ public sealed class SettingVM : ObservableRecipient,
         ILogger logger,
         IExceptionsProvider exceptionsProvider,
         IAppErrorMsgProvider appErrorMsgProvider,
-        AppSettingService appSettingService,
+        AppSettingsService appSettingsService,
         StatusBarService statusBarService,
         CompetitionDataService competitionDataService,
         RefereeService refereeService,
@@ -79,12 +79,12 @@ public sealed class SettingVM : ObservableRecipient,
     {
         _view = view;
         _appErrorMsgProvider = appErrorMsgProvider;
-        _appSettingService = appSettingService;
+        _appSettingsService = appSettingsService;
         _statusBarService = statusBarService;
         _competitionDataService = competitionDataService;
         _refereeService = refereeService;
         _sportEventService =  sportEventService;
-        _localizationHelper = new LocalizationHelper(appSettingService);
+        _localizationHelper = new LocalizationHelper(appSettingsService);
         _viewModelHelper = new ViewModelHelper(logger, appErrorMsgProvider, statusBarService);
 
         // Соревнования
@@ -112,7 +112,7 @@ public sealed class SettingVM : ObservableRecipient,
         Messenger.Register<AllCompetitionsMessage>(this);
 
         // Получение языка локализации из настроек
-        var localization = appSettingService.AppLocalization;
+        var localization = appSettingsService.AppLocalization;
         var langName = localization.GetLangFromSetting();
         CurrLang = localization.SetCurrentLangFromName(langName);
         
@@ -193,7 +193,7 @@ public sealed class SettingVM : ObservableRecipient,
     {
         if (disposing)
         {
-            _appSettingService.SaveConfig();
+            _appSettingsService.SaveConfig();
         }
     }
     

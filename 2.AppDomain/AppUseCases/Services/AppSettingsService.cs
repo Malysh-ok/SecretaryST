@@ -7,7 +7,7 @@ namespace AppDomain.AppUseCases.Services;
 /// <summary>
 /// Сервис настроек приложения.
 /// </summary>
-public class AppSettingService
+public class AppSettingsService
 {
     #region [---------- НЕ публичные члены ----------]
     
@@ -60,18 +60,18 @@ public class AppSettingService
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public AppSettingService(IAppErrorMsgProvider appErrorMsgProvider, AppDirService appDir, AppInfo appInfo)
+    public AppSettingsService(IAppErrorMsgProvider appErrorMsgProvider, AppDirService appDir, AppInfo appInfo)
     {
         AppName = appInfo.Name;
         AppVersion = appInfo.Version;
         AppBuildDate = appInfo.BuildDate;
         AppDir = appDir;
-        AppLocalization = new AppLocalizationService(appErrorMsgProvider, GetLangConfigItem, SetOrUpdateLangConfigItem);
         var configurationFileMap = new ExeConfigurationFileMap
         {
             ExeConfigFilename = appDir.SettingFullFilePath
         };
         _config = ConfigurationManager.OpenMappedExeConfiguration(configurationFileMap, ConfigurationUserLevel.None);
+        AppLocalization = new AppLocalizationService(appErrorMsgProvider, GetLangConfigItem, SetOrUpdateLangConfigItem);
     }
 
     /// <summary>

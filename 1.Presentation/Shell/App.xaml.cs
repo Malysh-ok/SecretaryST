@@ -10,7 +10,6 @@ using AppDomain.AppUseCases.Services;
 using Common.BaseExtensions;
 using Common.WpfModule.Ui.Services;
 using Common.WpfModule.Ui.Services._Contracts;
-using Common.WpfModule.Ui.Views;
 using Common.WpfModule.Ui.Views._Contracts;
 using DataAccess.DataAccessAssets.Services;
 using DataAccess.DataAccessExceptions;
@@ -18,18 +17,18 @@ using DataAccess.DbContexts;
 using DataAccess.DbContexts.DbConfigure;
 using DataAccess.Repositories;
 using Microsoft.Extensions.DependencyInjection;
-using Presentation.Shell.Infrastructure.Views;
-using Presentation.ViewModels;
+using Presentation.Shell.Infrastructure;
+using Presentation.Shell.Views;
 using Presentation.ViewModels.AppSetting;
 using Presentation.ViewModels.Main;
 using Presentation.ViewModels.Shared.Infrastructure;
 using Presentation.ViewModels.Shared.Infrastructure._Contracts;
+using ProblemDomain.UseCases._Contracts;
 using ProblemDomain.UseCases.Services;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
-using ProblemDomain.UseCases._Contracts;
 
-namespace Presentation.Shell.Infrastructure;
+namespace Presentation.Shell;
 
 /// <summary>
 /// Interaction logic for App.xaml
@@ -61,7 +60,7 @@ public partial class App
                 var provider = sp.GetRequiredService<IAppErrorMsgProvider>();
                 return ServiceFactory.CreateAppDirService(provider);
             })                                                                  // регистрируем сервис директорий приложения
-            .AddSingleton<AppSettingService>(sp =>
+            .AddSingleton<AppSettingsService>(sp =>
             {
                 var provider = sp.GetRequiredService<IAppErrorMsgProvider>();
                 var appDir = sp.GetRequiredService<AppDirService>();
@@ -94,7 +93,7 @@ public partial class App
             // Регистрируем общие сервисы (Common)
             .AddSingleton<ILogger>(sp =>
             {
-                var appSettings = sp.GetRequiredService<AppSettingService>();
+                var appSettings = sp.GetRequiredService<AppSettingsService>();
                 return new LoggerConfiguration()
                        .MinimumLevel.Information()
                        // REMARK: Тут баг в Райдере с раскраской консоли (https://youtrack.jetbrains.com/issue/RIDER-71410)
@@ -135,7 +134,7 @@ public partial class App
         {
             ViewModelLocator.Initialize(_serviceProvider);      // Инициализация ViewModelLocator
             
-            var appSettingService = _serviceProvider.GetService<AppSettingService>();
+            var appSettingService = _serviceProvider.GetService<AppSettingsService>();
             
             // Берем название языка из настроек и устанавливаем язык культуры и фраз
             var lang = appSettingService?.AppLocalization.GetLangFromSetting();

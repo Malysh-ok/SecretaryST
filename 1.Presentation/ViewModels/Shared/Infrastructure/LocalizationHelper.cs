@@ -12,7 +12,7 @@ namespace Presentation.ViewModels.Shared.Infrastructure;
 public class LocalizationHelper
 {
     // Настройки приложения
-    private readonly AppSettingService _appSetting;
+    private readonly AppSettingsService _appSettings;
 
     // Базовый  для поиска языкового словаря ресурсов
     private Regex _regex = new Regex(@"lang\..*xaml", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -23,7 +23,7 @@ public class LocalizationHelper
     /// <param name="lang">Язык, для которого получаем наименование.</param>
     private string GetLangResourceName(Lang lang)
     {
-        var delim = lang.ShortName == _appSetting.AppLocalization.GetDefaultLang().ShortName
+        var delim = lang.ShortName == _appSettings.AppLocalization.GetDefaultLang().ShortName
             ? string.Empty
             : $".{lang.ShortName}";
         return $"lang{delim}.xaml";
@@ -32,9 +32,9 @@ public class LocalizationHelper
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public LocalizationHelper(AppSettingService appSetting)
+    public LocalizationHelper(AppSettingsService appSettings)
     {
-        _appSetting = appSetting;
+        _appSettings = appSettings;
     }
 
     /// <summary>

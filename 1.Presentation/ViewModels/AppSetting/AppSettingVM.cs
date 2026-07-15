@@ -24,7 +24,7 @@ namespace Presentation.ViewModels.AppSetting;
 public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
 {
     private readonly IViewWithResources _view;
-    private readonly AppSettingService _appSettingService;
+    private readonly AppSettingsService _appSettingsService;
     private readonly IAppErrorMsgProvider _appErrorMsgProvider;
     private readonly LocalizationHelper _localizationHelper;
     private readonly ViewModelHelper _viewModelHelper;
@@ -56,7 +56,7 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
             if (SetProperty(ref field, value) && ! _suppressSend)
             {
                 // Оповещаем все представления (окна) приложения о смене локализации
-                Messenger.Send(new LocalizationMessage(value ?? _appSettingService.AppLocalization.GetDefaultLang(), oldLang));
+                Messenger.Send(new LocalizationMessage(value ?? _appSettingsService.AppLocalization.GetDefaultLang(), oldLang));
             }
         }
     }
@@ -75,20 +75,20 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
         IViewWithResources view,
         ILogger logger,
         IAppErrorMsgProvider appErrorMsgProvider,
-        AppSettingService appSettingService,
+        AppSettingsService appSettingsService,
         StatusBarService statusBarService)
     {
         _view = view;
         _appErrorMsgProvider = appErrorMsgProvider;
-        _appSettingService = appSettingService;
-        _localizationHelper = new LocalizationHelper(appSettingService);
+        _appSettingsService = appSettingsService;
+        _localizationHelper = new LocalizationHelper(appSettingsService);
         _viewModelHelper = new ViewModelHelper(logger, appErrorMsgProvider, statusBarService);
 
         // Подписываемся на получение сообщений
         Messenger.Register(this);
         
         // Отправляем начальное сообщение
-        var localization = appSettingService.AppLocalization;
+        var localization = appSettingsService.AppLocalization;
         var initialLang = localization.GetCurrentOrDefaultLang();
         Messenger.Send(new LocalizationMessage(initialLang, null));
     }
@@ -106,7 +106,7 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
             // Визуализируем язык
             DisplayMsg = message.Lang;
             
-            var localization = _appSettingService.AppLocalization;
+            var localization = _appSettingsService.AppLocalization;
         
             // Перевод наименований всех доступных языков приложения в соответствии с устанавливаемым языком
             localization.Translate(localization.SetCurrentLang(message.Lang).GetCultureInfo());

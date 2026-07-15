@@ -3,7 +3,7 @@
 /// <summary>
 /// Содержит информацию о приложении: имя, версию и дату сборки.
 /// </summary>
-public class AppInfo(string? name, Version? version, DateTime? buildDate)
+public class AppInfo(string? name = null, Version? version = null, DateTime? buildDate = null)
 {
     /// <summary>
     /// Имя приложения.

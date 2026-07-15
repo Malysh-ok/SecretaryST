@@ -8,12 +8,11 @@ using Common.BaseExtensions.ValueTypes;
 using Common.WpfModule.Ui.Services._Contracts;
 using Common.WpfModule.Ui.Views._Contracts;
 using CommunityToolkit.Mvvm.Messaging;
-using Presentation.ViewModels;
 using Presentation.ViewModels.AppSetting;
 using Presentation.ViewModels.Main;
 using Presentation.ViewModels.Shared.Messages;
 
-namespace Presentation.Shell.Infrastructure.Views;
+namespace Presentation.Shell.Views;
 
 /// <summary>
 /// Основное представление (окно).
@@ -21,16 +20,16 @@ namespace Presentation.Shell.Infrastructure.Views;
 public partial class MainView : IViewWithResources, IRecipient<OpenAppSettingMessage>
 {
     private readonly IViewService _viewService;
-    private readonly AppSettingService _appSettingService;
+    private readonly AppSettingsService _appSettingsService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public MainView(IViewService viewService, AppSettingService appSettingService)
+    public MainView(IViewService viewService, AppSettingsService appSettingsService)
     {
         _viewService = viewService;
         _viewService.Initialize(this);
-        _appSettingService = appSettingService;
+        _appSettingsService = appSettingsService;
 
         InitializeComponent();
 
@@ -70,18 +69,18 @@ public partial class MainView : IViewWithResources, IRecipient<OpenAppSettingMes
     /// </summary>
     private void LoadViewData()
     {
-        if (_appSettingService.GetConfigItem("MainViewLeft").NullToEmpty().TryParseDouble(out var doubleResult))
+        if (_appSettingsService.GetConfigItem("MainViewLeft").NullToEmpty().TryParseDouble(out var doubleResult))
             Left = doubleResult;
-        if (_appSettingService.GetConfigItem("MainViewTop").NullToEmpty().TryParseDouble(out doubleResult))
+        if (_appSettingsService.GetConfigItem("MainViewTop").NullToEmpty().TryParseDouble(out doubleResult))
             Top = doubleResult;
-        if (_appSettingService.GetConfigItem("MainViewWidth").NullToEmpty().TryParseDouble(out doubleResult))
+        if (_appSettingsService.GetConfigItem("MainViewWidth").NullToEmpty().TryParseDouble(out doubleResult))
             Width = doubleResult;
-        if (_appSettingService.GetConfigItem("MainViewHeight").NullToEmpty().TryParseDouble(out doubleResult))
+        if (_appSettingsService.GetConfigItem("MainViewHeight").NullToEmpty().TryParseDouble(out doubleResult))
             Height = doubleResult;
-        WindowState = _appSettingService.GetConfigItem("MainViewState").NullToEmpty().ToEnum<WindowState>();
+        WindowState = _appSettingsService.GetConfigItem("MainViewState").NullToEmpty().ToEnum<WindowState>();
 
         // TODO: Не срабатывает восстановление значений контролов. Придумать другой способ.
-        if (_appSettingService.GetConfigItem(nameof(CmboxRestrictedDisciplineGroup)).NullToEmpty().TryParseInt(out var intResult))
+        if (_appSettingsService.GetConfigItem(nameof(CmboxRestrictedDisciplineGroup)).NullToEmpty().TryParseInt(out var intResult))
             CmboxRestrictedDisciplineGroup.SelectedIndex = intResult;
     }
 
@@ -90,13 +89,13 @@ public partial class MainView : IViewWithResources, IRecipient<OpenAppSettingMes
     /// </summary>
     private void SaveViewData()
     {
-        _appSettingService.SetConfigItem("MainViewLeft", Left.ToString(CultureInfo.InvariantCulture));
-        _appSettingService.SetConfigItem("MainViewTop", Top.ToString(CultureInfo.InvariantCulture));
-        _appSettingService.SetConfigItem("MainViewWidth", Width.ToString(CultureInfo.InvariantCulture));
-        _appSettingService.SetConfigItem("MainViewHeight", Height.ToString(CultureInfo.InvariantCulture));
-        _appSettingService.SetConfigItem("MainViewState", WindowState.ToString());
+        _appSettingsService.SetConfigItem("MainViewLeft", Left.ToString(CultureInfo.InvariantCulture));
+        _appSettingsService.SetConfigItem("MainViewTop", Top.ToString(CultureInfo.InvariantCulture));
+        _appSettingsService.SetConfigItem("MainViewWidth", Width.ToString(CultureInfo.InvariantCulture));
+        _appSettingsService.SetConfigItem("MainViewHeight", Height.ToString(CultureInfo.InvariantCulture));
+        _appSettingsService.SetConfigItem("MainViewState", WindowState.ToString());
 
-        _appSettingService.SetConfigItem(nameof(CmboxRestrictedDisciplineGroup), CmboxRestrictedDisciplineGroup.SelectedIndex.ToString());
+        _appSettingsService.SetConfigItem(nameof(CmboxRestrictedDisciplineGroup), CmboxRestrictedDisciplineGroup.SelectedIndex.ToString());
     }
 
     /// <summary>
