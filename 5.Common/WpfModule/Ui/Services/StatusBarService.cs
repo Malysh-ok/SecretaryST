@@ -178,15 +178,15 @@ public class StatusBarService : ObservableObject
     /// Если <paramref name="visualizationTime"/> меньше или равен 0 - текст стираться не будет.
     /// </remarks>
     public async Task SetTextAsync(string? statusText = null,
-        BaseException.ExcptnType textType = BaseException.ExcptnType.Info, 
+        ExcptnTypeEnm textType = ExcptnTypeEnm.Info, 
         int? visualizationTime = null,
         bool isHideProgressBar = true)
     {
         var brush = textType switch
         {
-            BaseException.ExcptnType.Info => InfoBrush,
-            BaseException.ExcptnType.Warning => WarningBrush,
-            BaseException.ExcptnType.Error => ErrorBrush,
+            ExcptnTypeEnm.Info => InfoBrush,
+            ExcptnTypeEnm.Warning => WarningBrush,
+            ExcptnTypeEnm.Error => ErrorBrush,
             _ => throw new ArgumentOutOfRangeException(nameof(textType), textType, null)
         };
         await SetTextAsync(statusText, brush, visualizationTime, isHideProgressBar);

@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Resources;
+using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions;
 using DataAccess.DataAccessAssets.Strings;
 using DataAccess.DataAccessExceptions;
@@ -31,6 +32,7 @@ public class DataAccessErrorMsgProvider
     /// </summary>
     /// <param name="errCode">Код ошибки.</param>
     /// <param name="args">Аргументы для форматирования сообщения.</param>
+    // ReSharper disable once MemberCanBePrivate.Global
     public string? GetMessage(string? errCode, params object[]? args)
     {
         if (errCode.IsNullOrEmpty())
@@ -48,10 +50,12 @@ public class DataAccessErrorMsgProvider
     /// </summary>
     /// <param name="code">Код ошибки.</param>
     /// <param name="inner">Исключение, вызвавшее текущее исключение, или null.</param>
+    /// <param name="excptnType">Тип исключения.</param>
     /// <param name="args">Аргументы для форматирования сообщения.</param>
-    public DataAccessException CreateException(string code, Exception? inner = null, params object[] args)
+    public DataAccessException CreateException(string code, Exception? inner = null,
+        ExcptnTypeEnm excptnType = ExcptnTypeEnm.Error, params object[] args)
     {
         var message = GetMessage(code, args);
-        return DataAccessException.CreateFromErrorCode(code, inner, message);
+        return DataAccessException.CreateFromErrorCode(code, inner, message, excptnType);
     }
 }

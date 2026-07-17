@@ -1,4 +1,5 @@
-﻿using ProblemDomain.ProblemExceptions;
+﻿using Common.BaseComponents.Components.Exceptions;
+using ProblemDomain.ProblemExceptions;
 
 namespace ProblemDomain.UseCases._Contracts;
 
@@ -21,5 +22,7 @@ public interface IProblemErrorMsgProvider
     /// <param name="code">Код ошибки.</param>
     /// <param name="inner">Исключение, вызвавшее текущее исключение, или null.</param>
     /// <param name="args">Аргументы для форматирования сообщения.</param>
-    public ProblemException CreateException(string code, Exception? inner = null, params object[] args);
+    /// <param name="excptnType">Тип исключения.</param>
+    public ProblemException CreateException(string code, Exception? inner = null, 
+        ExcptnTypeEnm excptnType = ExcptnTypeEnm.Error, params object[] args);
 }

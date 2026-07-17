@@ -80,11 +80,37 @@ public class ViewModelHelper(
         if (exception == null) 
             return;
         
-        // Пишем в статус-бар и лог об ошибке
-        logger.Error(exception, 
-            "{CallerClassName}.{CallerMethodName}", callerClassName, callerMethodName);
-        if (statusBarService != null)
+        // Приводим исключение к базовому
+        var baseException = exception as BaseException;
+        
+        // Пишем в лог об ошибке
+        if (baseException == null)
+            logger.Error(exception, 
+                "{CallerClassName}.{CallerMethodName}", callerClassName, callerMethodName);
+        else
+        {
+            // если смогли привести к базовому исключению - анализируем тип
+            switch (baseException.ExcptnType)
+            {
+                case ExcptnTypeEnm.Info:
+                    logger.Information(baseException, 
+                        "{CallerClassName}.{CallerMethodName}", callerClassName, callerMethodName);
+                    break;
+                case ExcptnTypeEnm.Warning:
+                    logger.Warning(baseException, 
+                        "{CallerClassName}.{CallerMethodName}", callerClassName, callerMethodName);
+                    break;
+                default:
+                    logger.Error(baseException, 
+                        "{CallerClassName}.{CallerMethodName}", callerClassName, callerMethodName);
+                    break;
+            }
+        }
+        
+        // Пишем в статус-бар об ошибке,
+        // только если сервис статус-бара не null и тип исключения - ошибка
+        if (statusBarService != null && baseException?.ExcptnType == ExcptnTypeEnm.Error)
             _ = statusBarService.SetTextAsync(exception.Message,
-                BaseException.ExcptnType.Error, 0);
+                ExcptnTypeEnm.Error, 0);
     }
 }

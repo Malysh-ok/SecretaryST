@@ -196,7 +196,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             Messenger.Send(new AllCompetitionsMessage(Competitions, CurrentCompetition));
             
             // TODO: Временно (без ожидания окончания)
-            _ = _statusBarService.SetTextAsync("Добавили соревнование.", BaseException.ExcptnType.Info);
+            _ = _statusBarService.SetTextAsync("Добавили соревнование.", ExcptnTypeEnm.Info);
         }
         finally
         {
@@ -244,7 +244,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
             CurrentCompetition = competitionResult.Value;
             
             // TODO: Временно (без ожидания окончания)
-            _ = _statusBarService.SetTextAsync("Удалили соревнование.", BaseException.ExcptnType.Warning);
+            _ = _statusBarService.SetTextAsync("Удалили соревнование.", ExcptnTypeEnm.Warning);
         }
         finally
         {

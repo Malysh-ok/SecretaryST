@@ -17,7 +17,6 @@ public class BaseComponentsTests
     [SetUp]
     public void Setup()
     {
-        ;
     }
     
     [Test]
@@ -35,6 +34,7 @@ public class BaseComponentsTests
             "Exception", null, "ru", "Исключение");
         
         // ------------------------
+        
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("ru");
         
         var ex21 = BaseException.Create<SystemException>(
@@ -57,6 +57,16 @@ public class BaseComponentsTests
                       ex23.Message.IsOnlyCyrillicChars() &&
                       ex24.Message.IsOnlyCyrillicChars();
         Assert.That(result2, Is.True, "Ошибка при работе с исключениями.");
+        
+        // ------------------------
+
+        var ex31 = new BaseException("Exception"){ ExcptnType = ExcptnTypeEnm.Warning};
+        Assert.That(ex31.ExcptnType, Is.EqualTo(ExcptnTypeEnm.Warning), 
+            "Тип исключения должен быть ExcptnTypeEnm.Warning.");
+        
+        ex31.ResetExcptnType(ExcptnTypeEnm.Info);
+        Assert.That(ex31.ExcptnType, Is.EqualTo(ExcptnTypeEnm.Info), 
+            "Тип исключения должен быть ExcptnTypeEnm.Info.");
     }
 
     [Test]

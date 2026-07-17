@@ -117,7 +117,7 @@ public sealed class MainVM : ObservableRecipient, IDisposable
         //     " Если нужно добавить всплывающие подсказки, иконки и кликабельность", 
         //         BaseException.ExcptnType.Info, 0, false);
         await _statusBarService.SetTextAsync("OnPink " + _appErrorMsgProvider.GetMessage(AppErrorCodes.UnknownError),
-            BaseException.ExcptnType.Info, 0, false);
+            ExcptnTypeEnm.Info, 0, false);
 
         await Task.Delay(2000);
         await _statusBarService.SetProgressAsync(100);

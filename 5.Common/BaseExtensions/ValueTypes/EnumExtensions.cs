@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -18,7 +19,7 @@ public static class EnumExtensions
     /// <param name="enumString">Текст для преобразования.</param>
     /// <param name="isThrowException">Признак генерации исключения при неудачном преобразовании.</param>
     public static T ToEnum<T>(this string enumString, bool isThrowException = false) 
-        where T : struct, IComparable, IFormattable, IConvertible
+        where T : struct, Enum, IComparable, IFormattable, IConvertible
     {
         return Enum.TryParse(enumString, true, out T value)
             ? value
@@ -31,7 +32,7 @@ public static class EnumExtensions
     /// Преобразует перечисление к int.
     /// </summary>
     public static int ToInt<T>(this T source) 
-        where T : struct, IComparable, IFormattable, IConvertible
+        where T : struct, Enum, IComparable, IFormattable, IConvertible
     {
         CommonPhrases.Culture = CultureInfo.CurrentUICulture;       // устанавливаем яз. стандарт для фраз
 
@@ -46,7 +47,7 @@ public static class EnumExtensions
     /// <param name="isThrowException">Признак генерации исключения при неудачном преобразовании.</param>
     [SuppressMessage("ReSharper", "InvalidXmlDocComment")]
     public static T ToEnum<T>(this int enumInt, bool isThrowException = false)
-        where T : struct, IComparable, IFormattable, IConvertible
+        where T : struct, Enum, IComparable, IFormattable, IConvertible
     {
         var enm =  (T)Enum.ToObject(typeof(T), enumInt);
             
@@ -62,7 +63,7 @@ public static class EnumExtensions
     /// </summary>
     /// <param name="enumInt">Число для преобразования.</param>
     public static T ToEnumWithException<T>(this int enumInt)
-        where T : struct, IComparable, IFormattable, IConvertible
+        where T : struct, Enum, IComparable, IFormattable, IConvertible
     {
         return enumInt.ToEnum<T>(true);
     }
@@ -70,7 +71,7 @@ public static class EnumExtensions
     /// <summary>
     /// Достать описание из атрибутов перечислимого типа.
     /// </summary>
-    public static string GetDescription(this Enum value)
+    public static string? GetDescription(this Enum value)
     {
         var fieldInfo = value.GetType().GetField(value.ToString());
         if (fieldInfo == null) return null;
@@ -139,7 +140,7 @@ public static class EnumExtensions
     /// <param name="value">Исходное перечисление.</param>
     /// <param name="addingFlags">Устанавливаемые флаги.</param>
     public static T Set<T>(this Enum value, T addingFlags) 
-        where T : struct, IComparable, IFormattable, IConvertible
+        where T : struct, Enum, IComparable, IFormattable, IConvertible
     {
         var underlyingType = Enum.GetUnderlyingType(value.GetType());
 
@@ -157,7 +158,7 @@ public static class EnumExtensions
     /// <param name="value">Исходное перечисление.</param>
     /// <param name="removingFlags">Сбрасываемые флаги.</param>
     public static T Clear<T>(this Enum value, T removingFlags) 
-        where T : struct, IComparable, IFormattable, IConvertible
+        where T : struct, Enum, IComparable, IFormattable, IConvertible
     {
         var underlyingType = Enum.GetUnderlyingType(value.GetType());
 
@@ -174,7 +175,7 @@ public static class EnumExtensions
     /// <param name="value">Исходное перечисление.</param>
     /// <param name="processFlag">Выполняемый делегат.</param>
     public static void ForEach<T>(this Enum value, Action<T> processFlag) 
-        where T : struct, IComparable, IFormattable, IConvertible
+        where T : struct, Enum, IComparable, IFormattable, IConvertible
     {
         if (processFlag == null)
             throw new ArgumentNullException(nameof(processFlag));
@@ -188,5 +189,14 @@ public static class EnumExtensions
             if ((valueAsInt & bit) != 0)
                 processFlag((T)tempBit);
         }
+    }
+    
+    /// <summary>
+    /// Получить перечисление из обнуляемого типа.
+    /// </summary>
+    public static T FromNullable<T>(this T? value, T defaultValue = default) 
+        where T : struct, Enum
+    {
+        return value ?? defaultValue;
     }
 }

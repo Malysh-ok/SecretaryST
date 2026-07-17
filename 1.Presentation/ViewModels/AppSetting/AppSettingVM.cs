@@ -141,8 +141,7 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
         catch (Exception ex)
         {
             // Пишем в статус-бар и лог об ошибке
-            var exception = _appErrorMsgProvider.CreateException(AppErrorCodes.LocalizingError, ex, this.GetType().Name);
-            
+            var exception = _appErrorMsgProvider.CreateException(AppErrorCodes.LocalizingError, ex, args: this.GetType().Name);
             _viewModelHelper.HandleException(exception, this.ToString(), nameof(Receive));
         }
     }

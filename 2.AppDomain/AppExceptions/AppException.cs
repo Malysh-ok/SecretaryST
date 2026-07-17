@@ -15,8 +15,8 @@ public class AppException : BaseException
 
     /// <inheritdoc />
     private AppException(string? message = null, Exception? innerException = null,
-        string? localLangName = null, string? localMessage = null)
-        : base(GetRealMessage(message, localLangName, localMessage), innerException)
+        string? localLangName = null, string? localMessage = null, ExcptnTypeEnm excptnType = ExcptnTypeEnm.Error)
+        : base(message, innerException, localLangName, localMessage, excptnType)
     {
     }
 
@@ -26,8 +26,10 @@ public class AppException : BaseException
     /// <param name="errCode">Код ошибки.</param>
     /// <param name="innerException">Исключение, вызвавшее текущее исключение, или null.</param>
     /// <param name="message">Сообщение об ошибке в текущей локализации, указывающее причину создания исключения.</param>
-    private AppException(string errCode, Exception? innerException = null, string? message = null)
-        : base(innerException: innerException, message: message)
+    /// <param name="excptnType">Тип исключения.</param>
+    private AppException(string errCode, Exception? innerException = null, 
+        string? message = null, ExcptnTypeEnm excptnType = ExcptnTypeEnm.Error)
+        : base(innerException: innerException, message: message,  excptnType: excptnType)
     {
         ErrCode =  errCode;
     }
@@ -38,14 +40,15 @@ public class AppException : BaseException
     /// <inheritdoc cref="BaseException.Create"/>
     public new static AppException Create(
         string? message = null, Exception? innerException = null,
-        string? localLangName = null, string? localMessage = null)
-            => new(message, innerException, localLangName, localMessage);
+        string? localLangName = null, string? localMessage = null, 
+        ExcptnTypeEnm excptnType = ExcptnTypeEnm.Error)
+            => new(message, innerException, localLangName, localMessage, excptnType);
     
     /// <summary>
     /// Создает новый экземпляр исключения <see cref="AppException" /> по коду ошибки (фабричный метод).
     /// </summary>
-    /// <inheritdoc cref="AppException(string, Exception, string)"/>
-    public static AppException CreateFromErrorCode(
-        string errCode, Exception? innerException = null, string? message = null)
-            => new(errCode, innerException, message);
+    /// <inheritdoc cref="AppException(string, Exception, string, ExcptnTypeEnm)"/>
+    public static AppException CreateFromErrorCode(string errCode, Exception? innerException = null, 
+        string? message = null, ExcptnTypeEnm excptnType = ExcptnTypeEnm.Error)
+            => new(errCode, innerException, message, excptnType);
 }

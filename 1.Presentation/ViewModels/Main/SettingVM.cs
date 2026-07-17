@@ -151,8 +151,7 @@ public sealed class SettingVM : ObservableRecipient,
         catch (Exception ex)
         {
             // Пишем в статус-бар и лог об ошибке
-            var exception =_appErrorMsgProvider.CreateException(AppErrorCodes.LocalizingError, ex, this.GetType().Name);
-
+            var exception =_appErrorMsgProvider.CreateException(AppErrorCodes.LocalizingError, ex, args: this.GetType().Name);
             _viewModelHelper.HandleException(exception, this.ToString(), nameof(Receive));
         }
     }
@@ -554,7 +553,7 @@ public sealed class SettingVM : ObservableRecipient,
             SportEventObservables.SelectedIndex = ++index;
             
             // TODO: Временно (без ожидания окончания)
-            _ = _statusBarService.SetTextAsync("Добавили вид программы.", BaseException.ExcptnType.Info);
+            _ = _statusBarService.SetTextAsync("Добавили вид программы.", ExcptnTypeEnm.Info);
         }
         else
         {
@@ -585,7 +584,7 @@ public sealed class SettingVM : ObservableRecipient,
             SportEventObservables.SelectedIndex = index == 0 ? 0 : --index;
 
             // TODO: Временно (без ожидания окончания)
-            _ = _statusBarService.SetTextAsync("Удалили вид программы.", BaseException.ExcptnType.Error);
+            _ = _statusBarService.SetTextAsync("Удалили вид программы.", ExcptnTypeEnm.Error);
         }
         else
         {
@@ -821,7 +820,7 @@ public sealed class SettingVM : ObservableRecipient,
             Referees.SelectedIndex = refereeResult.Value;
             
             // TODO: Временно (без ожидания окончания)
-            _ = _statusBarService.SetTextAsync("Добавили судью.", BaseException.ExcptnType.Info);
+            _ = _statusBarService.SetTextAsync("Добавили судью.", ExcptnTypeEnm.Info);
         }
         else
         {
@@ -843,7 +842,7 @@ public sealed class SettingVM : ObservableRecipient,
             
             // TODO: Временно (без ожидания окончания)
             if (refereeResult.Value >= 0)
-                _ = _statusBarService.SetTextAsync("Удалили судью.", BaseException.ExcptnType.Error);
+                _ = _statusBarService.SetTextAsync("Удалили судью.", ExcptnTypeEnm.Error);
         }
         else
         {

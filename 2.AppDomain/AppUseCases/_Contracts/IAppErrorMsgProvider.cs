@@ -1,4 +1,5 @@
 ﻿using AppDomain.AppExceptions;
+using Common.BaseComponents.Components.Exceptions;
 using ProblemDomain.ProblemExceptions;
 
 namespace AppDomain.AppUseCases._Contracts;
@@ -22,7 +23,9 @@ public interface IAppErrorMsgProvider
     /// <param name="code">Код ошибки.</param>
     /// <param name="inner">Исключение, вызвавшее текущее исключение, или null.</param>
     /// <param name="args">Аргументы для форматирования сообщения.</param>
-    public AppException CreateException(string code, Exception? inner = null, params object[] args);
+    /// <param name="excptnType">Тип исключения.</param>
+    public AppException CreateException(string code, Exception? inner = null, 
+        ExcptnTypeEnm excptnType = ExcptnTypeEnm.Error, params object[] args);
 
     /// <summary>
     /// Создаёт <see cref="AppException"/> с сообщением по коду ошибки.

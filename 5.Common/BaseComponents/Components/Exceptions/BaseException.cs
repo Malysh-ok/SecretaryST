@@ -10,25 +10,14 @@ namespace Common.BaseComponents.Components.Exceptions;
 /// </summary>
 public class BaseException : Exception
 {
+    private ExcptnTypeEnm _excptnType;
     /// <summary>
     /// Тип исключения.
     /// </summary>
-    public enum ExcptnType
+    public ExcptnTypeEnm ExcptnType
     {
-        /// <summary>
-        /// Информация.
-        /// </summary>
-        Info = 1,
-        
-        /// <summary>
-        /// Предупреждение.
-        /// </summary>
-        Warning,
-        
-        /// <summary>
-        /// Ошибка.
-        /// </summary>
-        Error
+        get => _excptnType;
+        init => _excptnType = value;
     }
 
     /// <summary>
@@ -39,7 +28,7 @@ public class BaseException : Exception
         : base(message, innerException)
     {
     }
-
+    
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -54,10 +43,12 @@ public class BaseException : Exception
     /// <param name="localLangName">Наименование альтернативной локализации.</param>
     /// <param name="localMessage">Сообщение об ошибке в альтернативной локализации,
     /// указывающее причину создания исключения.</param>
+    /// <param name="excptnType">Тип исключения.</param>
     public BaseException(string? message = null, Exception? innerException = null,
-        string? localLangName = null, string? localMessage = null)
+        string? localLangName = null, string? localMessage = null, ExcptnTypeEnm excptnType = ExcptnTypeEnm.Error)
         : base(GetRealMessage(message, localLangName, localMessage), innerException)
     {
+        ExcptnType = excptnType;
     }
 
     /// <summary>
@@ -74,10 +65,12 @@ public class BaseException : Exception
     /// <param name="localLangName">Наименование альтернативной локализации.</param>
     /// <param name="localMessage">Сообщение об ошибке в альтернативной локализации,
     /// указывающее причину создания исключения.</param>
+    /// <param name="excptnType">Тип исключения.</param>
     public static BaseException Create(
         string? message = null, Exception? innerException = null,
-        string? localLangName = null, string? localMessage = null)
-        => new(message, innerException, localLangName, localMessage);
+        string? localLangName = null, string? localMessage = null, 
+        ExcptnTypeEnm excptnType = ExcptnTypeEnm.Error)
+        => new(message, innerException, localLangName, localMessage, excptnType);
 
     /// <inheritdoc cref="Create"/>
     /// <summary>
@@ -86,11 +79,18 @@ public class BaseException : Exception
     /// </summary>
     public static TEx Create<TEx>(
         string? message = null, Exception? innerException = null,
-        string? localLangName = null, string? localMessage = null) where TEx: Exception
+        string? localLangName = null, string? localMessage = null, 
+        ExcptnTypeEnm excptnType = ExcptnTypeEnm.Error) where TEx: Exception
     {
         const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
             
         var constructor = typeof(TEx).GetConstructor(bindingFlags,
+            null, [typeof(string), typeof(Exception), typeof(string), typeof(string), typeof(ExcptnTypeEnm)], 
+            null);
+        if (constructor != null)
+            return (TEx)constructor.Invoke([message, innerException, localLangName, localMessage, excptnType]);
+
+        constructor = typeof(TEx).GetConstructor(bindingFlags,
             null, [typeof(string), typeof(Exception), typeof(string), typeof(string)], 
             null);
         if (constructor != null)
@@ -120,10 +120,15 @@ public class BaseException : Exception
 
         // Ошибка
         throw Create($"Unable to instantiate {typeof(TEx)}.", null,
-            "ru", $"Невозможно создать экземпляр {typeof(TEx)}.");
+            "ru", $"Невозможно создать экземпляр {typeof(TEx)}.", excptnType);
     }
 
-
+    public void ResetExcptnType(ExcptnTypeEnm excptnType)
+    {
+        _excptnType = excptnType;
+    }
+    
+    
     #region [---------- НЕ публичные члены ----------]
 
     /// <summary>

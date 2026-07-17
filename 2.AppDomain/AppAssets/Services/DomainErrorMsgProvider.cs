@@ -3,6 +3,7 @@ using System.Resources;
 using AppDomain.AppAssets.Strings;
 using AppDomain.AppExceptions;
 using AppDomain.AppUseCases._Contracts;
+using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions;
 using ProblemDomain.ProblemExceptions;
 using ProblemDomain.UseCases._Contracts;
@@ -43,17 +44,17 @@ public class DomainErrorMsgProvider : IAppErrorMsgProvider, IProblemErrorMsgProv
     }
     
     /// <inheritdoc/>
-    ProblemException IProblemErrorMsgProvider.CreateException(string code, Exception? inner, params object[] args)
+    ProblemException IProblemErrorMsgProvider.CreateException(string code, Exception? inner, ExcptnTypeEnm excptnType, params object[] args)
     {
         var message = GetMessage(code, args);
-        return ProblemException.CreateFromErrorCode(code, inner, message);
+        return ProblemException.CreateFromErrorCode(code, inner, message, excptnType);
     }
 
     /// <inheritdoc/>
-    AppException IAppErrorMsgProvider.CreateException(string code, Exception? inner, params object[] args)
+    AppException IAppErrorMsgProvider.CreateException(string code, Exception? inner, ExcptnTypeEnm excptnType, params object[] args)
     {
         var message = GetMessage(code, args);
-        return AppException.CreateFromErrorCode(code, inner, message);
+        return AppException.CreateFromErrorCode(code, inner, message, excptnType);
     }
 
     /// <inheritdoc/>
