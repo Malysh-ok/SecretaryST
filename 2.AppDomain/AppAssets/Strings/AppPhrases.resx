@@ -88,7 +88,7 @@
         <value>Failed to create the application directories.</value>
     </data>
     <data name="LocalizingError" xml:space="preserve">
-        <value>Localizing '{0}' view error.</value>
+        <value>Localization error for the view associated with '{0}'.</value>
     </data>
     <data name="SportEventsLoadError" xml:space="preserve">
         <value>Failed to retrieve the list of sport events from the repository.</value>
@@ -119,5 +119,8 @@
     </data>
     <data name="LanguageNotFound" xml:space="preserve">
         <value>Language '{0}' not found in the available languages list.</value>
+    </data>
+    <data name="LanguageIsNull" xml:space="preserve">
+        <value>Language argument cannot be null.</value>
     </data>
 </root>

@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Threading;
-using AppDomain.AppAssets.Strings;
 using AppDomain.AppEntities;
 using AppDomain.AppExceptions;
 using AppDomain.AppUseCases._Contracts;
@@ -26,7 +25,8 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
     private readonly IViewWithResources _view;
     private readonly AppSettingsService _appSettingsService;
     private readonly IAppErrorMsgProvider _appErrorMsgProvider;
-    private readonly LocalizationHelper _localizationHelper;
+    private readonly AppLocalizationService _appLocalizationService;
+    private readonly ViewLocalizationService _viewLocalizationService;
     private readonly ViewModelHelper _viewModelHelper;
     
     /// <summary>
@@ -56,7 +56,7 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
             if (SetProperty(ref field, value) && ! _suppressSend)
             {
                 // Оповещаем все представления (окна) приложения о смене локализации
-                Messenger.Send(new LocalizationMessage(value ?? _appSettingsService.AppLocalization.GetDefaultLang(), oldLang));
+                Messenger.Send(new LocalizationMessage(value ?? _appLocalizationService.DefaultLang, oldLang));
             }
         }
     }
@@ -81,15 +81,15 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
         _view = view;
         _appErrorMsgProvider = appErrorMsgProvider;
         _appSettingsService = appSettingsService;
-        _localizationHelper = new LocalizationHelper(appSettingsService);
+        _appLocalizationService = appSettingsService.AppLocalization;
+        _viewLocalizationService = new ViewLocalizationService(appSettingsService);
         _viewModelHelper = new ViewModelHelper(logger, appErrorMsgProvider, statusBarService);
 
         // Подписываемся на получение сообщений
         Messenger.Register(this);
         
-        // Отправляем начальное сообщение
-        var localization = appSettingsService.AppLocalization;
-        var initialLang = localization.GetCurrentOrDefaultLang();
+        // Получаем язык локализации из настроек и отправляем начальное сообщение
+        var initialLang = _appLocalizationService.CurrentLang;
         Messenger.Send(new LocalizationMessage(initialLang, null));
     }
     
@@ -103,36 +103,39 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
     {
         try
         {
-            // Визуализируем язык
-            DisplayMsg = message.Lang;
-            
-            var localization = _appSettingsService.AppLocalization;
-        
-            // Перевод наименований всех доступных языков приложения в соответствии с устанавливаемым языком
-            localization.Translate(localization.SetCurrentLang(message.Lang).GetCultureInfo());
-        
-            // Локализация представления асинхронно в UI-потоке, но без блокировки
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            // Устанавливаем текущий язык
+            var langResult = _appLocalizationService.SetCurrentLang(message.Lang);
+            if (langResult)
             {
-                if (! _localizationHelper.LocalizeView(_view, message.Lang))
+                // Локализация представления асинхронно в UI-потоке, но без блокировки
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    // Если локализовать не получилось - визуализируем предыдущий язык
-                    DisplayMsg = message.OldLang;
-                    
-                    // Если локализовать не получилось - переводим доступные языки обратно,
-                    // в соответствии с предыдущим языком
-                    localization.Translate(localization.SetCurrentLang(message.OldLang).GetCultureInfo());
-                }
-            }, DispatcherPriority.Normal);
-            
-            // После завершения локализации обновляем культуру, UI, и фразы приложения
-            var currLang = localization.GetCurrentOrDefaultLang();
+                    if (! _viewLocalizationService.LocalizeView(_view, message.Lang))
+                    {
+                        // Если локализовать не получилось - восстанавливаем текущий язык
+                        _appLocalizationService.SetCurrentLang(message.OldLang);
+                    }
+                }, DispatcherPriority.Normal);
+            }
+            else
+            {
+                // Пишем в статус-бар и лог об ошибке
+                var exception = _appErrorMsgProvider.CreateException(AppErrorCodes.LocalizingError,
+                    langResult.Excptn, args: this.GetType().Name);
+                _viewModelHelper.HandleException(exception, this.ToString(), nameof(Receive));
+            }
+
+            // После завершения локализации устанавливаем язык культуры
+            var currLang = _appLocalizationService.CurrentLang;
             CultureInfo.CurrentUICulture = currLang.GetCultureInfo();
             CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture;
-            AppPhrases.Culture = CultureInfo.CurrentUICulture;
+            
+            // Визуализируем язык
+            DisplayMsg = currLang;
         
             // Пересоздаем коллекцию языков
-            Languages = new ObservableCollection<Lang>(localization.Languages.Values);
+            Languages = new ObservableCollection<Lang>(_appLocalizationService.Languages.Values);
+            
             // Устанавливаем язык локализации с подавлением отправки сообщения
             _suppressSend = true;
             CurrLang = currLang;

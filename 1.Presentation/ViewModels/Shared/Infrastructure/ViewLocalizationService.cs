@@ -9,13 +9,13 @@ namespace Presentation.ViewModels.Shared.Infrastructure;
 /// <summary>
 /// Помощник локализации представлений.
 /// </summary>
-public class LocalizationHelper
+public class ViewLocalizationService
 {
     // Настройки приложения
-    private readonly AppSettingsService _appSettings;
+    private readonly AppSettingsService _appSettingsService;
 
     // Базовый  для поиска языкового словаря ресурсов
-    private Regex _regex = new Regex(@"lang\..*xaml", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private readonly Regex _regex = new Regex(@"lang\..*xaml", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     /// <summary>
     /// Получаем наименование ресурса локализации.
@@ -23,18 +23,18 @@ public class LocalizationHelper
     /// <param name="lang">Язык, для которого получаем наименование.</param>
     private string GetLangResourceName(Lang lang)
     {
-        var delim = lang.ShortName == _appSettings.AppLocalization.GetDefaultLang().ShortName
+        var cultureSuffix = lang.ShortName == _appSettingsService.AppLocalization.DefaultLang.ShortName
             ? string.Empty
             : $".{lang.ShortName}";
-        return $"lang{delim}.xaml";
+        return $"lang{cultureSuffix}.xaml";
     }
 
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public LocalizationHelper(AppSettingsService appSettings)
+    public ViewLocalizationService(AppSettingsService appSettingsService)
     {
-        _appSettings = appSettings;
+        _appSettingsService = appSettingsService;
     }
 
     /// <summary>

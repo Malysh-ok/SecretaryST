@@ -14,4 +14,5 @@ public static class AppErrorCodes
     public const string LanguageNotFound = nameof(LanguageNotFound);
     public const string LocalizingError = nameof(LocalizingError);
     public const string UnknownError = nameof(UnknownError);
+    public const string LanguageIsNull = nameof(LanguageIsNull);
 }

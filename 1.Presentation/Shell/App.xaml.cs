@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Configuration;
 using System.Globalization;
 using System.IO;
 using System.Windows;
 using AppDomain.AppAssets.Services;
-using AppDomain.AppAssets.Strings;
 using AppDomain.AppEntities;
 using AppDomain.AppUseCases._Contracts;
 using AppDomain.AppUseCases.Services;
@@ -96,7 +96,7 @@ public partial class App
                 var appSettings = sp.GetRequiredService<AppSettingsService>();
                 return new LoggerConfiguration()
                        .MinimumLevel.Information()
-                       // REMARK: Тут баг в Райдере с раскраской консоли (https://youtrack.jetbrains.com/issue/RIDER-71410)
+                       // REMARK: Тут баг в Rider с раскраской консоли (https://youtrack.jetbrains.com/issue/RIDER-71410)
                        // Костыль такой: в настройках проекта поменять выходной тип с WinExe на Exe.
                        // П.С. Для темной темы лучше использовать AnsiConsoleTheme.Sixteen, а не AnsiConsoleTheme.Literate, SystemConsoleTheme.Colored.
                        .WriteTo.Console(theme: AnsiConsoleTheme.Sixteen)
@@ -127,34 +127,47 @@ public partial class App
     /// </summary>
     private async void OnStartup(object sender, StartupEventArgs e)
     {
+        // Получаем необходимые сервисы
         var exceptionsProvider = _serviceProvider.GetRequiredService<IExceptionsProvider>();
-        var dataAccessErrorMsgProvider = _serviceProvider.GetRequiredService<DataAccessErrorMsgProvider>();
         var domainErrorMsgProvider = _serviceProvider.GetRequiredService<IAppErrorMsgProvider>();
+        var dataAccessErrorMsgProvider = _serviceProvider.GetRequiredService<DataAccessErrorMsgProvider>();
         try
         {
-            ViewModelLocator.Initialize(_serviceProvider);      // Инициализация ViewModelLocator
-            
-            var appSettingService = _serviceProvider.GetService<AppSettingsService>();
-            
-            // Берем название языка из настроек и устанавливаем язык культуры и фраз
-            var lang = appSettingService?.AppLocalization.GetLangFromSetting();
-            var ci = lang.IsValidCulture()
-                ? CultureInfo.GetCultureInfo(lang!)
-                : CultureInfo.GetCultureInfo("ru-RU");  // если язык не найден - делаем русский по умолчанию
-            CultureInfo.CurrentUICulture = ci;
-            CultureInfo.CurrentCulture = ci;
-            AppPhrases.Culture = ci;
-                        
+            // Устанавливаем культуру приложения ДО создания сервиса настроек приложения
+            {
+                // Получаем название языка локализации из файла настроек
+                var appDirService = _serviceProvider.GetRequiredService<AppDirService>();
+                var config = ConfigurationManager.OpenMappedExeConfiguration(
+                    new ExeConfigurationFileMap { ExeConfigFilename = appDirService.SettingFullFilePath },
+                    ConfigurationUserLevel.None);
+                var langName = config.AppSettings.Settings[AppSettingsService.LangKey]?.Value;
+
+                // Если название языка не найдено - устанавливаем название по умолчанию
+                if (langName == null || ! langName.IsValidCulture())
+                    langName = AppLocalizationService.DefaultLangName;
+
+                // Устанавливаем язык культуры
+                var culture = CultureInfo.GetCultureInfo(langName);
+                CultureInfo.CurrentUICulture = culture;
+                CultureInfo.CurrentCulture = culture;
+            }
+
+            // Инициализация ViewModelLocator
+            ViewModelLocator.Initialize(_serviceProvider);
+
+            // Получаем сервис настроек приложения
+            var appSettingService = _serviceProvider.GetRequiredService<AppSettingsService>();
+
             // Создаем каталоги приложения
-            var result = appSettingService?.AppDir.CreateAppDirs();
-            if (result != null && ! result)
+            var result = appSettingService.AppDir.CreateAppDirs();
+            if (! result)
             {
                 exceptionsProvider.Exception = domainErrorMsgProvider.CreateFatalException(result.Excptn);
                 exceptionsProvider.IsFatal = true;
                 return;
             }
             
-            var repositoryHelper = _serviceProvider.GetService<IRepositoryHelper>()!;
+            var repositoryHelper = _serviceProvider.GetRequiredService<IRepositoryHelper>();
 
             if (! await repositoryHelper.IsExistLibrary())
             {
@@ -182,7 +195,6 @@ public partial class App
         {
             // Пробрасываем фатальное исключение
             exceptionsProvider.Exception = domainErrorMsgProvider.CreateFatalException(ex);
-
             exceptionsProvider.IsFatal = true;
         }
         finally

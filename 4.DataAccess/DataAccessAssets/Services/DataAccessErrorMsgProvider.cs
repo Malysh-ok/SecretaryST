@@ -23,7 +23,6 @@ public class DataAccessErrorMsgProvider
     /// </summary>
     public DataAccessErrorMsgProvider()
     {
-        DbPhrases.Culture = CultureInfo.CurrentUICulture;       // устанавливаем языковой стандарт для фраз
         _resourceManager = DbPhrases.ResourceManager;
     }
     
@@ -38,7 +37,8 @@ public class DataAccessErrorMsgProvider
         if (errCode.IsNullOrEmpty())
             return null;
         
-        var format = _resourceManager.GetString(errCode!);
+        var culture = DbPhrases.Culture ?? CultureInfo.CurrentUICulture;
+        var format = _resourceManager.GetString(errCode!, culture);
         
         return format != null && args is { Length: > 0 } 
             ? string.Format(format, args) 

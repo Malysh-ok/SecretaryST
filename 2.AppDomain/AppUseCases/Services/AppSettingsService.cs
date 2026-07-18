@@ -19,14 +19,14 @@ public class AppSettingsService
     /// <summary>
     /// Получаем наименование языка из настроек.
     /// </summary>
-    private string GetLangConfigItem()
-        => GetConfigItem("Lang") ?? string.Empty;
+    private string? GetLangConfigItem()
+        => GetConfigItem(LangKey);
 
     /// <summary>
     /// Сохраняем наименование языка в настройки.
     /// </summary>
     private void SetOrUpdateLangConfigItem(string value)
-        => SetConfigItem("Lang", value);
+        => SetConfigItem(LangKey, value);
 
     #endregion
 
@@ -56,6 +56,11 @@ public class AppSettingsService
     /// Сервис локализации приложения.
     /// </summary>
     public AppLocalizationService AppLocalization { get; }
+    
+    /// <summary>
+    /// Ключ для доступа к настройке языка в файле конфигурации.
+    /// </summary>
+    public const string LangKey = "Lang";
 
     /// <summary>
     /// Конструктор.

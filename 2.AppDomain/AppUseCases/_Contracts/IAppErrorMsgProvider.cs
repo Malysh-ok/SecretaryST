@@ -1,6 +1,5 @@
 ﻿using AppDomain.AppExceptions;
 using Common.BaseComponents.Components.Exceptions;
-using ProblemDomain.ProblemExceptions;
 
 namespace AppDomain.AppUseCases._Contracts;
 

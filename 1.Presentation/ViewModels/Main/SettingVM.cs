@@ -42,7 +42,7 @@ public sealed class SettingVM : ObservableRecipient,
     private readonly CompetitionDataService _competitionDataService = null!;
     private readonly RefereeService _refereeService = null!;
     private readonly SportEventService _sportEventService = null!;
-    private readonly LocalizationHelper _localizationHelper = null!;
+    private readonly ViewLocalizationService _viewLocalizationService = null!;
     private readonly ViewModelHelper _viewModelHelper = null!;
 
     /// <summary>
@@ -84,7 +84,7 @@ public sealed class SettingVM : ObservableRecipient,
         _competitionDataService = competitionDataService;
         _refereeService = refereeService;
         _sportEventService =  sportEventService;
-        _localizationHelper = new LocalizationHelper(appSettingsService);
+        _viewLocalizationService = new ViewLocalizationService(appSettingsService);
         _viewModelHelper = new ViewModelHelper(logger, appErrorMsgProvider, statusBarService);
 
         // Соревнования
@@ -111,13 +111,15 @@ public sealed class SettingVM : ObservableRecipient,
         Messenger.Register<LocalizationMessage>(this);
         Messenger.Register<AllCompetitionsMessage>(this);
 
-        // Получение языка локализации из настроек
-        var localization = appSettingsService.AppLocalization;
-        var langName = localization.GetLangFromSetting();
-        CurrLang = localization.SetCurrentLangFromName(langName);
+        // Получаем язык локализации из настроек и отправляем начальное сообщение
+        // (по сути - только главному представлению)
+        var initialLang = appSettingsService.AppLocalization.CurrentLang;
+        Messenger.Send(new LocalizationMessage(initialLang, null));
         
-        // Оповещаем все представления (окна) приложения о смене языка локализации
-        Messenger.Send(new LocalizationMessage(CurrLang, null));
+        // Если при инициализации AppLocalization была ошибка - пишем о ней в лог
+        if (! appSettingsService.AppLocalization.IsInitializedSuccessfully)
+            _viewModelHelper.HandleException(appSettingsService.AppLocalization.InitializationException,
+                this.ToString(), "ctor");
         
         // Обработка исключений "сверху", запуск инициализации если исключений нет
         _viewModelHelper.HandleExceptionsProvider(exceptionsProvider, InitAsync);
@@ -130,13 +132,17 @@ public sealed class SettingVM : ObservableRecipient,
     {
         try
         {
+            // Если текущий язык равен переданному - ничего не делаем
+            if (CurrLang == message.Lang)
+                return;
+            
             // Устанавливаем текущий язык
             CurrLang = message.Lang;
             
             // Локализация представления асинхронно в UI-потоке, но без блокировки
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                if (! _localizationHelper.LocalizeView(_view, message.Lang))
+                if (! _viewLocalizationService.LocalizeView(_view, message.Lang))
                 {
                     // Если локализовать не получилось - возвращаем предыдущий язык
                     CurrLang = message.OldLang;
@@ -285,7 +291,7 @@ public sealed class SettingVM : ObservableRecipient,
                 return;
             }
 
-            // TODO: возможно изменим - Обновляем соревнование, хотя бы потому, чтобы обновилась коллекция сорев, при изменении ShortName одного из них
+            // TODO: возможно изменим - Обновляем соревнование, хотя бы потому, чтобы обновилась коллекция соревнований, при изменении ShortName одного из них
             if (CurrentCompetition != null)
                 // await GetCompetitionDataAsync(CurrentCompetition.Id);
                 CurrentCompetition = CurrentCompetition;
@@ -619,7 +625,7 @@ public sealed class SettingVM : ObservableRecipient,
             // Перезаписываем коллекцию групп дисциплин с null
             DisciplineGroupsWithNull.Clear();
             DisciplineGroupsWithNull.Add(new KeyValuePair<DisciplineGroup?, string>(null, 
-                _localizationHelper.GetLocalizedString(_view, "NullDisplayText")));
+                _viewLocalizationService.GetLocalizedString(_view, "NullDisplayText")));
             disciplineGroupsResult.Value.ForEach(item => DisciplineGroupsWithNull.Add(
                 new KeyValuePair<DisciplineGroup?, string>(item, item.ToString())));
 
@@ -653,7 +659,7 @@ public sealed class SettingVM : ObservableRecipient,
             // Перезаписываем коллекцию групп дисциплин с null
             DisciplineSubGroupsWithNull.Clear();
             DisciplineSubGroupsWithNull.Add(new KeyValuePair<DisciplineSubGroup?, string>(null, 
-                _localizationHelper.GetLocalizedString(_view, "NullDisplayText")));
+                _viewLocalizationService.GetLocalizedString(_view, "NullDisplayText")));
             disciplineSubGroupsResult.Value.ForEach(item => 
                 DisciplineSubGroupsWithNull.Add(new KeyValuePair<DisciplineSubGroup?, string>(item, item.ToString())));
 
@@ -748,7 +754,7 @@ public sealed class SettingVM : ObservableRecipient,
     public ICommand RemoveRefereeCommand { get; } = null!;
     
     /// <summary>
-    /// Команда перенумерования судей.
+    /// Команда перенумеровывания судей.
     /// </summary>
     public ICommand RenumberRefereesCommand { get; } = null!;
 

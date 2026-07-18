@@ -3,6 +3,8 @@ using AppDomain.AppEntities;
 using AppDomain.AppExceptions;
 using AppDomain.AppUseCases._Contracts;
 using Common.BaseComponents.Components;
+using Common.BaseComponents.Components.Exceptions;
+using Common.BaseExtensions;
 using Common.BaseExtensions.Collections;
 
 // ReSharper disable MemberCanBePrivate.Global
@@ -15,14 +17,9 @@ namespace AppDomain.AppUseCases.Services;
 public class AppLocalizationService
 {
     /// <summary>
-    /// Название языка по умолчанию.
+    /// Ключ текущего языка в словаре <see cref="Languages"/>.
     /// </summary>
-    private const string DefaultLangName = "en-US";
-    
-    /// <summary>
-    /// Название русского языка.
-    /// </summary>
-    private const string RuLangName = "ru-RU";
+    private LangEnm _currentLangKey;
 
     /// <summary>
     /// Провайдер сообщений об ошибках предметной области приложения.
@@ -30,193 +27,185 @@ public class AppLocalizationService
     private readonly IAppErrorMsgProvider _appErrorMsgProvider;
 
     /// <summary>
-    /// Делегат, получающий наименование из настроек.
+    /// Делегат, получающий наименование языка из настроек.
     /// </summary>
-    private readonly Func<string> _getLangDelegate;
+    // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
+    private readonly Func<string?> _getLangDelegate;
 
     /// <summary>
-    /// Делегат, устанавливающий наименование в настройках.
+    /// Делегат, сохраняющий наименование языка в настройках.
     /// </summary>
     private readonly Action<string> _setLangDelegate;
+    
+    /// <summary>
+    /// Переводит отображаемые имена всех языков в соответствии с указанной культурой.
+    /// </summary>
+    private void Translate(CultureInfo targetCulture)
+    {
+        Languages.ForEach(item => item.Value.Translate(targetCulture));
+    }
 
     /// <summary>
-    /// Создание языка по умолчанию.
+    /// Получение исключения "Язык = null".
     /// </summary>
-    private Lang CreateDefaultLang() => new(CultureInfo.GetCultureInfo(DefaultLangName));
+    private AppException GetLangIsNullEx()
+    {
+        var ex =  _appErrorMsgProvider.CreateException(
+            AppErrorCodes.LanguageIsNull);
+        
+        return ex;
+    }
 
     /// <summary>
     /// Получение исключения "Язык не найден".
     /// </summary>
     /// <param name="langName">Наименование языка.</param>
-    private AppException GetLangNotFoundEx(string? langName)
+    private AppException GetLangNotFoundEx(string langName)
     {
-        return  _appErrorMsgProvider.CreateException(
-            AppErrorCodes.LanguageNotFound, null, langName ?? "???");
+        var ex =  _appErrorMsgProvider.CreateException(
+            AppErrorCodes.LanguageNotFound, args: langName);
+        
+        return ex;
     }
     
     /// <summary>
-    /// Индекс текущего языка в словаре <see cref="Languages"/>.
+    /// Название языка по умолчанию.
     /// </summary>
-    private LangEnm _langNumber = 0;
+    public const string DefaultLangName = "en-US";
     
     /// <summary>
-    /// Список поддерживаемых приложением языков.
+    /// Название русского языка.
     /// </summary>
-    public Dictionary<LangEnm, Lang> Languages { get; private set; }
+    public const string RuLangName = "ru-RU";
 
     /// <summary>
-    /// Конструктор, запрещающий создание экземпляра без параметров.
+    /// Словарь поддерживаемых языков (ключ – идентификатор языка).
     /// </summary>
-    // ReSharper disable once UnusedMember.Local
-    private AppLocalizationService()
-    {
-        _appErrorMsgProvider = null!;
-        _getLangDelegate = null!;
-        _setLangDelegate = null!;
-        Languages = new Dictionary<LangEnm, Lang>();
-    }
+    public Dictionary<LangEnm, Lang> Languages { get; }
 
+    /// <summary>
+    /// Язык по умолчанию.
+    /// </summary>
+    public Lang DefaultLang => GetLangFromName(DefaultLangName).Value!;
+
+    /// <summary>
+    /// Текущий язык.
+    /// </summary>
+    public Lang CurrentLang => Languages.GetValueOrDefault(_currentLangKey)!;
+
+    /// <summary>
+    /// Исключение, возникшее при инициализации сервиса.
+    /// Если инициализация прошла успешно, значение равно <c>null</c>.
+    /// </summary>
+    public AppException? InitializationException { get; private set; }
+    
+    /// <summary>
+    /// Флаг, проверяющий, была ли инициализация сервиса успешной.
+    /// </summary>
+    public bool IsInitializedSuccessfully => InitializationException == null;
+    
+    
     /// <summary>
     /// Конструктор.
     /// </summary>
     public AppLocalizationService(IAppErrorMsgProvider appErrorMsgProvider, 
-        Func<string> getLangDelegate, Action<string> setLangDelegate) : this()
+        Func<string?> getLangDelegate, Action<string> setLangDelegate)
     {
         _appErrorMsgProvider = appErrorMsgProvider;
         _getLangDelegate = getLangDelegate;
         _setLangDelegate = setLangDelegate;
 
-        // Текущая локализация
-        var appCultureInfo = CreateDefaultLang().GetCultureInfo();
-        
+        // Инициализация словаря языков
+        var defaultCulture = CultureInfo.GetCultureInfo(DefaultLangName);
         Languages = new Dictionary<LangEnm, Lang>
         {
-            { LangEnm.En, new Lang(CultureInfo.GetCultureInfo(DefaultLangName), appCultureInfo) },
-            { LangEnm.Ru, new Lang(CultureInfo.GetCultureInfo(RuLangName), appCultureInfo) },
-            { LangEnm.Fr, new Lang(CultureInfo.GetCultureInfo("fr-FR"), appCultureInfo) },
+            { LangEnm.En, new Lang(CultureInfo.GetCultureInfo(DefaultLangName), defaultCulture) },
+            { LangEnm.Ru, new Lang(CultureInfo.GetCultureInfo(RuLangName), defaultCulture) },
+            { LangEnm.Fr, new Lang(CultureInfo.GetCultureInfo("fr-FR"), defaultCulture) },
         };
+        
+        // Безопасная инициализация: читаем из настроек,
+        // если не получилось – ставим дефолтный язык и устанавливаем InitializationException
+        var initialLangName = _getLangDelegate();
+        var initialLangResult = GetLangFromName(initialLangName);
+        Lang initialLang;
+        if (initialLangResult)
+        {
+            initialLang = initialLangResult.Value!;
+        }
+        else
+        {
+            initialLang = DefaultLang;
+            
+            // Устанавливаем InitializationException и меняем его тип на предупреждение
+            InitializationException = initialLangResult.Excptn as AppException;
+            InitializationException!.ResetExcptnType(ExcptnTypeEnm.Warning);
+        }
+        _currentLangKey = Languages.First(kvp => kvp.Value.Equals(initialLang)).Key;
+        Translate(initialLang.GetCultureInfo());
     }
-
+    
     /// <summary>
-    /// Перевод наименований всех доступных языков приложения в соответствии с локализацией <paramref name="cultureInfo"/>.
-    /// </summary>
-    /// <remarks>
-    /// По сути - локализация свойства <see cref="Lang.DisplayName"/> доступных языков в соответствии с заданной локализацией.
-    /// </remarks>
-    public void Translate(CultureInfo cultureInfo)
-    {
-        Languages.ForEach(item => item.Value.Translate(cultureInfo));
-    }
-
-    /// <summary>
-    /// Получить язык по умолчанию.
-    /// </summary>
-    public Lang GetDefaultLang() => GetFromName(DefaultLangName) 
-                                    ?? Languages.FirstOrDefault(x => x.Value.Name == DefaultLangName).Value;
-
-    /// <summary>
-    /// Получить текущий язык.
-    /// </summary>
-    public Lang? GetCurrentLang() => Languages.GetValueOrDefault(_langNumber);
-
-    /// <summary>
-    /// Получить текущий язык или язык по умолчанию.
-    /// </summary>
-    public Lang GetCurrentOrDefaultLang() => Languages.GetValueOrDefault(_langNumber, GetDefaultLang());
-
-    /// <summary>
-    /// Проверка валидности языка.
+    /// Проверяет, поддерживается ли переданный язык.
     /// </summary>
     /// <remarks>
     /// Проверяется наличие языка в списке доступных языков.
     /// </remarks>
     public Result<bool> ValidateLang(Lang? lang)
     {
-        return lang != null && Languages.KeyByValue(lang, out _)
+        if (lang == null)
+            return Result<bool>.Fail(GetLangIsNullEx());
+
+        return Languages.ContainsValue(lang)
             ? Result<bool>.Done(true)
-            : Result<bool>.Fail(GetLangNotFoundEx(lang?.Name));
+            : Result<bool>.Fail(GetLangNotFoundEx(lang.Name));
     }
 
     /// <summary>
-    /// Проверка валидности языка по его имени.
+    /// Возвращает язык по его имени.
+    /// </summary>
+    public Result<Lang> GetLangFromName(string? langName)
+    {
+        if (langName.IsNullOrEmpty())
+            return Result<Lang>.Fail(GetLangIsNullEx());
+        
+        var lang = Languages.Values.FirstOrDefault(l => l.Name == langName);
+
+        return lang is null 
+            ? Result<Lang>.Fail(GetLangNotFoundEx(langName!)) 
+            : Result<Lang>.Done(lang);
+    }
+
+    /// <summary>
+    /// Получает язык по его имени или, если такой язык не найден, язык по умолчанию.
+    /// </summary>
+    public Lang GetLangFromNameOrDefault(string? langName)
+    {
+        var langResult = GetLangFromName(langName);
+        return langResult
+            ? langResult.Value!
+            : DefaultLang;
+    }
+
+    /// <summary>
+    /// Устанавливает текущий язык.
     /// </summary>
     /// <remarks>
-    /// Проверяется наличие языка в списке доступных языков.
+    /// <para>Если язык <paramref name="lang"/> не найден, то текущий язык не изменяется.</para>
     /// </remarks>
-    public Result<bool> ValidateLang(string? langName)
+    public Result<bool> SetCurrentLang(Lang? lang)
     {
-        return GetFromName(langName) != null
-            ? Result<bool>.Done(true)
-            : Result<bool>.Fail(GetLangNotFoundEx(langName));
+        if (lang == null)
+            return Result<bool>.Fail(GetLangIsNullEx());
+
+        var key = Languages.FirstOrDefault(kvp => kvp.Value.Equals(lang)).Key;
+        if (key == 0)
+            return Result<bool>.Fail(GetLangNotFoundEx(lang.Name));
+
+        _currentLangKey = key;
+        _setLangDelegate(lang.Name);
+        Translate(lang.GetCultureInfo());
+        
+        return Result<bool>.Done(true);
     }
-
-    /// <summary>
-    /// Получить язык по его имени.
-    /// </summary>
-    /// <remarks>
-    /// Если язык не найден и isExceptionIfNotFound = true, генерируется исключение.
-    /// </remarks>
-    public Lang? GetFromName(string? langName, bool isThrowExceptionIfNotFound = false)
-    {
-        var lang = Languages.Values.FirstOrDefault(x => x.Name == langName);
-
-        if (lang is null && isThrowExceptionIfNotFound)
-            throw GetLangNotFoundEx(langName);
-        return lang;
-    }
-
-    /// <summary>
-    /// Получить язык по его имени или язык по умолчанию.
-    /// </summary>
-    public Lang GetFromNameOrDefault(string? langName)
-    {
-        return GetFromName(langName!) ?? GetDefaultLang();
-    }
-
-    /// <summary>
-    /// Установить текущий язык.
-    /// </summary>
-    /// <remarks>
-    /// Если язык <paramref name="lang"/> не найден, то текущий язык не изменяется.
-    /// </remarks>
-    public Lang SetCurrentLang(Lang? lang, bool isThrowExceptionIfNotFound = false)
-    {
-        var langNumber = Languages.FirstOrDefault(x =>  lang != null && x.Value.Name == lang.Name).Key;
-        switch (langNumber)
-        {
-            case 0 when isThrowExceptionIfNotFound:
-                throw GetLangNotFoundEx(lang?.Name);
-            case > 0:
-                _langNumber = langNumber;
-                SetLangToSetting(lang!.Name);        // сохраняем локализацию в настройках
-                break;
-        }
-
-        return GetCurrentOrDefaultLang();
-    }
-
-    /// <summary>
-    /// Установить текущий язык по его имени.
-    /// </summary>
-    /// <remarks>
-    /// Если язык с именем <paramref name="langName"/> не найден, то текущий язык не изменяется.
-    /// </remarks>
-    public Lang SetCurrentLangFromName(string? langName, bool isThrowExceptionIfNotFound = false)
-    {
-        var lang = GetFromName(langName, isThrowExceptionIfNotFound);
-
-        return lang != null
-            ? SetCurrentLang(lang)
-            : GetCurrentOrDefaultLang();
-    }
-    
-    /// <summary>
-    /// Получаем наименование языка из настроек.
-    /// </summary>
-    public string GetLangFromSetting() => _getLangDelegate();
-    
-    /// <summary>
-    /// Сохраняем наименование языка в настройки.
-    /// </summary>
-    public void SetLangToSetting(string langName) => _setLangDelegate(langName);
 }

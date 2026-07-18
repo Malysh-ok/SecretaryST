@@ -249,6 +249,15 @@ namespace AppDomain.AppAssets.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Language argument cannot be null..
+        /// </summary>
+        public static string LanguageIsNull {
+            get {
+                return ResourceManager.GetString("LanguageIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Language &apos;{0}&apos; not found in the available languages list..
         /// </summary>
         public static string LanguageNotFound {
@@ -258,7 +267,7 @@ namespace AppDomain.AppAssets.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Localizing &apos;{0}&apos; view error..
+        ///   Looks up a localized string similar to Localization error for the view associated with &apos;{0}&apos;..
         /// </summary>
         public static string LocalizingError {
             get {

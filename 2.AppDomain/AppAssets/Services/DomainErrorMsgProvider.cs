@@ -26,17 +26,17 @@ public class DomainErrorMsgProvider : IAppErrorMsgProvider, IProblemErrorMsgProv
     /// </summary>
     public DomainErrorMsgProvider()
     {
-        AppPhrases.Culture = CultureInfo.CurrentUICulture;       // устанавливаем языковой стандарт для фраз
         _resourceManager = AppPhrases.ResourceManager;
     }
 
-    /// <inheritdoc cref="IAppErrorMsgProvider" />
+    /// <inheritdoc cref="IAppErrorMsgProvider.GetMessage" />
     public string? GetMessage(string? errCode, params object[]? args)
     {
         if (errCode.IsNullOrEmpty())
             return null;
         
-        var format = _resourceManager.GetString(errCode!);
+        var culture = AppPhrases.Culture ?? CultureInfo.CurrentUICulture;
+        var format = _resourceManager.GetString(errCode!, culture);
         
         return format != null && args is { Length: > 0 } 
             ? string.Format(format, args) 

@@ -36,18 +36,6 @@ public class Lang : IEquatable<Lang>, ICloneable
     /// </summary>
     public CultureInfo GetCultureInfo() 
         => CultureInfo.GetCultureInfo(Name);
-
-    /// <summary>
-    /// Конструктор, запрещающий создание объекта без параметров.
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
-    private Lang()
-    {
-        LCID = 0!;
-        Name = null!;
-        ShortName = null!;
-        DisplayName = null!;
-    }
     
     /// <summary>
     /// Конструктор.
@@ -113,10 +101,31 @@ public class Lang : IEquatable<Lang>, ICloneable
     /// <inheritdoc />
     public bool Equals(Lang? other)
     {
+        if (ReferenceEquals(this, other)) 
+            return true;
+
         return string.Equals(Name, other?.Name, StringComparison.OrdinalIgnoreCase)
                && string.Equals(ShortName, other?.ShortName, StringComparison.OrdinalIgnoreCase);
     }
     
+    /// <summary>
+    /// Сравнение на равенство.
+    /// </summary>
+    public static bool operator ==(Lang? left, Lang? right)
+    {
+        if (left is null || right is null) return false;
+        
+        return left.Equals(right);
+    }
+
+    /// <summary>
+    /// Сравнение на неравенство.
+    /// </summary>
+    public static bool operator !=(Lang? left, Lang? right)
+    {
+        return ! (left == right);
+    }
+
     /// <inheritdoc />
     public override int GetHashCode()
     {

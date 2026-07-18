@@ -333,17 +333,9 @@ public class Repository<TDbContext> : IRepository
                     else
                     {
                         // Ошибка
-                        // return Result<int>.Fail(DbException.Create(
-                        //     $"It is not possible to add an entity of type {typeof(TEntity).Name} with Id = {entity.Id} " +
-                        //     "An entity with this Id already exists.",
-                        //     null,
-                        //     "ru",
-                        //     $"Невозможно добавить сущность типа {typeof(TEntity).Name} с Id = {entity.Id}. " +
-                        //     "Сущность с таким Id уже существует.")
-                        // );
                         return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
-                            DataAccessErrorCodes.EntityAlreadyExistsError, null, 
-                            $"{typeof(TEntity).Name}", $"{entity.Id}"));
+                            DataAccessErrorCodes.EntityAlreadyExistsError, 
+                            args: [$"{typeof(TEntity).Name}", $"{entity.Id}"]));
                     }
 
                     break;
@@ -445,15 +437,9 @@ public class Repository<TDbContext> : IRepository
 
                 case EntityState.Deleted:
                     // Ошибка
-                    // return Result<int>.Fail(DbException.Create(
-                    //     $"It is not possible to update a deleted entity of type {typeof(TEntity).Name}.",
-                    //     null,
-                    //     "ru",
-                    //     $"Невозможно обновить удалённую сущность типа {typeof(TEntity).Name}.")
-                    // );
                     return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
-                        DataAccessErrorCodes.UpdateDeletedEntityError, null,
-                        $"{typeof(TEntity).Name}"));
+                        DataAccessErrorCodes.UpdateDeletedEntityError,
+                        args: $"{typeof(TEntity).Name}"));
             }
             
             return Result<int>.Done(1);

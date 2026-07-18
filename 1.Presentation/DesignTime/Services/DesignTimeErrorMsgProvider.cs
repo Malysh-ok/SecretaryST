@@ -14,7 +14,7 @@ namespace Presentation.DesignTime.Services;
 /// </remarks>
 public class DesignTimeErrorMsgProvider : IAppErrorMsgProvider
 {
-    /// <inheritdoc cref="IAppErrorMsgProvider" />
+    /// <inheritdoc cref="IAppErrorMsgProvider.GetMessage" />
     public string GetMessage(string? code, params object[]? args)
     {
         return $"Design-time message: {code}";
