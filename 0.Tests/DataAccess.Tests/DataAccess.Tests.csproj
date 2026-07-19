@@ -31,11 +31,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\..\1.Presentation\Shell\Setting.xml">
+      <Content Include="..\..\2.AppDomain\AppAssets\Config\Setting.xml">
         <Link>Setting.xml</Link>
-        <!--Копируем файл после компиляции-->
+          <!--Копируем файл после компиляции-->
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        <TargetPath>Config\%(Filename)%(Extension)</TargetPath>
       </Content>
     </ItemGroup>
 

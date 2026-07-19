@@ -81,23 +81,6 @@
       <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     </ItemGroup>
 
-    <!--Копируем необходимые файлы после компиляции-->
-    <ItemGroup>
-        <ContentWithTargetPath Include="Setting.xml">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <TargetPath>Config\%(Filename)%(Extension)</TargetPath>
-        </ContentWithTargetPath>
-<!--
-        <ContentWithTargetPath Include="Setting.xml">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <TargetPath>Config\%(Filename)%(Extension)</TargetPath>
-        </ContentWithTargetPath>
--->
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Resources\" />
-    </ItemGroup>
-
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <PropertyGroup>
             <!-- %3B is semicolon (;)  -->

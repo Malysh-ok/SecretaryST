@@ -12,6 +12,11 @@ public class AppSettingsService
     #region [---------- НЕ публичные члены ----------]
     
     /// <summary>
+    /// Провайдер, извлекающий ресурсы, встроенные в исполняемую сборку приложения
+    /// </summary>
+    private readonly IEmbeddedResourceProvider _resourceProvider;
+
+    /// <summary>
     /// Конфигурация (настройки).
     /// </summary>
     private readonly Configuration _config;
@@ -27,6 +32,28 @@ public class AppSettingsService
     /// </summary>
     private void SetOrUpdateLangConfigItem(string value)
         => SetConfigItem(LangKey, value);
+
+        
+    /// <summary>
+    /// Гарантирует наличие файла настроек. Если файл отсутствует, извлекает его из встроенного ресурса.
+    /// </summary>
+    private void EnsureSettingsFileExists()
+    {
+        _resourceProvider.EnsureSettingsFileExists(AppDir.SettingFileName, AppDir.SettingFullFilePath);
+    }
+
+    /// <summary>
+    /// Создание конфигурации.
+    /// </summary>
+    private Configuration CreateConfig(AppDirService appDir)
+    {
+        var configurationFileMap = new ExeConfigurationFileMap
+        {
+            ExeConfigFilename = appDir.SettingFullFilePath
+        };
+
+        return ConfigurationManager.OpenMappedExeConfiguration(configurationFileMap, ConfigurationUserLevel.None);
+    }
 
     #endregion
 
@@ -65,17 +92,23 @@ public class AppSettingsService
     /// <summary>
     /// Конструктор.
     /// </summary>
-    public AppSettingsService(IAppErrorMsgProvider appErrorMsgProvider, AppDirService appDir, AppInfo appInfo)
+    public AppSettingsService(
+        IAppErrorMsgProvider appErrorMsgProvider, 
+        IEmbeddedResourceProvider resourceProvider,
+        AppDirService appDir, 
+        AppInfo appInfo)
     {
+        _resourceProvider = resourceProvider;
         AppName = appInfo.Name;
         AppVersion = appInfo.Version;
         AppBuildDate = appInfo.BuildDate;
         AppDir = appDir;
-        var configurationFileMap = new ExeConfigurationFileMap
-        {
-            ExeConfigFilename = appDir.SettingFullFilePath
-        };
-        _config = ConfigurationManager.OpenMappedExeConfiguration(configurationFileMap, ConfigurationUserLevel.None);
+
+        // Сначала создаем файл настроек (если отсутствует)
+        EnsureSettingsFileExists();
+        
+        _config = CreateConfig(appDir);
+        
         AppLocalization = new AppLocalizationService(appErrorMsgProvider, GetLangConfigItem, SetOrUpdateLangConfigItem);
     }
 

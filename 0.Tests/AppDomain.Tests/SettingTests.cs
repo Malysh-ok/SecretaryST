@@ -23,13 +23,29 @@ public class SettingTests
     public void LocalizationTest()
     {
         IAppErrorMsgProvider appErrorMsgProvider = new DomainErrorMsgProvider();
+        IEmbeddedResourceProvider embeddedResourceProvider = new EmbeddedResourceProvider();
         var testAppInfo = ServiceFactory.CreateAppInfo("Test", new Version(1,0,0,0), DateTime.Now);
         var appDirService = ServiceFactory.CreateAppDirService(appErrorMsgProvider);
-        var appSettingService = ServiceFactory.CreateAppSettingService(appErrorMsgProvider, appDirService, testAppInfo);
+        var appSettingService = ServiceFactory.CreateAppSettingService(
+            appErrorMsgProvider, embeddedResourceProvider, appDirService, testAppInfo);
         var appLocalization = appSettingService.AppLocalization;
         Assert.That(appLocalization.InitializationException, Is.Null, 
             "Исключение должно отсутствовать.");
-        
+
+        {
+            var isOk1 = appLocalization.ValidateLang(null);
+            Assert.That(isOk1, Is.False,
+                "Должно быть False.");
+
+            var isOk2 = appLocalization.ValidateLangName(null);
+            Assert.That(isOk2, Is.False,
+                "Должно быть False.");
+
+            var isOk3 = appLocalization.ValidateLangName("ru-RU");
+            Assert.That(isOk3, Is.True,
+                "Должно быть True.");
+        }
+
         {
             var langResult = appLocalization.GetLangFromName("fr-FR");
 

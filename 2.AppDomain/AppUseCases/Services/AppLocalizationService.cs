@@ -127,38 +127,51 @@ public class AppLocalizationService
         // Безопасная инициализация: читаем из настроек,
         // если не получилось – ставим дефолтный язык и устанавливаем InitializationException
         var initialLangName = _getLangDelegate();
-        var initialLangResult = GetLangFromName(initialLangName);
         Lang initialLang;
-        if (initialLangResult)
+        var isSetException = false;
+        if (ValidateLangName(initialLangName))
         {
-            initialLang = initialLangResult.Value!;
+            initialLang = GetLangFromName(initialLangName).Value!;
         }
         else
         {
             initialLang = DefaultLang;
-            
+            isSetException = true;
+        }
+        var culture = initialLang.GetCultureInfo();
+        CultureInfo.CurrentUICulture = culture;
+        CultureInfo.CurrentCulture = culture;
+        if (isSetException)
+        {
             // Устанавливаем InitializationException и меняем его тип на предупреждение
-            InitializationException = initialLangResult.Excptn as AppException;
+            InitializationException = GetLangFromName(initialLangName).Excptn as AppException;
             InitializationException!.ResetExcptnType(ExcptnTypeEnm.Warning);
         }
+
         _currentLangKey = Languages.First(kvp => kvp.Value.Equals(initialLang)).Key;
-        Translate(initialLang.GetCultureInfo());
+        Translate(culture);
     }
     
     /// <summary>
-    /// Проверяет, поддерживается ли переданный язык.
+    /// Проверяет, поддерживается ли язык.
     /// </summary>
     /// <remarks>
     /// Проверяется наличие языка в списке доступных языков.
     /// </remarks>
-    public Result<bool> ValidateLang(Lang? lang)
+    public bool ValidateLang(Lang? lang)
     {
-        if (lang == null)
-            return Result<bool>.Fail(GetLangIsNullEx());
+        return lang != null && Languages.ContainsValue(lang);
+    }
 
-        return Languages.ContainsValue(lang)
-            ? Result<bool>.Done(true)
-            : Result<bool>.Fail(GetLangNotFoundEx(lang.Name));
+    /// <summary>
+    /// Проверяет, поддерживается ли язык по его названию.
+    /// </summary>
+    /// <remarks>
+    /// Проверяется наличие языка в списке доступных языков.
+    /// </remarks>
+    public bool ValidateLangName(string? langName)
+    {
+        return langName != null && Languages.Values.Any(l => l.Name == langName);
     }
 
     /// <summary>

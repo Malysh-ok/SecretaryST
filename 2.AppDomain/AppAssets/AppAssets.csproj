@@ -14,6 +14,9 @@
         <LastGenOutput>AppPhrases.Designer.cs</LastGenOutput>
         <CustomToolNamespace>AppDomain.AppAssets.Strings</CustomToolNamespace>
       </EmbeddedResource>
+      <EmbeddedResource Include="Config\Setting.xml">
+        <TargetPath>Config\Setting.xml</TargetPath>
+      </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>

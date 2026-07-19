@@ -53,8 +53,9 @@ public partial class App
     {
         services
             // Регистрируем сервисы предметной области приложения (AppDomain)
-            .AddSingleton(ServiceFactory.CreateAppInfoFromAssembly())           // регистрируем AppInfo
-            .AddSingleton<IAppErrorMsgProvider, DomainErrorMsgProvider>()       // регистрируем провайдер сообщений об ошибках
+            .AddSingleton(ServiceFactory.CreateAppInfoFromAssembly())               // регистрируем AppInfo
+            .AddSingleton<IAppErrorMsgProvider, DomainErrorMsgProvider>()           // регистрируем провайдер сообщений об ошибках
+            .AddSingleton<IEmbeddedResourceProvider, EmbeddedResourceProvider>()    // регистрируем провайдер ресурсов
             .AddSingleton<AppDirService>(sp =>
             {
                 var provider = sp.GetRequiredService<IAppErrorMsgProvider>();
@@ -62,10 +63,11 @@ public partial class App
             })                                                                  // регистрируем сервис директорий приложения
             .AddSingleton<AppSettingsService>(sp =>
             {
-                var provider = sp.GetRequiredService<IAppErrorMsgProvider>();
+                var errProvider = sp.GetRequiredService<IAppErrorMsgProvider>();
+                var resourceProvider = sp.GetRequiredService<IEmbeddedResourceProvider>();
                 var appDir = sp.GetRequiredService<AppDirService>();
                 var appInfo = sp.GetRequiredService<AppInfo>();
-                return ServiceFactory.CreateAppSettingService(provider, appDir, appInfo);
+                return ServiceFactory.CreateAppSettingService(errProvider, resourceProvider, appDir, appInfo);
             })                                                                  // регистрируем сервис настроек приложения
 
             // Регистрируем сервисы предметной области (ProblemDomain)
@@ -93,14 +95,14 @@ public partial class App
             // Регистрируем общие сервисы (Common)
             .AddSingleton<ILogger>(sp =>
             {
-                var appSettings = sp.GetRequiredService<AppSettingsService>();
+                var appDirService = sp.GetRequiredService<AppDirService>();
                 return new LoggerConfiguration()
                        .MinimumLevel.Information()
                        // REMARK: Тут баг в Rider с раскраской консоли (https://youtrack.jetbrains.com/issue/RIDER-71410)
                        // Костыль такой: в настройках проекта поменять выходной тип с WinExe на Exe.
                        // П.С. Для темной темы лучше использовать AnsiConsoleTheme.Sixteen, а не AnsiConsoleTheme.Literate, SystemConsoleTheme.Colored.
                        .WriteTo.Console(theme: AnsiConsoleTheme.Sixteen)
-                       .WriteTo.File(Path.Combine(appSettings.AppDir.LogsPath, "Application-.log"),
+                       .WriteTo.File(Path.Combine(appDirService.LogsPath, "Application-.log"),
                            rollingInterval: RollingInterval.Day,
                            retainedFileCountLimit: 50)
                        .CreateLogger();
@@ -133,39 +135,23 @@ public partial class App
         var dataAccessErrorMsgProvider = _serviceProvider.GetRequiredService<DataAccessErrorMsgProvider>();
         try
         {
-            // Устанавливаем культуру приложения ДО создания сервиса настроек приложения
-            {
-                // Получаем название языка локализации из файла настроек
-                var appDirService = _serviceProvider.GetRequiredService<AppDirService>();
-                var config = ConfigurationManager.OpenMappedExeConfiguration(
-                    new ExeConfigurationFileMap { ExeConfigFilename = appDirService.SettingFullFilePath },
-                    ConfigurationUserLevel.None);
-                var langName = config.AppSettings.Settings[AppSettingsService.LangKey]?.Value;
-
-                // Если название языка не найдено - устанавливаем название по умолчанию
-                if (langName == null || ! langName.IsValidCulture())
-                    langName = AppLocalizationService.DefaultLangName;
-
-                // Устанавливаем язык культуры
-                var culture = CultureInfo.GetCultureInfo(langName);
-                CultureInfo.CurrentUICulture = culture;
-                CultureInfo.CurrentCulture = culture;
-            }
-
             // Инициализация ViewModelLocator
             ViewModelLocator.Initialize(_serviceProvider);
 
-            // Получаем сервис настроек приложения
-            var appSettingService = _serviceProvider.GetRequiredService<AppSettingsService>();
+            // Получаем сервис директорий приложения
+            var appDirService = _serviceProvider.GetRequiredService<AppDirService>();
 
             // Создаем каталоги приложения
-            var result = appSettingService.AppDir.CreateAppDirs();
+            var result = appDirService.CreateAppDirs();
             if (! result)
             {
                 exceptionsProvider.Exception = domainErrorMsgProvider.CreateFatalException(result.Excptn);
                 exceptionsProvider.IsFatal = true;
                 return;
             }
+
+            // Получаем сервис настроек приложения (с целью выявления исключений)
+            _ = _serviceProvider.GetRequiredService<AppSettingsService>();
             
             var repositoryHelper = _serviceProvider.GetRequiredService<IRepositoryHelper>();
 

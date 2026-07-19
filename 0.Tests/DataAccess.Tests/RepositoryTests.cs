@@ -230,9 +230,11 @@ public class RepositoryTests
             // Создаем сервис настроек приложения и создаем необходимые каталоги
             // (без каталога метод dbContext.Database.MigrateAsync вызовет ошибку)
             IAppErrorMsgProvider appErrorMsgProvider = new DomainErrorMsgProvider();
+            IEmbeddedResourceProvider embeddedResourceProvider = new EmbeddedResourceProvider();
             var testAppInfo = ServiceFactory.CreateAppInfo("Test", new Version(1,0,0,0), DateTime.Now);
             var appDirService = ServiceFactory.CreateAppDirService(appErrorMsgProvider);
-            var appSettingService = ServiceFactory.CreateAppSettingService(appErrorMsgProvider, appDirService, testAppInfo);
+            var appSettingService = ServiceFactory.CreateAppSettingService(
+                appErrorMsgProvider, embeddedResourceProvider, appDirService, testAppInfo);
             var result = appDirService.CreateAppDirs();
             Assert.That(result.Excptn, Is.Null, result.Excptn?.Message);
         

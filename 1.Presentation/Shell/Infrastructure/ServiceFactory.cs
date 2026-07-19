@@ -49,14 +49,16 @@ public static class ServiceFactory
     /// Создаёт экземпляр <see cref="AppSettingsService"/>.
     /// </summary>
     /// <param name="errorMsgProvider">Провайдер сообщений об ошибках.</param>
+    /// <param name="resourceProvider">Провайдер доступа к ресурсам сборки.</param>
     /// <param name="appDirService">Сервис для работы с путями.</param>
     /// <param name="appInfo">Информация о приложении.</param>
     /// <returns>Сконфигурированный <see cref="AppSettingsService"/>.</returns>
     public static AppSettingsService CreateAppSettingService(
         IAppErrorMsgProvider errorMsgProvider,
+        IEmbeddedResourceProvider resourceProvider,
         AppDirService appDirService,
         AppInfo appInfo)
-        => new(errorMsgProvider, appDirService, appInfo);
+        => new(errorMsgProvider, resourceProvider, appDirService, appInfo);
 
     /// <summary>
     /// Создаёт экземпляр <see cref="DbConfigurator"/>.

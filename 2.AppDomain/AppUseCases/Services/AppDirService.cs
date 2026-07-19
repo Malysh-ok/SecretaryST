@@ -22,7 +22,7 @@ public class AppDirService
     /// <summary>
     /// Наименование файла конфигурации.
     /// </summary>
-    private const string SettingFileName = "Setting.xml";
+    public string SettingFileName => "Setting.xml";
     
     /// <summary>
     /// Путь к корневой папке приложения (там, где exe-файл). 
