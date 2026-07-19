@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Configuration;
-using System.Globalization;
 using System.IO;
 using System.Windows;
 using AppDomain.AppAssets.Services;
 using AppDomain.AppEntities;
 using AppDomain.AppUseCases._Contracts;
 using AppDomain.AppUseCases.Services;
-using Common.BaseExtensions;
 using Common.WpfModule.Ui.Services;
 using Common.WpfModule.Ui.Services._Contracts;
 using Common.WpfModule.Ui.Views._Contracts;
@@ -127,6 +124,7 @@ public partial class App
     /// <summary>
     /// Обработчик события запуска приложения.
     /// </summary>
+    // ReSharper disable once AsyncVoidEventHandlerMethod
     private async void OnStartup(object sender, StartupEventArgs e)
     {
         // Получаем необходимые сервисы

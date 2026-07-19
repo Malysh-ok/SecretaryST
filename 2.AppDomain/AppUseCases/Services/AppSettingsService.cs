@@ -12,6 +12,11 @@ public class AppSettingsService
     #region [---------- НЕ публичные члены ----------]
     
     /// <summary>
+    /// Ключ для доступа к настройке языка в файле конфигурации.
+    /// </summary>
+    private const string LangKey = "Lang";
+
+    /// <summary>
     /// Провайдер, извлекающий ресурсы, встроенные в исполняемую сборку приложения
     /// </summary>
     private readonly IEmbeddedResourceProvider _resourceProvider;
@@ -37,9 +42,9 @@ public class AppSettingsService
     /// <summary>
     /// Гарантирует наличие файла настроек. Если файл отсутствует, извлекает его из встроенного ресурса.
     /// </summary>
-    private void EnsureSettingsFileExists()
+    private void EnsureSettingsFileExists(AppDirService appDir)
     {
-        _resourceProvider.EnsureSettingsFileExists(AppDir.SettingFileName, AppDir.SettingFullFilePath);
+        _resourceProvider.EnsureSettingsFileExists(appDir.SettingFileName, appDir.SettingFullFilePath);
     }
 
     /// <summary>
@@ -77,17 +82,13 @@ public class AppSettingsService
     /// <summary>
     /// Сервис директорий приложения.
     /// </summary>
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public AppDirService AppDir { get; }
 
     /// <summary>
     /// Сервис локализации приложения.
     /// </summary>
     public AppLocalizationService AppLocalization { get; }
-    
-    /// <summary>
-    /// Ключ для доступа к настройке языка в файле конфигурации.
-    /// </summary>
-    public const string LangKey = "Lang";
 
     /// <summary>
     /// Конструктор.
@@ -105,7 +106,7 @@ public class AppSettingsService
         AppDir = appDir;
 
         // Сначала создаем файл настроек (если отсутствует)
-        EnsureSettingsFileExists();
+        EnsureSettingsFileExists(appDir);
         
         _config = CreateConfig(appDir);
         
