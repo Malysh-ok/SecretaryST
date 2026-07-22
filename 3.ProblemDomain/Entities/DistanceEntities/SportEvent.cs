@@ -5,6 +5,7 @@ using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 // ReSharper disable InvalidXmlDocComment
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace ProblemDomain.Entities.DistanceEntities;
 
@@ -20,11 +21,10 @@ public sealed class SportEvent
     /// <inheritdoc />
     /// <param name="isShort">Признак короткой дистанции.</param>
     /// <param name="difficulty">Категория сложности маршрута или класс дистанции.</param>
-    private SportEvent(string name, bool? isShort, Difficulty.IdEnm difficulty, string? description = null) 
+    private SportEvent(string name, bool? isShort, string? description = null) 
         : base(name, description)
     {
         IsShort = isShort;
-        Difficulty = difficulty;
     }
 
     /// <summary>
@@ -48,11 +48,13 @@ public sealed class SportEvent
     /// <inheritdoc />
     /// <param name="discipline">Дисциплина.</param>
     /// <param name="competitionData">Соревнование.</param>
-    public SportEvent(string name, bool? isShort, Difficulty.IdEnm difficulty, Discipline discipline,
+    public SportEvent(string name, bool? isShort, Difficulty difficulty, Discipline discipline,
             CompetitionData competitionData, string? description = null) 
-        : this(name, isShort, difficulty, description)
+        : this(name, isShort, description)
     {
+        Difficulty = difficulty;
         Discipline = discipline;
+        DisciplineGroupId = Discipline.DisciplineGroupId;
         CompetitionData = competitionData;
     }
 
@@ -62,9 +64,15 @@ public sealed class SportEvent
     public bool? IsShort { get; set; }
 
     /// <summary>
-    /// Категория сложности маршрута или класс дистанции.
+    /// Связь с трудностью (объектом-владельцем).
     /// </summary>
-    public Difficulty.IdEnm Difficulty { get; set; }
+    /// <remarks>
+    /// Категория сложности маршрута или класс дистанции.
+    /// </remarks>
+    public DifficultyEnm DifficultyId { get; set; }
+    
+    /// <inheritdoc cref="DisciplineId"/>
+    public Difficulty Difficulty { get; set; } = null!;
 
     /// <summary>
     /// Связь с дисциплиной (объектом-владельцем).
@@ -73,6 +81,14 @@ public sealed class SportEvent
 
     /// <inheritdoc cref="DisciplineId"/>
     public Discipline Discipline { get; set; } = null!;
+    
+    /// <summary>
+    /// Связь с группой дисциплин.
+    /// </summary>
+    /// <remarks>
+    /// Необходимо для составного внешнего ключа к трудности ({ DifficultyId, DisciplineGroupId } -> <see cref="Difficulty"/>)
+    /// </remarks>
+    public DisciplineGroupEnm DisciplineGroupId { get; set; }
     
     /// <summary>
     /// Связь с соревнованием (объектом-владельцем).
@@ -108,6 +124,7 @@ public sealed class SportEvent
         destination.IsShort = IsShort;
         destination.Difficulty = Difficulty;
         destination.Discipline = Discipline;
+        destination.CompetitionData = CompetitionData;
         destination.Description = Description;
     }
     

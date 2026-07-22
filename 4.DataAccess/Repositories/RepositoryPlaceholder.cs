@@ -477,4 +477,52 @@ public static class RepositoryPlaceholder
 
         return Result<List<SportUnitType>>.Done(sportUnitTypeLst);
     }
+    
+    /// <summary>
+    /// Заполняем трудности.
+    /// </summary>
+    public static async Task<Result<List<Difficulty>>> FillDifficulties(IRepository repository)
+    {
+        // Удаляем трудности
+        var result = repository.RemoveAllQuickly<Difficulty>();
+        if (!result.HasValue)
+            return Result<List<Difficulty>>.Fail(result.Excptn!);
+
+        var difficultyLst = new List<Difficulty>
+        {
+            new(DifficultyEnm.LowThird, DisciplineGroupEnm.Trek, "3 ст.с.", "3 степень сложности", "3 степени сложности"),
+            new(DifficultyEnm.LowSecond, DisciplineGroupEnm.Trek, "2 ст.с.", "2 степень сложности", "2 степени сложности"),
+            new(DifficultyEnm.LowFirst, DisciplineGroupEnm.Trek, "1 ст.с.", "1 степень сложности", "1 степени сложности"),
+            new(DifficultyEnm.First, DisciplineGroupEnm.Trek, "1 к.с.", "1 категория сложности", "1 категории сложности"),
+            new(DifficultyEnm.Second, DisciplineGroupEnm.Trek, "2 к.с.", "2 категория сложности", "2 категории сложности"),
+            new(DifficultyEnm.Third, DisciplineGroupEnm.Trek, "3 к.с.", "3 категория сложности", "3 категории сложности"),
+            new(DifficultyEnm.Fourth, DisciplineGroupEnm.Trek, "4 к.с.", "4 категория сложности", "4 категории сложности"),
+            new(DifficultyEnm.Fifth, DisciplineGroupEnm.Trek, "5 к.с.", "5 категория сложности", "5 категории сложности"),
+            new(DifficultyEnm.Sixth, DisciplineGroupEnm.Trek, "6 к.с.", "6 категория сложности", "6 категории сложности"),
+            
+            new(DifficultyEnm.First, DisciplineGroupEnm.Distance, "1 класс", "1 класс", "1 класса"),
+            new(DifficultyEnm.Second, DisciplineGroupEnm.Distance, "2 класс", "2 класс", "2 класса"),
+            new(DifficultyEnm.Third, DisciplineGroupEnm.Distance, "3 класс", "3 класс", "3 класса"),
+            new(DifficultyEnm.Fourth, DisciplineGroupEnm.Distance, "4 класс", "4 класс", "4 класса"),
+            new(DifficultyEnm.Fifth, DisciplineGroupEnm.Distance, "5 класс", "5 класс", "5 класса"),
+            new(DifficultyEnm.Sixth, DisciplineGroupEnm.Distance, "6 класс", "6 класс", "6 класса"),
+            
+            new(DifficultyEnm.First, DisciplineGroupEnm.NordicWalking, "1 класс", "1 класс", "1 класса"),
+            new(DifficultyEnm.Second, DisciplineGroupEnm.NordicWalking, "2 класс", "2 класс", "2 класса"),
+            new(DifficultyEnm.Third, DisciplineGroupEnm.NordicWalking, "3 класс", "3 класс", "3 класса"),
+            new(DifficultyEnm.Fourth, DisciplineGroupEnm.NordicWalking, "4 класс", "4 класс", "4 класса"),
+            new(DifficultyEnm.Fifth, DisciplineGroupEnm.NordicWalking, "5 класс", "5 класс", "5 класса"),
+            new(DifficultyEnm.Sixth, DisciplineGroupEnm.NordicWalking, "6 класс", "6 класс", "6 класса"),
+        };
+
+        result = repository.AddRange(difficultyLst);
+        if (!result)
+            return Result<List<Difficulty>>.Fail(result.Excptn!);
+        
+        result = await repository.SaveChangesAsync();
+        if (!result)
+            return Result<List<Difficulty>>.Fail(result.Excptn!);
+
+        return Result<List<Difficulty>>.Done(difficultyLst);
+    }
 }

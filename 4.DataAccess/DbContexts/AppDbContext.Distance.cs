@@ -1,8 +1,6 @@
-using Common.BaseExtensions.ValueTypes;
 using DataAccess.DbContexts._Contracts.DbContextPartitions;
 using Microsoft.EntityFrameworkCore;
 using ProblemDomain.Entities.DistanceEntities;
-using ProblemDomain.Entities.LibraryEntities;
 
 namespace DataAccess.DbContexts;
 
@@ -49,15 +47,14 @@ public sealed partial class AppDbContext : IDistanceDbContext
 
             entity.Property(e => e.IsShort).IsRequired(false);
                 
-            entity.Property(e => e.Difficulty)
-                .IsRequired()
-                .HasConversion(
-                    enm => enm.ToInt(),
-                    i => i.ToEnumWithException<Difficulty.IdEnm>()
-                );
-
             entity.HasKey(e => e.Id)
                 .HasName("PK_SportEvents");
+            
+            // Вторичный ключ (составной) - Трудность
+            entity.HasOne(se => se.Difficulty)
+                  .WithMany(d => d.SportEvents)
+                  .HasForeignKey(se => new { se.DifficultyId, se.DisciplineGroupId })
+                  .HasConstraintName("FK_SportEvents_DifficultyId_DisciplineGroupId");
 
             // Вторичный ключ - Дисциплина
             entity.HasOne(se => se.Discipline)

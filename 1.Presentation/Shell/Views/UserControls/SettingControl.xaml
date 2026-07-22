@@ -300,7 +300,7 @@
                     </DataGridTextColumn>
                     
                     <!-- Дисциплина -->
-                    <DataGridTemplateColumn Width="1.5*">
+                    <DataGridTemplateColumn Width="1.7*">
                         <DataGridTemplateColumn.Header>
                             <TextBlock Text="{DynamicResource SettingControl_SportEventList_Discipline}" />
                         </DataGridTemplateColumn.Header>
@@ -320,7 +320,7 @@
                     </DataGridTemplateColumn>
 
                     <!-- Трудность -->
-                    <DataGridTemplateColumn Width="*">
+                    <DataGridTemplateColumn Width="0.7*">
                         <DataGridTemplateColumn.Header>
                             <TextBlock 
                                 Text="{DynamicResource SettingControl_SportEventList_Difficulty}"
@@ -330,8 +330,6 @@
                             <DataTemplate>
                                 <ComboBox
                                     ItemsSource="{Binding AvailableDifficulties}"
-                                    DisplayMemberPath="Value"
-                                    SelectedValuePath="Key"
                                     SelectedValue="{Binding Difficulty, 
                                         Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
                                     BorderThickness="0">
@@ -351,7 +349,7 @@
 
                     
                     <!-- Признак короткой дистанции -->
-                    <DataGridTemplateColumn Width="0.8*">
+                    <DataGridTemplateColumn Width="0.7*">
                         <DataGridTemplateColumn.Header>
                             <TextBlock Text="{DynamicResource SettingControl_SportEventList_IsShort}" />
                         </DataGridTemplateColumn.Header>

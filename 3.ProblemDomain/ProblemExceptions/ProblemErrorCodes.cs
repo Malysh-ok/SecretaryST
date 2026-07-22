@@ -26,7 +26,10 @@ public static class ProblemErrorCodes
     
     public const string DetailedCompetitionStatusesLoadError = nameof(DetailedCompetitionStatusesLoadError);
     public const string DetailedCompetitionStatusFindError = nameof(DetailedCompetitionStatusFindError);
-    
+
+    public const string DifficultyLoadError = nameof(DifficultyLoadError);
+    public const string DifficultiesLoadError = nameof(DifficultiesLoadError);
+
     public const string DisciplineGroupsLoadError = nameof(DisciplineGroupsLoadError);
     public const string DisciplineLoadError = nameof(DisciplineLoadError);
     public const string DisciplinesLoadError = nameof(DisciplinesLoadError);

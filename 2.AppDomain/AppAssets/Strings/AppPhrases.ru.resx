@@ -116,4 +116,10 @@
     <data name="LanguageIsNull" xml:space="preserve">
         <value>Аргумент, задающий язык, не может быть равен null.</value>
     </data>
+    <data name="DifficultiesLoadError" xml:space="preserve">
+        <value>Не удалось получить список трудностей из репозитория.</value>
+    </data>
+    <data name="DifficultyLoadError" xml:space="preserve">
+        <value>Не удалось получить трудность из репозитория.</value>
+    </data>
 </root>

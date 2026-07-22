@@ -1,10 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
-using Cogs.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ProblemDomain.Entities.DistanceEntities;
 using ProblemDomain.Entities.LibraryEntities;
-using ProblemDomain.Entities.LibraryEntities.Enums;
 using ProblemDomain.UseCases.Services;
 
 namespace Presentation.ViewModels.Shared.Models;
@@ -17,9 +15,9 @@ public class SportEventObservable : ObservableValidator
     private readonly SportEventService _sportEventService;
 
     /// <summary>
-    /// Словарь текстовых значений для трудностей видов программы.
+    /// Коллекция трудностей видов программы.
     /// </summary>
-    private readonly  ObservableDictionary<(DisciplineGroupEnm, Difficulty.IdEnm), string> _difficultyMap;
+    private readonly IList<Difficulty> _difficulties;
 
     
     /// <summary>
@@ -27,11 +25,11 @@ public class SportEventObservable : ObservableValidator
     /// </summary>
     public SportEventObservable(
         SportEventService sportEventService,
-        ObservableDictionary<(DisciplineGroupEnm, Difficulty.IdEnm), string> difficultyMap,
+        IList<Difficulty> difficulties,
         SportEvent sportEvent)
     {
         _sportEventService = sportEventService;
-        _difficultyMap = difficultyMap;
+        _difficulties = difficulties;
         SportEvent = sportEvent;
         Discipline = sportEvent.Discipline;
         Difficulty = sportEvent.Difficulty;
@@ -61,8 +59,8 @@ public class SportEventObservable : ObservableValidator
                 SportEvent.Discipline = value;
                 
                 // Обновляем коллекцию доступных трудностей
-                AvailableDifficulties = new ObservableCollection<KeyValuePair<Difficulty.IdEnm, string>>(
-                    _sportEventService.GetAvailableDifficulties(_difficultyMap, Discipline));
+                AvailableDifficulties = new ObservableCollection<Difficulty>(
+                    _sportEventService.GetAvailableDifficulties(_difficulties, Discipline));
                 
                 // Обновляем при необходимости признак короткой дистанции
                 if (_sportEventService.IsShortUpdate(value,  SportEvent))
@@ -79,7 +77,7 @@ public class SportEventObservable : ObservableValidator
     /// Текущая трудность вида программы.
     /// </summary>
     [Required]
-    public Difficulty.IdEnm Difficulty
+    public Difficulty Difficulty
     {
         get;
         set
@@ -94,10 +92,7 @@ public class SportEventObservable : ObservableValidator
     /// <summary>
     /// Коллекция допустимых значений трудности для текущей группы дисциплин.
     /// </summary>
-    /// <remarks>
-    /// Необходимость <see cref="KeyValuePair"/> продиктована удобством биндинга в представлении. 
-    /// </remarks>
-    public ObservableCollection<KeyValuePair<Difficulty.IdEnm, string>> AvailableDifficulties
+    public ObservableCollection<Difficulty> AvailableDifficulties
     {
         get;
         set => SetProperty(ref field, value);

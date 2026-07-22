@@ -140,7 +140,8 @@ public class RepositoryTests
     /// </summary>
     private async Task<IList<SportEvent>> GetSportEvents(IRepository repository, CompetitionData competitionData)
     {
-       
+       var difficultyResult = await repository.GetAllAsync<Difficulty>();
+        
         var disciplineResult = await repository.FindAsync<Discipline>(DisciplineEnm.DistanceMountainBunch);
 
         // var sportUnitTypes = (await repository.GetAllAsync<SportUnitType>()).Value!;
@@ -151,11 +152,17 @@ public class RepositoryTests
         var sportEvents = new List<SportEvent>()
         {
             new("Вид программы 1", true,
-                Difficulty.IdEnm.Fourth, disciplineResult.Value!, competitionData),
+                (await repository.GetByConditionAsync<Difficulty>(
+                    d => d.Id == DifficultyEnm.Third && d.DisciplineGroupId == disciplineResult.Value!.DisciplineGroupId)
+                ).Value!, disciplineResult.Value!, competitionData),
             new("Вид программы 2", false,
-                Difficulty.IdEnm.Third, disciplineResult.Value!, competitionData),
+                (await repository.GetByConditionAsync<Difficulty>(
+                    d => d.Id == DifficultyEnm.Fourth && d.DisciplineGroupId == disciplineResult.Value!.DisciplineGroupId)
+                ).Value!, disciplineResult.Value!, competitionData),
             new("Вид программы 3", null,
-                Difficulty.IdEnm.Third, disciplineResult.Value!, competitionData),
+                (await repository.GetByConditionAsync<Difficulty>(
+                    d => d.Id == DifficultyEnm.Fifth && d.DisciplineGroupId == disciplineResult.Value!.DisciplineGroupId)
+                ).Value!, disciplineResult.Value!, competitionData),
         };
         
         return sportEvents;

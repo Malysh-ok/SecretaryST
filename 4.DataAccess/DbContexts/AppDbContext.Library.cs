@@ -115,6 +115,12 @@ public sealed partial class AppDbContext : IConfigurationDbContext
 
             entity.HasKey(dcs => dcs.Id)
                 .HasName("PK_DetailedCompetitionStatuses");
+            
+            // Вторичный ключ - Статус соревнований
+            entity.HasOne(dcs => dcs.CompetitionsStatus)
+                  .WithMany(cs => cs.DetailedCompetitionStatuses)
+                  .HasForeignKey(dcs => dcs.CompetitionsStatusId)
+                  .HasConstraintName("FK_DetailedCompetitionStatuses_CompetitionsStatusId");
         });
     }
         
@@ -238,7 +244,7 @@ public sealed partial class AppDbContext : IConfigurationDbContext
 
             entity.Property(dg => dg.Name).IsRequired().HasMaxLength(100);
                 
-            entity.Property(dg => dg.LongName).IsRequired().HasMaxLength(100);
+            entity.Property(dg => dg.FullName).IsRequired().HasMaxLength(100);
 
             entity.Property(dg => dg.Description).HasMaxLength(300);
 
@@ -331,4 +337,41 @@ public sealed partial class AppDbContext : IConfigurationDbContext
                 .HasName("PK_SportUnitTypes");
         });
     }
+
+    /// <summary>
+    /// Создание трудностей.
+    /// </summary>
+    private void CreateModel_Difficulties(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Difficulty>(entity =>
+        {
+            entity.ToTable($"{CONFIGURATION_TABLE_PRE}Difficulties", CONFIGURATION_SCHEMA_NAME, 
+                t => t.HasComment("Трудности"));
+
+            entity.Property(d => d.Id).ValueGeneratedNever()
+                  .HasConversion(
+                      enm => enm.ToInt(),
+                      i => i.ToEnumWithException<DifficultyEnm>()
+                  );
+                
+            entity.Property(d => d.Name).IsRequired().HasMaxLength(100);
+            
+            entity.Property(d => d.FullName).HasMaxLength(100);
+
+            entity.Property(d => d.FullNameGenitive).HasMaxLength(100);
+
+            entity.Property(d => d.Description).HasMaxLength(300);
+
+            // Первичный ключ - составной
+            entity.HasKey(d => new { d.Id, d.DisciplineGroupId })
+                  .HasName("PK_Difficulties");
+            
+            // Вторичный ключ - Группа дисциплин
+            entity.HasOne(d => d.DisciplineGroup)
+                  .WithMany(dg => dg.Difficulties)
+                  .HasForeignKey(d => d.DisciplineGroupId)
+                  .HasConstraintName("FK_Difficulties_DisciplineGroupId");
+        });
+    }
+
 }

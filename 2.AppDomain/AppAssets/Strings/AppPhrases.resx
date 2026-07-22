@@ -123,4 +123,10 @@
     <data name="LanguageIsNull" xml:space="preserve">
         <value>Language argument cannot be null.</value>
     </data>
+    <data name="DifficultiesLoadError" xml:space="preserve">
+        <value>Failed to retrieve the list of difficulties from the repository.</value>
+    </data>
+    <data name="DifficultyLoadError" xml:space="preserve">
+        <value>Failed to retrieve the difficulty from the repository.</value>
+    </data>
 </root>

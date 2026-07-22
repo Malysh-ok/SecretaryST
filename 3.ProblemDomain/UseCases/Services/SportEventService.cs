@@ -15,33 +15,6 @@ namespace ProblemDomain.UseCases.Services;
 /// <param name="problemErrorMsgProvider">Провайдер сообщений об ошибках слоя предметной области.</param>
 public class SportEventService(IRepository repository, IProblemErrorMsgProvider problemErrorMsgProvider)
 {
-    // TODO: Временно, видимо
-    // Словарь текстовых значений для трудностей вида программы.
-    private Dictionary<(DisciplineGroupEnm, Difficulty.IdEnm), string> _difficulties = new()
-    {
-        {(DisciplineGroupEnm.Trek, Difficulty.IdEnm.LowThird), "3 ст. сложности"},
-        {(DisciplineGroupEnm.Trek, Difficulty.IdEnm.LowSecond), "2 ст. сложности"},
-        {(DisciplineGroupEnm.Trek, Difficulty.IdEnm.LowFirst), "1 ст. сложности"},
-        {(DisciplineGroupEnm.Trek, Difficulty.IdEnm.First), "1 кат. сложности"},
-        {(DisciplineGroupEnm.Trek, Difficulty.IdEnm.Second), "2 кат. сложности"},
-        {(DisciplineGroupEnm.Trek, Difficulty.IdEnm.Third), "3 кат. сложности"},
-        {(DisciplineGroupEnm.Trek, Difficulty.IdEnm.Fourth), "4 кат. сложности"},
-        {(DisciplineGroupEnm.Trek, Difficulty.IdEnm.Fifth), "5 кат. сложности"},
-        {(DisciplineGroupEnm.Trek, Difficulty.IdEnm.Sixth), "6 кат. сложности"},
-        {(DisciplineGroupEnm.Distance, Difficulty.IdEnm.First), "1 класс дистанции"},
-        {(DisciplineGroupEnm.Distance, Difficulty.IdEnm.Second), "2 класс дистанции"},
-        {(DisciplineGroupEnm.Distance, Difficulty.IdEnm.Third), "3 класс дистанции"},
-        {(DisciplineGroupEnm.Distance, Difficulty.IdEnm.Fourth), "4 класс дистанции"},
-        {(DisciplineGroupEnm.Distance, Difficulty.IdEnm.Fifth), "5 класс дистанции"},
-        {(DisciplineGroupEnm.Distance, Difficulty.IdEnm.Sixth), "6 класс дистанции"},
-        {(DisciplineGroupEnm.NordicWalking, Difficulty.IdEnm.First), "1 класс дистанции"},
-        {(DisciplineGroupEnm.NordicWalking, Difficulty.IdEnm.Second), "2 класс дистанции"},
-        {(DisciplineGroupEnm.NordicWalking, Difficulty.IdEnm.Third), "3 класс дистанции"},
-        {(DisciplineGroupEnm.NordicWalking, Difficulty.IdEnm.Fourth), "4 класс дистанции"},
-        {(DisciplineGroupEnm.NordicWalking, Difficulty.IdEnm.Fifth), "5 класс дистанции"},
-        {(DisciplineGroupEnm.NordicWalking, Difficulty.IdEnm.Sixth), "6 класс дистанции"},
-    };
-    
     /// <summary>
     /// Получение видов программы, связанных с соревнованием.
     /// </summary>
@@ -83,7 +56,10 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
     /// Создание нового вида программы.
     /// </summary>
     /// <param name="competition">Текущее соревнование.</param>
-    public async Task<Result<SportEvent>> CreateSportEventAsync(CompetitionData? competition)
+    /// <param name="availableDisciplines">Коллекция доступных дисциплин.</param>
+    public async Task<Result<SportEvent>> CreateSportEventAsync(
+        CompetitionData? competition, 
+        IList<Discipline> availableDisciplines)
     {
         // Проверяем наличие соревнования
         if (competition == null!)
@@ -94,13 +70,41 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
             );
         }
         
-        // Получаем дисциплину
-        var disciplineResult = await repository.FindAsync<Discipline>(DisciplineEnm.DistanceHiking);
-        if (! disciplineResult)
+        // Получаем дисциплину (по возможности - из дистанций и пешеходка)
+        var discipline = availableDisciplines.FirstOrDefault(d => d.DisciplineSubGroupId == DisciplineSubGroupEnm.Hiking)
+                         ?? availableDisciplines.FirstOrDefault(d => d.DisciplineGroupId == DisciplineGroupEnm.Distance) 
+                         ?? availableDisciplines.First();
+        
+        // Получаем трудность
+        DifficultyEnm difficultyId;
+        if (discipline.DisciplineGroupId == DisciplineGroupEnm.Trek)
+        {
+            // TODO: Маршрут (пока только для мужчин/женщин)
+            difficultyId = competition.CompetitionsStatusId switch
+            {
+                CompetitionsStatusEnm.Municipal     => DifficultyEnm.First,
+                CompetitionsStatusEnm.Regional      => DifficultyEnm.Second,
+                CompetitionsStatusEnm.Interregional => DifficultyEnm.Fourth,
+                _                                   => DifficultyEnm.Fifth,     // всероссийские
+            };
+        }
+        else
+        {
+            // TODO: Дистанция (требует проверки)
+            difficultyId = competition.CompetitionsStatusId switch
+            {
+                CompetitionsStatusEnm.Municipal     => DifficultyEnm.First,
+                CompetitionsStatusEnm.Regional      => DifficultyEnm.Third,
+                CompetitionsStatusEnm.Interregional => DifficultyEnm.Fourth,
+                _                                   => DifficultyEnm.Fifth,     // всероссийские
+            };
+        }
+        var difficultyResult = await GetDifficultyAsync(difficultyId, discipline.DisciplineGroupId);
+        if (! difficultyResult)
         {
             var innerException = problemErrorMsgProvider.CreateException(
-                ProblemErrorCodes.DisciplineLoadError, disciplineResult.Excptn);
-
+                ProblemErrorCodes.DifficultyLoadError, difficultyResult.Excptn);
+        
             return Result<SportEvent>.Fail(
                 problemErrorMsgProvider.CreateException(
                     ProblemErrorCodes.SportEventCreateError, innerException)
@@ -111,8 +115,8 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
         var newSportEvent = new SportEvent(
             "НОВЫЙ ВИД ПРОГРАММЫ",
             null,
-            Difficulty.IdEnm.First,
-            disciplineResult.Value!,
+            difficultyResult.Value!,
+            discipline,
             competition);
 
         // Добавляем в репозиторий
@@ -145,7 +149,6 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
 
         return Result<int>.Done(1);
     }
-
     
     /// <summary>
     /// Получение списка групп дисциплин.
@@ -217,54 +220,58 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
             disciplines
         );
     }
-
     
     /// <summary>
-    /// Получение словаря текстовых значений для трудностей видов программы: (DisciplineGroup, Difficulty) -> string.
+    /// Получение коллекции трудностей видов программы.
     /// </summary>
-    /// <remarks>
-    /// TODO: Временно, потом сделаем с помощью БД.
-    /// </remarks>
-    public async Task<Result<Dictionary<(DisciplineGroupEnm, Difficulty.IdEnm), string>>> GetAllDifficultiesAsync()
+    public async Task<Result<IList<Difficulty>>> GetAllDifficultiesAsync()
     {
-        return Result<Dictionary<(DisciplineGroupEnm, Difficulty.IdEnm), string>>.Done(_difficulties);
+        var difficultiesResult = await repository.GetAllAsync<Difficulty>();
+        
+        return difficultiesResult
+            ? Result<IList<Difficulty>>.Done(difficultiesResult.Value!)
+            : Result<IList<Difficulty>>.Fail(
+                problemErrorMsgProvider.CreateException(
+                    ProblemErrorCodes.DifficultiesLoadError, difficultiesResult.Excptn)
+            );
     }
 
     /// <summary>
-    /// Получение трудности вида программы в виде текста.
+    /// Получение трудности вида программы.
     /// </summary>
-    /// <remarks>
-    /// TODO: Временно, потом сделаем с помощью БД.
-    /// </remarks>
-    public async Task<Result<string>> GetDifficultyAsync(
-        DisciplineGroup disciplineGroup, 
-        Difficulty.IdEnm difficulty)
+    // ReSharper disable once MemberCanBePrivate.Global
+    public async Task<Result<Difficulty>> GetDifficultyAsync(
+        DifficultyEnm difficultyId,
+        DisciplineGroupEnm disciplineGroupId
+        )
     {
-        return Result<string>.Done(_difficulties[(disciplineGroup.Id, difficulty)]);
+        var difficultyResult = await repository.GetByConditionAsync<Difficulty>(
+            d => d.Id == difficultyId && d.DisciplineGroupId == disciplineGroupId);
+        
+        return difficultyResult
+            ? Result<Difficulty>.Done(difficultyResult.Value!)
+            : Result<Difficulty>.Fail(
+                problemErrorMsgProvider.CreateException(
+                    ProblemErrorCodes.DifficultyLoadError, difficultyResult.Excptn)
+            );
     }
     
     /// <summary>
     /// Получение отфильтрованной коллекции значений трудности.
     /// </summary>
-    /// <param name="difficultyMap">Исходный словарь значений трудности</param>
+    /// <param name="difficulties">Исходная коллекция значений трудности</param>
     /// <param name="discipline">Дисциплина, которой ограничиваем значения трудностей.</param>
-    /// <remarks>
-    /// TODO: Пока с использованием KeyValuePair. Когда будем из БД получать - переделаем, видимо.
-    /// </remarks>
-    public IList<KeyValuePair<Difficulty.IdEnm, string>> GetAvailableDifficulties(
-        IDictionary<(DisciplineGroupEnm, Difficulty.IdEnm), string> difficultyMap,
+    public IList<Difficulty> GetAvailableDifficulties(
+        IList<Difficulty> difficulties,
         Discipline? discipline)
     {
         if (discipline == null)
             return [];
-        
-        return new List<KeyValuePair<Difficulty.IdEnm, string>>(
-            difficultyMap
-                .Where(kvp => kvp.Key.Item1 == discipline.DisciplineGroupId)
-                .Select(kvp => new KeyValuePair<Difficulty.IdEnm, string>(kvp.Key.Item2, kvp.Value))
-        );
-    }
 
+        return difficulties
+               .Where(d => d.DisciplineGroupId == discipline.DisciplineGroupId)
+               .ToList();
+    }
     
     /// <summary>
     /// Получение доступности признака короткой дистанции.

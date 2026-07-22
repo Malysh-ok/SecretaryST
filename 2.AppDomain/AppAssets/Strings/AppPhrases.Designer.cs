@@ -204,6 +204,24 @@ namespace AppDomain.AppAssets.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve the list of difficulties from the repository..
+        /// </summary>
+        public static string DifficultiesLoadError {
+            get {
+                return ResourceManager.GetString("DifficultiesLoadError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve the difficulty from the repository..
+        /// </summary>
+        public static string DifficultyLoadError {
+            get {
+                return ResourceManager.GetString("DifficultyLoadError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to retrieve the list of discipline groups from the repository..
         /// </summary>
         public static string DisciplineGroupsLoadError {

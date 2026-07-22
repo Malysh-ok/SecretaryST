@@ -20,7 +20,7 @@ public sealed class RefereeLevel
         : this(
             refereeLevel.Id,
             refereeLevel.Name,
-            refereeLevel.LongName,
+            refereeLevel.FullName,
             refereeLevel.Description
         )
     {
@@ -31,21 +31,21 @@ public sealed class RefereeLevel
     /// </summary>
     /// <param name="id">Идентификатор.</param>
     /// <inheritdoc />
-    /// <param name="longName">Длинное наименование.</param>
-    public RefereeLevel(RefereeLevelEnm id, string name, string longName, string? description = null) 
+    /// <param name="fullName">Длинное наименование.</param>
+    public RefereeLevel(RefereeLevelEnm id, string name, string fullName, string? description = null) 
         : base(name, description)
     {
         Id = id;
-        LongName = longName;
+        FullName = fullName;
     }
     
     /// <inheritdoc cref="AbstractEntity.Id"/>
     public new RefereeLevelEnm Id { get; set; }
     
     /// <summary>
-    /// Длинное наименование.
+    /// Полное наименование.
     /// </summary>
-    public string LongName { get; set; }
+    public string FullName { get; set; }
     
     /// <summary>
     /// Коллекция судей.
@@ -71,7 +71,7 @@ public sealed class RefereeLevel
     {
         destination.Id = Id;
         destination.Name = Name;
-        destination.LongName = LongName;
+        destination.FullName = FullName;
         destination.Description = Description;
     }
     

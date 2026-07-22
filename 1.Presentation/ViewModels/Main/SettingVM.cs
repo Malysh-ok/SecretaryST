@@ -6,7 +6,6 @@ using AppDomain.AppEntities;
 using AppDomain.AppExceptions;
 using AppDomain.AppUseCases._Contracts;
 using AppDomain.AppUseCases.Services;
-using Cogs.Collections;
 using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions.Collections;
 using Common.WpfModule.Components.Collections;
@@ -22,7 +21,6 @@ using Presentation.ViewModels.Shared.Messages;
 using Presentation.ViewModels.Shared.Models;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities;
-using ProblemDomain.Entities.LibraryEntities.Enums;
 using ProblemDomain.UseCases.Services;
 using Serilog;
 
@@ -183,7 +181,7 @@ public sealed class SettingVM : ObservableRecipient,
         await GetDisciplineGroupsAsync();
         await GetDisciplineSubGroupsAsync();
         await GetDisciplinesAsync();
-        await GetDifficultiesDicAsync();
+        await GetDifficultiesAsync();
     }
     
     /// <inheritdoc />
@@ -428,9 +426,9 @@ public sealed class SettingVM : ObservableRecipient,
     #region [---------- Виды программы ----------]
 
     /// <summary>
-    /// Словарь текстовых значений для трудностей вида программы.
+    /// Коллекция трудностей вида программы.
     /// </summary>
-    private readonly ObservableDictionary<(DisciplineGroupEnm, Difficulty.IdEnm), string> _difficultiesDic = [];
+    private IList<Difficulty> _difficulties = [];
 
     /// <summary>
     /// Коллекция Observable-видов программы.
@@ -529,7 +527,7 @@ public sealed class SettingVM : ObservableRecipient,
             // Перезаписываем коллекцию
             SportEventObservables.Clear();
             difficultiesResult.Value.ForEach(item => SportEventObservables.Add(
-                new SportEventObservable(_sportEventService, _difficultiesDic, item)));
+                new SportEventObservable(_sportEventService, _difficulties, item)));
         }
         else
         {
@@ -544,7 +542,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private async Task CreateSportEventAsync()
     {
-        var sportEventResult = await _sportEventService.CreateSportEventAsync(CurrentCompetition);
+        var sportEventResult = await _sportEventService.CreateSportEventAsync(CurrentCompetition, AvailableDisciplines);
         if (sportEventResult)
         {
             // Индекс
@@ -553,7 +551,7 @@ public sealed class SettingVM : ObservableRecipient,
                 index = SportEventObservables.Count;
 
             SportEventObservables.Insert(index, 
-                new SportEventObservable(_sportEventService, _difficultiesDic, sportEventResult.Value!));
+                new SportEventObservable(_sportEventService, _difficulties, sportEventResult.Value!));
                 
             // Увеличиваем индекс
             SportEventObservables.SelectedIndex = ++index;
@@ -697,23 +695,21 @@ public sealed class SettingVM : ObservableRecipient,
     }
     
     /// <summary>
-    /// Получение (обновление) словаря текстовых значений
-    /// для трудностей видов программы: (DisciplineGroup, Difficulty) -> string
+    /// Получение (создание) коллекции трудностей видов программы.
     /// </summary>
-    private async Task GetDifficultiesDicAsync()
+    private async Task GetDifficultiesAsync()
     {
         var difficultiesResult = await _sportEventService.GetAllDifficultiesAsync();
         if (difficultiesResult)
         {
-            // Перезаписываем коллекцию
-            _difficultiesDic.Clear();
-            _difficultiesDic.AddRange(difficultiesResult.Value!);
+            // Создаем коллекцию
+            _difficulties = difficultiesResult.Value!;
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
             _viewModelHelper.HandleException(difficultiesResult.Excptn, 
-                this.ToString(), nameof(GetDifficultiesDicAsync));        
+                this.ToString(), nameof(GetDifficultiesAsync));        
         }
     }
     

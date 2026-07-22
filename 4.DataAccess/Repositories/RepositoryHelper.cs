@@ -152,6 +152,14 @@ public class RepositoryHelper : IRepositoryHelper
         // ReSharper disable once UnusedVariable
         var sportUnitTypeLst = resultSportUnitTypeLst.Value;
 
+        // Добавляем трудности
+        var resultDifficultyLst = 
+            await RepositoryPlaceholder.FillDifficulties(_repository);
+        if (!resultDifficultyLst.HasValue)
+            return Result<bool>.Fail(resultDifficultyLst.Excptn!);
+        // ReSharper disable once UnusedVariable
+        var difficultyLst = resultDifficultyLst.Value;
+            
         return Result<bool>.Done(true);
     }
 }

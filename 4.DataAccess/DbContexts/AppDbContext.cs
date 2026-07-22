@@ -93,6 +93,9 @@ public sealed partial class AppDbContext : AbstractDbContext
         // Создание типов спортивных юнитов.
         CreateModel_SportUnitTypes(modelBuilder);
         
+        // Создание трудностей
+        CreateModel_Difficulties(modelBuilder);
+        
         #endregion
 
         #region [---------- ОБЩИЕ ДАННЫЕ ----------]

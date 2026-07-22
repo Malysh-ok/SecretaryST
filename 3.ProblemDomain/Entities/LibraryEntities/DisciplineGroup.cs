@@ -50,6 +50,12 @@ public sealed class DisciplineGroup
     /// </summary>
     // ReSharper disable once CollectionNeverUpdated.Global
     public ICollection<Discipline> Disciplines { get; set; } = new HashSet<Discipline>();
+    
+    /// <summary>
+    /// Коллекция трудностей.
+    /// </summary>
+    // ReSharper disable once CollectionNeverUpdated.Global
+    public ICollection<Difficulty> Difficulties { get; set; } = new HashSet<Difficulty>();
         
     /// <summary>
     /// Клонирование.
