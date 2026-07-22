@@ -99,14 +99,6 @@ public sealed class SportEvent
     public DisciplineGroupEnm DisciplineGroupId { get; set; }
     
     /// <summary>
-    /// Связь с группой дисциплин.
-    /// </summary>
-    /// <remarks>
-    /// Необходимо для составного внешнего ключа к трудности ({ DifficultyId, DisciplineGroupId } -> <see cref="Difficulty"/>)
-    /// </remarks>
-    public DisciplineGroupEnm DisciplineGroupId { get; set; }
-    
-    /// <summary>
     /// Связь с соревнованием (объектом-владельцем).
     /// </summary>
     public int CompetitionDataId { get; set; }
