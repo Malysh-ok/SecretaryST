@@ -80,7 +80,23 @@ public sealed class SportEvent
     public DisciplineEnm DisciplineId { get; set; }
 
     /// <inheritdoc cref="DisciplineId"/>
-    public Discipline Discipline { get; set; } = null!;
+    public Discipline Discipline
+    {
+        get;
+        set
+        {
+            field = value;
+            DisciplineGroupId = Discipline.DisciplineGroupId;
+        }
+    } = null!;
+
+    /// <summary>
+    /// Связь с группой дисциплин.
+    /// </summary>
+    /// <remarks>
+    /// Необходимо для составного внешнего ключа к трудности ({ DifficultyId, DisciplineGroupId } -> <see cref="Difficulty"/>)
+    /// </remarks>
+    public DisciplineGroupEnm DisciplineGroupId { get; set; }
     
     /// <summary>
     /// Связь с группой дисциплин.
