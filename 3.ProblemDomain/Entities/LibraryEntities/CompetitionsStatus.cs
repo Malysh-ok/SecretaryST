@@ -1,30 +1,17 @@
-using System;
 using System.Collections.Generic;
 using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 // ReSharper disable InvalidXmlDocComment
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace ProblemDomain.Entities.LibraryEntities;
 
 /// <summary>
 /// Статус соревнований.
 /// </summary>
-public sealed class CompetitionsStatus : AbstractEntity, ICloneable, ICopyEntity
+public sealed class CompetitionsStatus : AbstractEntity<CompetitionsStatusEnm>, IEntityCopyable
 {
-    /// <summary>
-    /// Конструктор на основе готового экземпляра.
-    /// </summary>
-    private CompetitionsStatus(CompetitionsStatus competitionsStatus)
-        : this(
-            competitionsStatus.Id,
-            competitionsStatus.Name,
-            competitionsStatus.NamePlural,
-            competitionsStatus.Description
-        )
-    {
-    }
-
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -37,9 +24,6 @@ public sealed class CompetitionsStatus : AbstractEntity, ICloneable, ICopyEntity
         Id = id;
         NamePlural = namePlural;
     }
-    
-    /// <inheritdoc cref="AbstractEntity.Id"/>
-    public new CompetitionsStatusEnm Id { get; set; }
     
     /// <summary>
     /// Наименование во множественном числе.
@@ -60,30 +44,17 @@ public sealed class CompetitionsStatus : AbstractEntity, ICloneable, ICopyEntity
     public ICollection<DetailedCompetitionStatus> DetailedCompetitionStatuses { get; set; } = 
         new HashSet<DetailedCompetitionStatus>();
     
-    /// <summary>
-    /// Клонирование.
-    /// </summary>
-    // ReSharper disable once MemberCanBePrivate.Global
-    public CompetitionsStatus Clone()
-        => new(this);
-    
-    /// <inheritdoc />
-    object ICloneable.Clone() {
-        return Clone();
-    }
-    
-    /// <inheritdoc cref="ICopyEntity.Copy"/>
+    /// <inheritdoc cref="IEntityCopyable.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(CompetitionsStatus destination)
     {
-        destination.Id = Id;
         destination.Name = Name;
         destination.NamePlural = NamePlural;
         destination.Description = Description;
     }
     
     /// <inheritdoc />
-    void ICopyEntity.Copy(IAbstractEntity destination)
+    void IEntityCopyable.Copy(IAbstractEntity destination)
     {
         Copy((CompetitionsStatus)destination);
     }

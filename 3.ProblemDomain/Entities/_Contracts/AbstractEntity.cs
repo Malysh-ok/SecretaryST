@@ -1,11 +1,12 @@
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 
 namespace ProblemDomain.Entities._Contracts;
 
 /// <summary>
 /// Абстрактный класс сущности.
 /// </summary>
-public abstract class AbstractEntity : IAbstractEntity, INamedEntity, IDescriptionedEntity
+public abstract class AbstractEntity<TId> : IAbstractEntity, INamedEntity, IDescriptionedEntity
+    where TId : struct
 {
     /// <summary>
     /// Конструктор.
@@ -19,12 +20,20 @@ public abstract class AbstractEntity : IAbstractEntity, INamedEntity, IDescripti
         Description = description;
     }
 
-    /// <inheritdoc />
-    public int Id { get; set; }
+    /// <inheritdoc cref="IAbstractEntity.Id"/>
+    public TId Id { get; init; }
+    
+    /// <summary>
+    /// Явная реализация IAbstractEntity.
+    /// </summary>
+    object IAbstractEntity.Id => Id;
     
     /// <inheritdoc />
     public virtual string Name { get; set; }
     
     /// <inheritdoc />
-    public string? Description { get; set; }    
+    public string? Description { get; set; }
+    
+    /// <inheritdoc />
+    public bool IsNew => EqualityComparer<TId>.Default.Equals(Id, default);
 }

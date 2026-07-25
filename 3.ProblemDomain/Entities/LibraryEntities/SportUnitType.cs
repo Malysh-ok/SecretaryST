@@ -1,59 +1,47 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Common.BaseExtensions.Collections;
 using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.DistanceEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 // ReSharper disable InvalidXmlDocComment
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace ProblemDomain.Entities.LibraryEntities;
 
 /// <summary>
 /// Тип спортивного юнита.
 /// </summary>
-public sealed class SportUnitType
-    : AbstractEntity, ICloneable, ICopyEntity
+public sealed class SportUnitType : AbstractEntity<SportUnitTypeEnm>, IEntityCopyable
 {
-    /// <summary>
-    /// Конструктор на основе готового экземпляра.
-    /// </summary>
-    private SportUnitType(SportUnitType sportUnitType)
-        : this(
-            sportUnitType.Id,
-            sportUnitType.Name,
-            sportUnitType.AuxName,
-            sportUnitType.Description
-        )
-    {
-    }
-    
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="id">Идентификатор.</param>
     /// <inheritdoc />
     /// <param name="auxName">Вспомогательное наименование.</param>
-    [SuppressMessage("ReSharper", "InvalidXmlDocComment")]
-    public SportUnitType(SportUnitTypeEnm id, string name, 
-        string? auxName = null, string? description = null) 
-        : base(name, description)
+    public SportUnitType(
+        SportUnitTypeEnm id, 
+        string name, 
+        string? auxName = null, 
+        string? description = null) : base(name, description)
     {
         Id = id;
         AuxName = auxName;
     }
-    
-    
-    /// <inheritdoc cref="AbstractEntity.Id"/>
-    public new SportUnitTypeEnm Id { get; set; }
-    
+
     /// <summary>
     /// Вспомогательное наименование.
     /// </summary>
     public string? AuxName { get; set; }
-    
+
     /// <summary>
-    /// Возвращает множество валидных значений типов спортивных юнитов
+    /// Список спортивных юнитов.
+    /// </summary>
+    // ReSharper disable once CollectionNeverUpdated.Global
+    public ICollection<SportUnit> SportUnits { get; set; } = new HashSet<SportUnit>();
+
+    /// <summary>
+    /// TODO: Убрать в бизнес-логику (сервисы). Возвращает множество валидных значений типов спортивных юнитов
     /// для конкретной подгруппы дисциплин <paramref name="disciplineSubGroupEnm"/>.
     /// </summary>
     public static HashSet<SportUnitTypeEnm> GetValidSportUnitType(DisciplineSubGroupEnm disciplineSubGroupEnm)
@@ -130,7 +118,7 @@ public sealed class SportUnitType
     }
 
     /// <summary>
-    /// Возвращает множество валидных значений типов дочерних спортивных юнитов,
+    /// TODO: Убрать в бизнес-логику (сервисы). Возвращает множество валидных значений типов дочерних спортивных юнитов,
     /// для юнита с конкретным типом <paramref name="sportUnitTypeEnm"/>.
     /// </summary>
     public static HashSet<SportUnitTypeEnm> GetValidChildSportUnitType(SportUnitTypeEnm sportUnitTypeEnm)
@@ -165,37 +153,18 @@ public sealed class SportUnitType
         return validSportUnitType;
     }
 
-    /// <summary>
-    /// Список спортивных юнитов.
-    /// </summary>
-    // ReSharper disable once CollectionNeverUpdated.Global
-    public ICollection<SportUnit> SportUnits { get; set; } = new HashSet<SportUnit>();
-    
-    /// <summary>
-    /// Клонирование.
-    /// </summary>
-    // ReSharper disable once MemberCanBePrivate.Global
-    public SportUnitType Clone()
-        => new(this);
-    
-    /// <inheritdoc />
-    object ICloneable.Clone() {
-        return Clone();
-    }
-    
-    /// <inheritdoc cref="ICopyEntity.Copy"/>
+    /// <inheritdoc cref="IEntityCopyable.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(SportUnitType destination)
     {
-        destination.Id = Id;
         destination.Name = Name;
         destination.AuxName = AuxName;
         destination.Description = Description;
     }
-    
+
     /// <inheritdoc />
-    void ICopyEntity.Copy(IAbstractEntity destination)
+    void IEntityCopyable.Copy(IAbstractEntity destination)
     {
         Copy((SportUnitType)destination);
-    }    
+    }
 }

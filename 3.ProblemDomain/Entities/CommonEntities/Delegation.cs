@@ -1,16 +1,15 @@
-using System;
 using System.Collections.Generic;
 using ProblemDomain.Entities._Contracts;
 // ReSharper disable InvalidXmlDocComment
 // ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace ProblemDomain.Entities.CommonEntities;
 
 /// <summary>
 /// Делегация.
 /// </summary>
-public sealed class Delegation 
-    : AbstractEntity, INumberedEntity, ICloneable, ICopyEntity
+public sealed class Delegation : AbstractEntity<int>, INumberedEntity, IEntityCloneable, IEntityCopyable
 {
     /// <summary>
     /// Конструктор для EF.
@@ -28,16 +27,16 @@ public sealed class Delegation
     /// <summary>
     /// Конструктор на основе готового экземпляра.
     /// </summary>
-    private Delegation(Delegation delegation)
+    private Delegation(Delegation source)
         : this(
-            delegation.Number,
-            delegation.Name,
-            delegation.Region,
-            delegation.Representative,
-            delegation.CompetitionData,
-            delegation.Description
+            source.Number,
+            source.Name,
+            source.Region,
+            source.Description
         )
     {
+        RepresentativeId = source.RepresentativeId;
+        CompetitionDataId = source.CompetitionDataId;
     }
     
     /// <summary>
@@ -45,9 +44,13 @@ public sealed class Delegation
     /// </summary>
     /// <inheritdoc />
     /// <param name="representative">Представитель.</param>
-    public Delegation(int number, string name, string region, Representative representative, 
-            CompetitionData competitionData, string? description = null) 
-        : this(number, name, region, description)
+    public Delegation(
+        int number, 
+        string name, 
+        string region, 
+        Representative representative, 
+        CompetitionData competitionData, 
+        string? description = null) : this(number, name, region, description)
     {
         Representative = representative;
         CompetitionData = competitionData;
@@ -89,22 +92,21 @@ public sealed class Delegation
         => new(this);
     
     /// <inheritdoc />
-    object ICloneable.Clone() {
+    object IEntityCloneable.Clone() {
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopyEntity.Copy"/>
+    /// <inheritdoc cref="IEntityCopyable.Copy"/>
     public void Copy(Delegation destination)
     {
         destination.Number = Number;
         destination.Name = Name;
-        destination.Description = Description;
         destination.Region = Region;
-        destination.Representative = Representative;
+        destination.Description = Description;
     }
 
     /// <inheritdoc />
-    void ICopyEntity.Copy(IAbstractEntity destination)
+    void IEntityCopyable.Copy(IAbstractEntity destination)
     {
         Copy((Delegation)destination);
     }

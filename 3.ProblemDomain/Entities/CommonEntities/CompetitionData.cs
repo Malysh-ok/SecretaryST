@@ -4,7 +4,7 @@ using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.DistanceEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
-
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 // ReSharper disable InvalidXmlDocComment
 
 namespace ProblemDomain.Entities.CommonEntities;
@@ -12,8 +12,7 @@ namespace ProblemDomain.Entities.CommonEntities;
 /// <summary>
 /// Соревнование (данные о соревновании).
 /// </summary>
-public sealed class CompetitionData
-    : AbstractEntity, ICloneable, ICopyEntity
+public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEntityCopyable
 {
     /// <summary>
     /// Конструктор для EF.
@@ -30,28 +29,28 @@ public sealed class CompetitionData
         : base(name, description)
     {
         ConductingOrganizations = conductingOrganizations;
-        Venue = venue;
         InitialDate = initialDate;
         EndDate = endDate;
+        Venue = venue;
         ShortName = shortName;
     }
     
     /// <summary>
     /// Конструктор на основе готового экземпляра.
     /// </summary>
-    private CompetitionData(CompetitionData competitionData)
+    private CompetitionData(CompetitionData source)
         : this(
-            competitionData.Name,
-            competitionData.ConductingOrganizations,
-            competitionData.InitialDate,
-            competitionData.EndDate,
-            competitionData.Venue,
-            competitionData.ShortName,
-            competitionData.CompetitionsStatus,
-            competitionData.DetailedCompetitionStatus,
-            competitionData.Description
+            source.Name,
+            source.ConductingOrganizations,
+            source.InitialDate,
+            source.EndDate,
+            source.Venue,
+            source.ShortName,
+            source.Description
         )
     {
+        CompetitionsStatusId = source.CompetitionsStatusId;
+        DetailedCompetitionStatusId = source.DetailedCompetitionStatusId;
     }
 
     /// <summary>
@@ -60,11 +59,16 @@ public sealed class CompetitionData
     /// <inheritdoc />
     /// <param name="competitionsStatus">Статус соревнований.</param>
     /// <param name="detailedCompetitionStatus">Статус и наименования соревнования.</param>
-    public CompetitionData(string name,
-        IList<string> conductingOrganizations, DateTime initialDate, DateTime endDate, string venue, string shortName,
-        CompetitionsStatus competitionsStatus, DetailedCompetitionStatus detailedCompetitionStatus,
-        string? description = null)
-        : this(name, conductingOrganizations, initialDate, endDate, venue, shortName, description)
+    public CompetitionData(
+        string name,
+        IList<string> conductingOrganizations, 
+        DateTime initialDate, 
+        DateTime endDate, 
+        string venue, 
+        string shortName,
+        CompetitionsStatus competitionsStatus, 
+        DetailedCompetitionStatus detailedCompetitionStatus,
+        string? description = null) : this(name, conductingOrganizations, initialDate, endDate, venue, shortName, description)
     {
         CompetitionsStatus = competitionsStatus;
         DetailedCompetitionStatus = detailedCompetitionStatus;
@@ -136,27 +140,25 @@ public sealed class CompetitionData
         => new(this);
     
     /// <inheritdoc />
-    object ICloneable.Clone() {
+    object IEntityCloneable.Clone() {
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopyEntity.Copy"/>
+    /// <inheritdoc cref="IEntityCopyable.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(CompetitionData destination)
     {
         destination.Name = Name;
-        destination.ShortName = ShortName;
-        destination.Description = Description;
         destination.ConductingOrganizations = ConductingOrganizations;
         destination.InitialDate = InitialDate;
         destination.EndDate = EndDate;
         destination.Venue = Venue;
-        destination.CompetitionsStatus = CompetitionsStatus;
-        destination.DetailedCompetitionStatus = DetailedCompetitionStatus;
+        destination.ShortName = ShortName;
+        destination.Description = Description;
     }
     
     /// <inheritdoc />
-    void ICopyEntity.Copy(IAbstractEntity destination)
+    void IEntityCopyable.Copy(IAbstractEntity destination)
     {
         Copy((CompetitionData)destination);
     }

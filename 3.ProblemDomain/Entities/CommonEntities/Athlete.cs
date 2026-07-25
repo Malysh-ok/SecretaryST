@@ -5,14 +5,14 @@ using ProblemDomain.Entities.DistanceEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 // ReSharper disable InvalidXmlDocComment
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace ProblemDomain.Entities.CommonEntities;
 
 /// <summary>
 /// Спортсмен.
 /// </summary>
-public sealed class Athlete
-    : AbstractPersonalityEntity, ICloneable, ICopyEntity
+public sealed class Athlete : AbstractPersonalityEntity, IEntityCloneable, IEntityCopyable
 {
     /// <summary>
     /// Конструктор для EF.
@@ -29,18 +29,18 @@ public sealed class Athlete
     /// <summary>
     /// Конструктор на основе готового экземпляра.
     /// </summary>
-    private Athlete(Athlete delegation)
+    private Athlete(Athlete source)
         : this(
-            delegation.LastName,
-            delegation.FirstName,
-            delegation.BirthDate,
-            delegation.Sex,
-            delegation.Delegation,
-            delegation.SportUnit,
-            delegation.Patronymic,
-            delegation.Description
+            source.LastName,
+            source.FirstName,
+            source.BirthDate,
+            source.Patronymic,
+            source.Description
         )
     {
+        SexId = source.SexId;
+        DelegationId = source.DelegationId;
+        SportUnitId = source.SportUnitId;
     }
     
     /// <summary>
@@ -51,10 +51,15 @@ public sealed class Athlete
     /// <param name="delegation">Делегация.</param>
     /// <param name="sportUnit">Спортивный юнит.</param>
     [SuppressMessage("ReSharper", "InvalidXmlDocComment")]
-    public Athlete(string lastName, string firstName, DateTime birthDate, 
-        Sex sex, Delegation delegation, SportUnit sportUnit,
-        string? patronymic = null, string? description = null) 
-        : this(lastName, firstName, birthDate, patronymic, description)
+    public Athlete(
+        string lastName, 
+        string firstName, 
+        DateTime birthDate, 
+        Sex sex, 
+        Delegation delegation, 
+        SportUnit sportUnit,
+        string? patronymic = null, 
+        string? description = null) : this(lastName, firstName, birthDate, patronymic, description)
     {
         Sex = sex;
         Delegation = delegation;
@@ -93,19 +98,18 @@ public sealed class Athlete
     /// <inheritdoc cref="SportUnitId"/>
     public SportUnit SportUnit { get; set; } = null!;
     
-    /// <summary>
-    /// Клонирование.
-    /// </summary>
+    /// <inheritdoc cref="IEntityCloneable.Clone"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public Athlete Clone()
         => new(this);
     
     /// <inheritdoc />
-    object ICloneable.Clone() {
+    object IEntityCloneable.Clone() {
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopyEntity.Copy"/>
+    /// <inheritdoc cref="IEntityCopyable.Copy"/>
+    // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(Athlete destination)
     {
         destination.LastName = LastName;
@@ -113,13 +117,10 @@ public sealed class Athlete
         destination.Patronymic = Patronymic;
         destination.Description = Description;
         destination.BirthDate = BirthDate;
-        destination.Sex = Sex;
-        destination.Delegation = Delegation;
-        destination.SportUnit = SportUnit;
     }
     
     /// <inheritdoc />
-    void ICopyEntity.Copy(IAbstractEntity destination)
+    void IEntityCopyable.Copy(IAbstractEntity destination)
     {
         Copy((Athlete)destination);
     }

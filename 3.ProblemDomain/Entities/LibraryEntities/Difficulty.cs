@@ -5,30 +5,15 @@ using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.DistanceEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 // ReSharper disable InvalidXmlDocComment
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace ProblemDomain.Entities.LibraryEntities;
 
 /// <summary>
 /// Трудность - категория сложности маршрута или класс дистанции.
 /// </summary>
-public sealed class Difficulty
-    : AbstractEntity, ICloneable, ICopyEntity
+public sealed class Difficulty : AbstractEntity<DifficultyEnm>, IEntityCopyable, IEquatable<Difficulty>
 {
-    /// <summary>
-    /// Конструктор на основе готового экземпляра.
-    /// </summary>
-    private Difficulty(Difficulty difficulty)
-        : this(
-            difficulty.Id,
-            difficulty.DisciplineGroupId,
-            difficulty.Name,
-            difficulty.FullName,
-            difficulty.FullNameGenitive,
-            difficulty.Description
-        )
-    {
-    }
-
     /// <summary>
     /// Конструктор.
     /// </summary>
@@ -37,24 +22,25 @@ public sealed class Difficulty
     /// <param name="fullName">Полное наименование.</param>
     /// <param name="fullNameGenitive">Полное наименование в родительном падеже.</param>
     /// <inheritdoc cref="AbstractEntity(string,string?)"/>
-    public Difficulty(DifficultyEnm id, DisciplineGroupEnm disciplineGroupId, string name, 
-        string fullName, string fullNameGenitive, string? description = null) 
-        : base(name, description)
+    public Difficulty(
+        DifficultyEnm id, 
+        DisciplineGroupEnm disciplineGroupId, 
+        string name, 
+        string fullName, 
+        string fullNameGenitive, 
+        string? description = null) : base(name, description)
     {
         Id = id;
         DisciplineGroupId = disciplineGroupId;
         FullName = fullName;
         FullNameGenitive = fullNameGenitive;
     }
-    
-    /// <inheritdoc cref="AbstractEntity.Id"/>
-    public new DifficultyEnm Id { get; set; }
 
     /// <inheritdoc cref="DisciplineGroup"/>
     /// <remarks>
     /// Вторичный идентификатор.
     /// </remarks>
-    public DisciplineGroupEnm DisciplineGroupId { get; set; }
+    public DisciplineGroupEnm DisciplineGroupId { get; init; }
 
     /// <summary>
     /// Связь с группой дисциплин (объектом-владельцем).
@@ -88,25 +74,11 @@ public sealed class Difficulty
     {
         return Id.ToInt();
     }
-    
-    /// <summary>
-    /// Клонирование.
-    /// </summary>
-    // ReSharper disable once MemberCanBePrivate.Global
-    public Difficulty Clone()
-        => new(this);
-    
-    /// <inheritdoc />
-    object ICloneable.Clone() {
-        return Clone();
-    }
 
-    /// <inheritdoc cref="ICopyEntity.Copy"/>
+    /// <inheritdoc cref="IEntityCopyable.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(Difficulty destination)
     {
-        destination.Id = Id;
-        destination.DisciplineGroupId = DisciplineGroupId;
         destination.Name = Name;
         destination.FullName = FullName;
         destination.FullNameGenitive = FullNameGenitive;
@@ -114,11 +86,36 @@ public sealed class Difficulty
     }
     
     /// <inheritdoc />
-    void ICopyEntity.Copy(IAbstractEntity destination)
+    void IEntityCopyable.Copy(IAbstractEntity destination)
     {
         Copy((Difficulty)destination);
     }
     
+    /// <summary>
+    /// Определяет, равен ли текущий объект другому объекту того же типа.
+    /// </summary>
+    /// <remarks>
+    /// Отличается от стандартного, т.к. здесь составной ключ.
+    /// </remarks>
+    public bool Equals(Difficulty? other)
+    {
+        if (other is null || GetType() != other.GetType()) return false;
+
+        return ReferenceEquals(this, other) 
+               || (Id == other.Id && DisciplineGroupId == other.DisciplineGroupId);     // сравнение составного ключа
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+        => Equals(obj as Difficulty);
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        // Комбинируем хеш-коды обоих полей ключа
+        return HashCode.Combine(Id, DisciplineGroupId);
+    }
+
     /// <inheritdoc />
     public override string ToString()
         => Name;

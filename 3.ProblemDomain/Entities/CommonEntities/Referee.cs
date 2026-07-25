@@ -1,17 +1,16 @@
-using System;
 using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 // ReSharper disable InvalidXmlDocComment
 // ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace ProblemDomain.Entities.CommonEntities;
 
 /// <summary>
 /// Судья.
 /// </summary>
-public sealed class Referee
-    : AbstractPersonalityEntity, INumberedEntity, ICloneable, ICopyEntity
+public sealed class Referee : AbstractPersonalityEntity, INumberedEntity, IEntityCloneable, IEntityCopyable
 {
     /// <summary>
     /// Конструктор для EF.
@@ -36,13 +35,13 @@ public sealed class Referee
             referee.LastName,
             referee.FirstName,
             referee.Domicile,
-            referee.RefereeLevel,
-            referee.RefereeJobTitle,
-            referee.CompetitionData,
             referee.Patronymic,
             referee.Description
         )
     {
+        RefereeLevelId = referee.RefereeLevelId;
+        RefereeJobTitleId = referee.RefereeJobTitleId;
+        CompetitionDataId = referee.CompetitionDataId;
     }
     
     /// <summary>
@@ -52,11 +51,16 @@ public sealed class Referee
     /// <param name="refereeLevel">Судейская категория.</param>
     /// <param name="refereeJobTitle">Судейская должность.</param>
     /// <param name="competitionData">Соревнование.</param>
-    public Referee(int number, string lastName, string firstName, string domicile, 
-        RefereeLevel refereeLevel, RefereeJobTitle refereeJobTitle, 
+    public Referee(
+        int number, 
+        string lastName, 
+        string firstName, 
+        string domicile, 
+        RefereeLevel refereeLevel, 
+        RefereeJobTitle refereeJobTitle, 
         CompetitionData competitionData,
-        string? patronymic = null, string? description = null) 
-        : this(number, lastName, firstName, domicile, patronymic, description)
+        string? patronymic = null, 
+        string? description = null) : this(number, lastName, firstName, domicile, patronymic, description)
     {
         RefereeLevel = refereeLevel;
         RefereeJobTitle = refereeJobTitle;
@@ -102,25 +106,23 @@ public sealed class Referee
         => new(this);
     
     /// <inheritdoc />
-    object ICloneable.Clone() {
+    object IEntityCloneable.Clone() {
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopyEntity.Copy"/>
+    /// <inheritdoc cref="IEntityCopyable.Copy"/>
     public void Copy(Referee referee)
     {
         referee.Number = Number;
         referee.LastName = LastName;
         referee.FirstName = FirstName;
+        referee.Domicile = Domicile;
         referee.Patronymic = Patronymic;
         referee.Description = Description;
-        referee.Domicile = Domicile;
-        referee.RefereeLevel = RefereeLevel;
-        referee.RefereeJobTitle = RefereeJobTitle;
     }
     
     /// <inheritdoc />
-    void ICopyEntity.Copy(IAbstractEntity destination)
+    void IEntityCopyable.Copy(IAbstractEntity destination)
     {
         Copy((Referee)destination);
     }

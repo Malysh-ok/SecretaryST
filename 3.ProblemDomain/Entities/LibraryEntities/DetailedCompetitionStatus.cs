@@ -1,18 +1,17 @@
-using System;
 using System.Collections.Generic;
 using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 // ReSharper disable InvalidXmlDocComment
 // ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace ProblemDomain.Entities.LibraryEntities;
 
 /// <summary>
 /// Статус и обобщенное наименование соревнования.
 /// </summary>
-public sealed class DetailedCompetitionStatus
-    : AbstractEntity, ICloneable, ICopyEntity
+public sealed class DetailedCompetitionStatus : AbstractEntity<DetailedCompetitionStatusEnm>, IEntityCopyable
 {
     /// <summary>
     /// Конструктор для EF.
@@ -24,34 +23,20 @@ public sealed class DetailedCompetitionStatus
     {
         Id = id;
     }
-    
-    /// <summary>
-    /// Конструктор на основе готового экземпляра.
-    /// </summary>
-    private DetailedCompetitionStatus(DetailedCompetitionStatus detailedCompetitionStatus)
-        : this(
-            detailedCompetitionStatus.Id,
-            detailedCompetitionStatus.Name,
-            detailedCompetitionStatus.CompetitionsStatus,
-            detailedCompetitionStatus.Description
-        )
-    {
-    }
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <inheritdoc />
     /// <param name="competitionsStatus">Статус соревнований.</param>
-    public DetailedCompetitionStatus(DetailedCompetitionStatusEnm id, string name, 
-        CompetitionsStatus competitionsStatus, string? description = null) 
-        : this(id, name, description)
+    public DetailedCompetitionStatus(
+        DetailedCompetitionStatusEnm id, 
+        string name, 
+        CompetitionsStatus competitionsStatus, 
+        string? description = null) : this(id, name, description)
     {
         CompetitionsStatus = competitionsStatus;
     }
-    
-    /// <inheritdoc cref="AbstractEntity.Id"/>
-    public new DetailedCompetitionStatusEnm Id { get; set; }
     
     /// <summary>
     /// Связь со статусом соревнований (объектом-владельцем).
@@ -69,30 +54,16 @@ public sealed class DetailedCompetitionStatus
     public ICollection<CompetitionData> Competitions { get; set; } = 
         new HashSet<CompetitionData>();
     
-    /// <summary>
-    /// Клонирование.
-    /// </summary>
-    // ReSharper disable once MemberCanBePrivate.Global
-    public DetailedCompetitionStatus Clone()
-        => new(this);
-    
-    /// <inheritdoc />
-    object ICloneable.Clone() {
-        return Clone();
-    }
-    
-    /// <inheritdoc cref="ICopyEntity.Copy"/>
+    /// <inheritdoc cref="IEntityCopyable.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(DetailedCompetitionStatus destination)
     {
-        destination.Id = Id;
         destination.Name = Name;
-        destination.CompetitionsStatus = CompetitionsStatus;
         destination.Description = Description;
     }
     
     /// <inheritdoc />
-    void ICopyEntity.Copy(IAbstractEntity destination)
+    void IEntityCopyable.Copy(IAbstractEntity destination)
     {
         Copy((DetailedCompetitionStatus)destination);
     }

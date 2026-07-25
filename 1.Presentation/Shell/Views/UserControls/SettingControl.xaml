@@ -311,7 +311,6 @@
                                         RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                                     SelectedItem="{Binding  Discipline,
                                         Mode=TwoWay, UpdateSourceTrigger=PropertyChanged,
-                                        
                                         ValidatesOnDataErrors=True,
                                         NotifyOnValidationError=True}"
                                     BorderThickness="0" />

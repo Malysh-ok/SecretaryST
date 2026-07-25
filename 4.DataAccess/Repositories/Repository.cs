@@ -150,16 +150,20 @@ public class Repository<TDbContext> : IRepository
     }
     
     /// <inheritdoc />
-    public async Task<Result<TEntity?>> GetByIdAsync<TEntity>(int id, params string[] navigationProperties)
+    public async Task<Result<TEntity?>> GetByIdAsync<TEntity>(object id, params string[] navigationProperties)
         where TEntity : class, IAbstractEntity
     {
         try
         {
             var queryable = DbContext.Set<TEntity>().AsTracking(); // Т.к. запрос может быть сложным,
                                                                    // .AsNoTracking() использовать не получается
-
-            return Result<TEntity?>.Done(await AddNavigationProperties(queryable, navigationProperties)
-                .FirstOrDefaultAsync(e => e.Id == id));
+            queryable = AddNavigationProperties(queryable, navigationProperties);
+                                                                   
+            // Используем IAbstractEntity.Id для сравнения
+            // ReSharper disable once RedundantCast
+            var entity = await queryable.FirstOrDefaultAsync(e => ((IAbstractEntity)e).Id.Equals(id));
+            
+            return Result<TEntity?>.Done(entity);
         }
         catch (Exception ex)
         {
@@ -326,7 +330,7 @@ public class Repository<TDbContext> : IRepository
                 case EntityState.Unchanged:
                 case EntityState.Modified:
                     // Уже отслеживается как существующий - проверяем ID
-                    if (entity.Id == 0)
+                    if (entity.IsNew)
                     {
                         entry.State = EntityState.Added;
                     }
@@ -416,7 +420,7 @@ public class Repository<TDbContext> : IRepository
             switch (entry.State)
             {
                 case EntityState.Detached:
-                    if (entity.Id == 0)
+                    if (entity.IsNew)
                     {
                         DbContext.Set<TEntity>().Add(entity);
                     }
@@ -513,7 +517,7 @@ public class Repository<TDbContext> : IRepository
             switch (entry.State)
             {
                 case EntityState.Detached:
-                    if (entity.Id == 0)
+                    if (entity.IsNew)
                     {
                         // Новая сущность, не сохранённая в БД - просто игнорируем
                         return Result<int>.Done(1);

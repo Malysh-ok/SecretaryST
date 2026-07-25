@@ -37,8 +37,9 @@ public class Lang : IEquatable<Lang>, ICloneable
     public CultureInfo GetCultureInfo() 
         => CultureInfo.GetCultureInfo(Name);
     
+    
     /// <summary>
-    /// Конструктор.
+    /// Конструктор на основе готового экземпляра.
     /// </summary>
     private Lang(Lang lang)
     {
@@ -47,7 +48,6 @@ public class Lang : IEquatable<Lang>, ICloneable
         ShortName = lang.ShortName;
         DisplayName = lang.DisplayName;
     }
-
 
     /// <summary>
     /// Конструктор.
@@ -104,8 +104,7 @@ public class Lang : IEquatable<Lang>, ICloneable
         if (ReferenceEquals(this, other)) 
             return true;
 
-        return string.Equals(Name, other?.Name, StringComparison.OrdinalIgnoreCase)
-               && string.Equals(ShortName, other?.ShortName, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(Name, other?.Name, StringComparison.OrdinalIgnoreCase);
     }
     
     /// <summary>
@@ -129,7 +128,7 @@ public class Lang : IEquatable<Lang>, ICloneable
     /// <inheritdoc />
     public override int GetHashCode()
     {
-        return HashCode.Combine(Name, ShortName);
+        return Name.GetHashCode();
     }
 
     /// <summary>

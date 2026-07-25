@@ -1,18 +1,17 @@
-using System;
 using System.Collections.Generic;
 using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 // ReSharper disable InvalidXmlDocComment
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace ProblemDomain.Entities.DistanceEntities;
 
 /// <summary>
 /// Спортивный юнит.
 /// </summary>
-public sealed class SportUnit
-    : AbstractEntity, ICloneable, ICopyEntity
+public sealed class SportUnit : AbstractEntity<int>, IEntityCloneable, IEntityCopyable
 {
     /// <summary>
     /// Конструктор для EF.
@@ -29,16 +28,16 @@ public sealed class SportUnit
     /// <summary>
     /// Конструктор на основе готового экземпляра.
     /// </summary>
-    private SportUnit(SportUnit sportUnit)
+    private SportUnit(SportUnit source)
         : this(
-            sportUnit.Name,
-            sportUnit.Sex,
-            sportUnit.SportUnitType,
-            sportUnit.SportEvent,
-            sportUnit.Description,
-            sportUnit.ParentSportUnit
+            source.Name,
+            source.Description
         )
     {
+        SexId = source.SexId;
+        SportUnitTypeId = source.SportUnitTypeId;
+        SportEventId = source.SportEventId;
+        ParentSportUnitId = source.ParentSportUnitId;
     }
     
     /// <summary>
@@ -49,9 +48,13 @@ public sealed class SportUnit
     /// <param name="sportUnitType">Тип спортивного юнита.</param>
     /// <param name="sportEvent">Вид программы.</param>
     /// <param name="parentSportUnit">Родительский спортивный юнит.</param>
-    public SportUnit(string name, Sex sex, SportUnitType sportUnitType, SportEvent sportEvent, 
-        string? description = null, SportUnit? parentSportUnit = null) 
-        : this(name, description)
+    public SportUnit(
+        string name, 
+        Sex sex, 
+        SportUnitType sportUnitType, 
+        SportEvent sportEvent, 
+        SportUnit? parentSportUnit = null,
+        string? description = null) : this(name, description)
     {
         Sex = sex;
         SportUnitType = sportUnitType;
@@ -86,7 +89,6 @@ public sealed class SportUnit
     public int? ParentSportUnitId { get; set; }         // обязательно должен быть nullable!
     /// <inheritdoc cref="ParentSportUnitId"/>
     public SportUnit? ParentSportUnit { get; set; }
-
     
     /// <summary>
     /// Список спортсменов.
@@ -107,24 +109,20 @@ public sealed class SportUnit
         => new(this);
     
     /// <inheritdoc />
-    object ICloneable.Clone() {
+    object IEntityCloneable.Clone() {
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopyEntity.Copy"/>
+    /// <inheritdoc cref="IEntityCopyable.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(SportUnit destination)
     {
         destination.Name = Name;
-        destination.Sex = Sex;
-        destination.SportUnitType = SportUnitType;
-        destination.SportEvent = SportEvent;
         destination.Description = Description;
-        destination.ParentSportUnit = ParentSportUnit;
     }
     
     /// <inheritdoc />
-    void ICopyEntity.Copy(IAbstractEntity destination)
+    void IEntityCopyable.Copy(IAbstractEntity destination)
     {
         Copy((SportUnit)destination);
     }

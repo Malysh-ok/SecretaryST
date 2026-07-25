@@ -8,5 +8,10 @@ public interface IAbstractEntity
     /// <summary>
     /// Идентификатор.
     /// </summary>
-    public int Id { get; set; }
+    object Id { get; }
+    
+    /// <summary>
+    /// Возвращает true, если сущность еще не сохранена в репозитории (Id равен значению по умолчанию).
+    /// </summary>
+    public bool IsNew { get; }
 }

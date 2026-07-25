@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.CommonEntities;
@@ -12,8 +11,7 @@ namespace ProblemDomain.Entities.DistanceEntities;
 /// <summary>
 /// Вид программы.
 /// </summary>
-public sealed class SportEvent
-    : AbstractEntity, ICloneable, ICopyEntity
+public sealed class SportEvent : AbstractEntity<int>, IEntityCloneable, IEntityCopyable
 {
     /// <summary>
     /// Конструктор для EF.
@@ -30,16 +28,16 @@ public sealed class SportEvent
     /// <summary>
     /// Конструктор на основе готового экземпляра.
     /// </summary>
-    private SportEvent(SportEvent sportEvent)
+    private SportEvent(SportEvent source)
         : this(
-            sportEvent.Name,
-            sportEvent.IsShort,
-            sportEvent.Difficulty,
-            sportEvent.Discipline,
-            sportEvent.CompetitionData,
-            sportEvent.Description
+            source.Name,
+            source.IsShort,
+            source.Description
         )
     {
+        DifficultyId = source.DifficultyId;
+        DisciplineId = source.DisciplineId;
+        CompetitionDataId = source.CompetitionDataId;
     }
 
     /// <summary>
@@ -48,9 +46,13 @@ public sealed class SportEvent
     /// <inheritdoc />
     /// <param name="discipline">Дисциплина.</param>
     /// <param name="competitionData">Соревнование.</param>
-    public SportEvent(string name, bool? isShort, Difficulty difficulty, Discipline discipline,
-            CompetitionData competitionData, string? description = null) 
-        : this(name, isShort, description)
+    public SportEvent(
+        string name, 
+        bool? isShort, 
+        Difficulty difficulty, 
+        Discipline discipline,
+        CompetitionData competitionData, 
+        string? description = null) : this(name, isShort, description)
     {
         Difficulty = difficulty;
         Discipline = discipline;
@@ -86,7 +88,8 @@ public sealed class SportEvent
         set
         {
             field = value;
-            DisciplineGroupId = Discipline.DisciplineGroupId;
+            // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
+            DisciplineGroupId = Discipline?.DisciplineGroupId ?? default;
         }
     } = null!;
 
@@ -120,24 +123,21 @@ public sealed class SportEvent
         => new(this);
     
     /// <inheritdoc />
-    object ICloneable.Clone() {
+    object IEntityCloneable.Clone() {
         return Clone();
     }
     
-    /// <inheritdoc cref="ICopyEntity.Copy"/>
+    /// <inheritdoc cref="IEntityCopyable.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(SportEvent destination)
     {
         destination.Name = Name;
         destination.IsShort = IsShort;
-        destination.Difficulty = Difficulty;
-        destination.Discipline = Discipline;
-        destination.CompetitionData = CompetitionData;
         destination.Description = Description;
     }
     
     /// <inheritdoc />
-    void ICopyEntity.Copy(IAbstractEntity destination)
+    void IEntityCopyable.Copy(IAbstractEntity destination)
     {
         Copy((SportEvent)destination);
     }

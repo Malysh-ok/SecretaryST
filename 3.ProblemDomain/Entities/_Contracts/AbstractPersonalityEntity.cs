@@ -1,17 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
 namespace ProblemDomain.Entities._Contracts;
 
 /// <summary>
 /// Абстрактная сущность личности (человека).
 /// </summary>
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
-public abstract class AbstractPersonalityEntity 
-    : AbstractEntity, IPersonalityEntity
+public abstract class AbstractPersonalityEntity : AbstractEntity<int>, IPersonalityEntity
 {
     /// <summary>
     /// Конструктор.

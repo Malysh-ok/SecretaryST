@@ -65,7 +65,7 @@ public interface IRepository : IDisposable
     /// </remarks>
     /// <inheritdoc cref="GetFirstAsync{TEntity}(string[])"/>
     // ReSharper disable once InvalidXmlDocComment
-    public Task<Result<TEntity?>> GetByIdAsync<TEntity>(int id, params string[] navigationProperties) 
+    public Task<Result<TEntity?>> GetByIdAsync<TEntity>(object id, params string[] navigationProperties) 
         where TEntity : class, IAbstractEntity;
 
     /// <summary>

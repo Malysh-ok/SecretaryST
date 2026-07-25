@@ -1,17 +1,16 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
+// ReSharper disable InvalidXmlDocComment
 
 namespace ProblemDomain.Entities.CommonEntities;
 
 /// <summary>
 /// Представитель.
 /// </summary>
-public sealed class Representative
-    : AbstractPersonalityEntity, IEquatable<Representative>, ICloneable, ICopyEntity
+public sealed class Representative : AbstractPersonalityEntity, IEntityCloneable, IEntityCopyable
 {
     /// <summary>
     /// Конструктор для EF.
@@ -19,9 +18,8 @@ public sealed class Representative
     /// <inheritdoc />
     /// <param name="phoneNumber">Номер телефона.</param>
     /// <param name="email">E-mail.</param>
-    [SuppressMessage("ReSharper", "InvalidXmlDocComment")]
-    private Representative(string lastName, string firstName, string? patronymic = null, string? description = null,
-        string? phoneNumber = null, string? email = null) 
+    private Representative(string lastName, string firstName, string? patronymic = null,
+        string? phoneNumber = null, string? email = null, string? description = null) 
         : base(lastName, firstName, patronymic, description)
     {
         PhoneNumber = phoneNumber;
@@ -36,12 +34,12 @@ public sealed class Representative
             representative.LastName,
             representative.FirstName,
             representative.Patronymic,
-            representative.Description,
             representative.PhoneNumber,
             representative.Email,
-            representative.Sex
+            representative.Description
         )
     {
+        SexId = representative.SexId;
     }
     
     /// <summary>
@@ -50,10 +48,14 @@ public sealed class Representative
     /// <inheritdoc />
     /// <param name="phoneNumber">Номер телефона.</param>
     /// <param name="email">E-mail.</param>
-    [SuppressMessage("ReSharper", "InvalidXmlDocComment")]
-    public Representative(string lastName, string firstName, string? patronymic = null, string? description = null,
-        string? phoneNumber = null, string? email = null, Sex? sex = null) 
-        : this(lastName, firstName, patronymic, description, phoneNumber, email)
+    public Representative(
+        string lastName, 
+        string firstName, 
+        string? patronymic = null, 
+        string? phoneNumber = null, 
+        string? email = null, 
+        Sex? sex = null,
+        string? description = null) : this(lastName, firstName, patronymic, phoneNumber, email, description)
     {
         Sex = sex;
     }
@@ -83,27 +85,21 @@ public sealed class Representative
     /// </remarks>
     public ICollection<Delegation> Delegations { get; set; } = new HashSet<Delegation>();
 
-    /// <inheritdoc />
-    // TODO: Подумать, насчет правильного сравнения Representative
-    public override bool Equals(object? obj)
+    /// <summary>
+    /// Проверяет, является ли другой представитель тем же человеком.
+    /// </summary>
+    public bool IsSamePerson(Representative? other)
     {
-        if (obj == null || GetType() != obj.GetType()) return false;
-
-        return Equals((Representative)obj);
+        if (other is null) return false;
+        
+        return LastName == other.LastName &&
+               FirstName == other.FirstName &&
+               Patronymic == other.Patronymic &&
+               PhoneNumber == other.PhoneNumber &&
+               Email == other.Email &&
+               SexId == other.SexId;
     }
-
-    /// <inheritdoc />
-    public bool Equals(Representative? other)
-        => string.Equals(FirstName, other?.FirstName, StringComparison.OrdinalIgnoreCase)
-           && string.Equals(LastName, other?.LastName, StringComparison.OrdinalIgnoreCase)
-           && string.Equals(Patronymic, other?.Patronymic, StringComparison.OrdinalIgnoreCase);
     
-    /// <inheritdoc />
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(FirstName, ShortName, Patronymic);
-    }
-
     /// <summary>
     /// Клонирование.
     /// </summary>
@@ -111,11 +107,11 @@ public sealed class Representative
         => new(this);
     
     /// <inheritdoc />
-    object ICloneable.Clone() {
+    object IEntityCloneable.Clone() {
         return Clone();
     }
 
-    /// <inheritdoc cref="ICopyEntity.Copy"/>
+    /// <inheritdoc cref="IEntityCopyable.Copy"/>
     public void Copy(Representative destination)
     {
         destination.LastName = LastName;
@@ -124,11 +120,10 @@ public sealed class Representative
         destination.Description = Description;
         destination.PhoneNumber = PhoneNumber;
         destination.Email = Email;
-        destination.Sex = Sex;
     }
     
     /// <inheritdoc />
-    void ICopyEntity.Copy(IAbstractEntity destination)
+    void IEntityCopyable.Copy(IAbstractEntity destination)
     {
         Copy((Representative)destination);
     }
