@@ -15,7 +15,7 @@
                      DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
                      Title="{DynamicResource MainView}"
                      Height="800"
-                     Width="1250"
+                     Width="1650"   
                      MinHeight="610"
                      MinWidth="800" >
     <!-- TODO: откорректировать MinHeight -->

@@ -129,4 +129,10 @@
     <data name="DifficultyLoadError" xml:space="preserve">
         <value>Failed to retrieve the difficulty from the repository.</value>
     </data>
+    <data name="AgeGroupLoadError" xml:space="preserve">
+        <value>Failed to retrieve the age groupe from the repository.</value>
+    </data>
+    <data name="AgeGroupsLoadError" xml:space="preserve">
+        <value>Failed to retrieve the list of age groups from the repository.</value>
+    </data>
 </root>

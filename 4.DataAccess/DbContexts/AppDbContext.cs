@@ -96,6 +96,9 @@ public sealed partial class AppDbContext : AbstractDbContext
         // Создание трудностей
         CreateModel_Difficulties(modelBuilder);
         
+        // Создание возрастных групп
+        CreateModel_AgeGroups(modelBuilder);
+        
         #endregion
 
         #region [---------- ОБЩИЕ ДАННЫЕ ----------]

@@ -374,4 +374,39 @@ public sealed partial class AppDbContext : IConfigurationDbContext
         });
     }
 
+    /// <summary>
+    /// Создание возрастных групп.
+    /// </summary>
+    private void CreateModel_AgeGroups(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<AgeGroup>(entity =>
+        {
+            entity.ToTable($"{CONFIGURATION_TABLE_PRE}AgeGroups", CONFIGURATION_SCHEMA_NAME, 
+                t => t.HasComment("Возрастные группы"));
+
+            entity.Property(ag => ag.Id).ValueGeneratedNever()
+                  .HasConversion(
+                      enm => enm.ToInt(),
+                      i => i.ToEnumWithException<AgeGroupEnm>()
+                  );
+                
+            entity.Property(ag => ag.Name).IsRequired().HasMaxLength(100);
+
+            entity.Property(ag => ag.MinAge).IsRequired();
+
+            entity.Property(ag => ag.Description).HasMaxLength(300);
+
+            entity.Ignore(ag => ag.FullName);
+
+            // Первичный ключ - составной
+            entity.HasKey(d => new { d.Id, d.DisciplineSubGroupId })
+                  .HasName("PK_Difficulties");
+            
+            // Вторичный ключ - Группа дисциплин
+            entity.HasOne(ag => ag.DisciplineSubGroup)
+                  .WithMany(dsg => dsg.AgeGroups)
+                  .HasForeignKey(ag => ag.DisciplineSubGroupId)
+                  .HasConstraintName("FK_Difficulties_DisciplineSubGroupId");
+        });
+    }
 }

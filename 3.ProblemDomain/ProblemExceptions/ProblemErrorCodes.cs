@@ -46,4 +46,7 @@ public static class ProblemErrorCodes
     public const string SportEventCreateError = nameof(SportEventCreateError);
     public const string SportEventRemoveError = nameof(SportEventRemoveError);
     public const string SportEventsLoadError = nameof(SportEventsLoadError);
+    
+    public const string AgeGroupLoadError = nameof(AgeGroupLoadError);
+    public const string AgeGroupsLoadError = nameof(AgeGroupsLoadError);
 }

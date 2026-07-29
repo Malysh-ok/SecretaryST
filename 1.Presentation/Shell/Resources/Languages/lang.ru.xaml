@@ -76,6 +76,7 @@
     <v:String x:Key="SettingControl_CompetitionVenue">Место проведения:</v:String>
     <v:String x:Key="SettingControl_DetailedCompetitionStatus">Статус и наименование соревнования:</v:String>
     <v:String x:Key="SettingControl_CompetitionStatus">Статус соревнования (кратко):</v:String>
+    <v:String x:Key="SettingControl_IsStudentCompetition">Соревнования среди студентов</v:String>
     <v:String x:Key="SettingControl_CompetitionNote">Примечание:</v:String>
     <!--            Виды программы -->
     <v:String x:Key="SettingControl_SportEventList">Список видов программы:</v:String>
@@ -83,7 +84,8 @@
     <v:String x:Key="SettingControl_SportEventList_Discipline">Дисциплина</v:String>
     <v:String x:Key="SettingControl_SportEventList_Difficulty">Трудность</v:String>
     <v:String x:Key="SettingControl_SportEventList_Difficulty_Tooltip">Категория сложности маршрута или класс дистанции</v:String>
-    <v:String x:Key="SettingControl_SportEventList_IsShort">Короткая?</v:String>
+    <v:String x:Key="SettingControl_SportEventList_AgeGroup">Возраст. группа</v:String>
+    <v:String x:Key="SettingControl_SportEventList_IsShort">Короткая</v:String>
     <v:String x:Key="SettingControl_SportEventList_Description">Примечание</v:String>
     <!--            Судьи -->
     <v:String x:Key="SettingControl_RefereeList">Список судей:</v:String>

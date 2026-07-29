@@ -49,6 +49,12 @@ public sealed class DisciplineSubGroup : AbstractEntity<DisciplineSubGroupEnm>, 
     /// </summary>
     // ReSharper disable once CollectionNeverUpdated.Global
     public ICollection<Discipline> Disciplines { get; set; } = new HashSet<Discipline>();
+    
+    /// <summary>
+    /// Коллекция возрастных групп.
+    /// </summary>
+    // ReSharper disable once CollectionNeverUpdated.Global
+    public ICollection<AgeGroup> AgeGroups { get; set; } = new HashSet<AgeGroup>();
 
     /// <inheritdoc cref="IEntityCopyable.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global

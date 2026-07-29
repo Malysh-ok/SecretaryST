@@ -76,6 +76,7 @@
     <v:String x:Key="SettingControl_CompetitionVenue">Competition venue:</v:String>
     <v:String x:Key="SettingControl_DetailedCompetitionStatus">Status and name of the competition:</v:String>
     <v:String x:Key="SettingControl_CompetitionStatus">Brief Status of the competition:</v:String>
+    <v:String x:Key="SettingControl_IsStudentCompetition">Student competition</v:String>
     <v:String x:Key="SettingControl_CompetitionNote">Note:</v:String>
     <!--            Виды программы -->
     <v:String x:Key="SettingControl_SportEventList">List of sport event:</v:String>
@@ -83,7 +84,8 @@
     <v:String x:Key="SettingControl_SportEventList_Discipline">Discipline</v:String>
     <v:String x:Key="SettingControl_SportEventList_Difficulty">Difficulty</v:String>
     <v:String x:Key="SettingControl_SportEventList_Difficulty_Tooltip">Route difficulty category or distance class</v:String>
-    <v:String x:Key="SettingControl_SportEventList_IsShort">Is short?</v:String>
+    <v:String x:Key="SettingControl_SportEventList_AgeGroup">Age group</v:String>
+    <v:String x:Key="SettingControl_SportEventList_IsShort">Is short</v:String>
     <v:String x:Key="SettingControl_SportEventList_Description">Description</v:String>
     <!--            Судьи -->
     <v:String x:Key="SettingControl_RefereeList">List of judges:</v:String>

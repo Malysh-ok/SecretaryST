@@ -525,4 +525,77 @@ public static class RepositoryPlaceholder
 
         return Result<List<Difficulty>>.Done(difficultyLst);
     }
+    
+    /// <summary>
+    /// Заполняем возрастные группы.
+    /// </summary>
+    public static async Task<Result<List<AgeGroup>>> FillAgeGroups(IRepository repository)
+    {
+        // Удаляем возрастные группы
+        var result = repository.RemoveAllQuickly<AgeGroup>();
+        if (!result.HasValue)
+            return Result<List<AgeGroup>>.Fail(result.Excptn!);
+
+        var ageGroupLst = new List<AgeGroup>();
+        for (var disciplineSubGroupId = DisciplineSubGroupEnm.Trek; 
+             disciplineSubGroupId <= DisciplineSubGroupEnm.NordicWalking; 
+             disciplineSubGroupId++)
+        {
+            switch (disciplineSubGroupId)
+            {
+                case DisciplineSubGroupEnm.Trek:
+                    // Маршрут
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Children, disciplineSubGroupId, "Мальчики, девочки", 10, 12));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Youths, disciplineSubGroupId, "Юноши, девушки", 13, 16));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Juniors, disciplineSubGroupId, "Юниоры, юниорки", 17, 21, 
+                        17, 25));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Adults, disciplineSubGroupId, "Мужчины, женщины", 22, null));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Veterans, disciplineSubGroupId, "Ветераны", 60, null));
+                    break;
+                case DisciplineSubGroupEnm.Ski or DisciplineSubGroupEnm.Hiking:
+                    // Лыжная, пешеходная
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Children, disciplineSubGroupId, "Мальчики, девочки", 8, 13));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Youths, disciplineSubGroupId, "Юноши, девушки", 14, 15));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Juniors, disciplineSubGroupId, "Юниоры, юниорки", 16, 21, 
+                        17, 25));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Adults, disciplineSubGroupId, "Мужчины, женщины", 22, null));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Veterans, disciplineSubGroupId, "Ветераны", 60, null));
+                    break;
+                case DisciplineSubGroupEnm.Speleo:
+                    // Спелео
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Children, disciplineSubGroupId, "Мальчики, девочки", 10, 13));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Youths, disciplineSubGroupId, "Юноши, девушки", 14, 15));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Juniors, disciplineSubGroupId, "Юниоры, юниорки", 16, 21, 
+                        18, 25));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Adults, disciplineSubGroupId, "Мужчины, женщины", 22, null));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Veterans, disciplineSubGroupId, "Ветераны", 60, null));
+                    break;
+                case DisciplineSubGroupEnm.NordicWalking:
+                    // Северная ходьба
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Adults, disciplineSubGroupId, "Мужчины, женщины", 18, null,
+                        18, 25));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Veterans, disciplineSubGroupId, "Ветераны", 60, null));
+                    break;
+                default:
+                    // Остальные
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Children, disciplineSubGroupId, "Мальчики, девочки", 10, 13));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Youths, disciplineSubGroupId, "Юноши, девушки", 14, 15));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Juniors, disciplineSubGroupId, "Юниоры, юниорки", 16, 21, 
+                        17, 25));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Adults, disciplineSubGroupId, "Мужчины, женщины", 22, null));
+                    ageGroupLst.Add(new AgeGroup(AgeGroupEnm.Veterans, disciplineSubGroupId, "Ветераны", 60, null));
+                    break;
+            }
+        }
+
+        result = repository.AddRange(ageGroupLst);
+        if (!result)
+            return Result<List<AgeGroup>>.Fail(result.Excptn!);
+        
+        result = await repository.SaveChangesAsync();
+        if (!result)
+            return Result<List<AgeGroup>>.Fail(result.Excptn!);
+
+        return Result<List<AgeGroup>>.Done(ageGroupLst);
+    }
 }

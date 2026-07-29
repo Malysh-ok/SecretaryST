@@ -51,12 +51,15 @@ public sealed class SportEvent : AbstractEntity<int>, IEntityCloneable, IEntityC
         bool? isShort, 
         Difficulty difficulty, 
         Discipline discipline,
+        AgeGroup ageGroup,
         CompetitionData competitionData, 
         string? description = null) : this(name, isShort, description)
     {
         Difficulty = difficulty;
         Discipline = discipline;
+        AgeGroup = ageGroup;
         DisciplineGroupId = Discipline.DisciplineGroupId;
+        DisciplineSubGroupId = Discipline.DisciplineSubGroupId;
         CompetitionData = competitionData;
     }
 
@@ -90,6 +93,7 @@ public sealed class SportEvent : AbstractEntity<int>, IEntityCloneable, IEntityC
             field = value;
             // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
             DisciplineGroupId = Discipline?.DisciplineGroupId ?? default;
+            DisciplineSubGroupId = Discipline?.DisciplineSubGroupId ?? default;
         }
     } = null!;
 
@@ -100,6 +104,22 @@ public sealed class SportEvent : AbstractEntity<int>, IEntityCloneable, IEntityC
     /// Необходимо для составного внешнего ключа к трудности ({ DifficultyId, DisciplineGroupId } -> <see cref="Difficulty"/>)
     /// </remarks>
     public DisciplineGroupEnm DisciplineGroupId { get; set; }
+    
+    /// <summary>
+    /// Связь с подгруппой дисциплин.
+    /// </summary>
+    /// <remarks>
+    /// Необходимо для составного внешнего ключа к возрастной группе ({ AgeGroupId, DisciplineSubGroupId } -> <see cref="AgeGroup"/>)
+    /// </remarks>
+    public DisciplineSubGroupEnm DisciplineSubGroupId { get; set; }
+
+    /// <inheritdoc cref="AgeGroupId"/>
+    public AgeGroup AgeGroup { get; set; } = null!;
+
+    /// <summary>
+    /// Связь с возрастной группой (объектом-владельцем).
+    /// </summary>
+    public AgeGroupEnm AgeGroupId { get; set; }
     
     /// <summary>
     /// Связь с соревнованием (объектом-владельцем).

@@ -60,6 +60,24 @@ namespace AppDomain.AppAssets.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve the age groupe from the repository..
+        /// </summary>
+        public static string AgeGroupLoadError {
+            get {
+                return ResourceManager.GetString("AgeGroupLoadError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve the list of age groups from the repository..
+        /// </summary>
+        public static string AgeGroupsLoadError {
+            get {
+                return ResourceManager.GetString("AgeGroupsLoadError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to create the application directories..
         /// </summary>
         public static string AppDirsCreateError {

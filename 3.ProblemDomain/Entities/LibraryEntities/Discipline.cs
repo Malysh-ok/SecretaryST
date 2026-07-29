@@ -16,7 +16,7 @@ public sealed class Discipline : AbstractEntity<DisciplineEnm>, IEntityCopyable
     /// Конструктор для EF.
     /// </summary>
     /// <param name="id">Идентификатор.</param>
-    /// <inheritdoc cref="AbstractEntity(string,string?)"/>
+    /// <inheritdoc />
     private Discipline(DisciplineEnm id, string name, string? description = null) 
         : base(name, description)
     {
@@ -57,7 +57,7 @@ public sealed class Discipline : AbstractEntity<DisciplineEnm>, IEntityCopyable
     public DisciplineGroup DisciplineGroup { get; set; } = null!;
         
     /// <summary>
-    /// Список видов программ.
+    /// Коллекция видов программ.
     /// </summary>
     // ReSharper disable once CollectionNeverUpdated.Global
     public ICollection<SportEvent> SportEvents { get; set; } = new HashSet<SportEvent>();

@@ -144,6 +144,9 @@ public class RepositoryTests
         
         var disciplineResult = await repository.FindAsync<Discipline>(DisciplineEnm.DistanceMountainBunch);
 
+        var ageGroupResult =  await repository.GetByConditionAsync<AgeGroup>(
+            ag => ag.Id == AgeGroupEnm.Adults && ag.DisciplineSubGroupId == disciplineResult.Value!.DisciplineSubGroupId);
+        
         // var sportUnitTypes = (await repository.GetAllAsync<SportUnitType>()).Value!;
         // var groupUnitType = sportUnitTypes.FirstOrDefault(sut => sut.Id == SportUnitTypeEnm.Group);
         // var waterTeamUnitType = sportUnitTypes.FirstOrDefault(sut => sut.Id == SportUnitTypeEnm.WaterTeam);
@@ -154,15 +157,15 @@ public class RepositoryTests
             new("Вид программы 1", true,
                 (await repository.GetByConditionAsync<Difficulty>(
                     d => d.Id == DifficultyEnm.Third && d.DisciplineGroupId == disciplineResult.Value!.DisciplineGroupId)
-                ).Value!, disciplineResult.Value!, competitionData),
+                ).Value!, disciplineResult.Value!, ageGroupResult.Value!, competitionData),
             new("Вид программы 2", false,
                 (await repository.GetByConditionAsync<Difficulty>(
                     d => d.Id == DifficultyEnm.Fourth && d.DisciplineGroupId == disciplineResult.Value!.DisciplineGroupId)
-                ).Value!, disciplineResult.Value!, competitionData),
+                ).Value!, disciplineResult.Value!, ageGroupResult.Value!, competitionData),
             new("Вид программы 3", null,
                 (await repository.GetByConditionAsync<Difficulty>(
                     d => d.Id == DifficultyEnm.Fifth && d.DisciplineGroupId == disciplineResult.Value!.DisciplineGroupId)
-                ).Value!, disciplineResult.Value!, competitionData),
+                ).Value!, disciplineResult.Value!, ageGroupResult.Value!, competitionData),
         };
         
         return sportEvents;
@@ -432,7 +435,6 @@ public class RepositoryTests
             // Проверка
             var allSportEvents = (await repository.GetAllAsync<SportEvent>()).Value;
             Assert.That(allSportEvents, Is.Not.Empty, "Список видов программ пуст.");
-
 
             // Получаем спортивные юниты
             var sportUnits = await GetSportUnits(repository, cd, sportEvents);

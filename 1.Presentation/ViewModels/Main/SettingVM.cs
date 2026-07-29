@@ -182,6 +182,7 @@ public sealed class SettingVM : ObservableRecipient,
         await GetDisciplineSubGroupsAsync();
         await GetDisciplinesAsync();
         await GetDifficultiesAsync();
+        await GetAgeGroupsAsync();
     }
     
     /// <inheritdoc />
@@ -224,9 +225,29 @@ public sealed class SettingVM : ObservableRecipient,
             {
                 // При смене выбранного соревнования подгружаем навигационные свойства
                 _ = GetCompetitionDataAsync(value.Id);
-                
+
+                IsStudentCompetition = value.IsStudentCompetition;
+                    
                 // Посылаем сообщение об изменении текущего соревнования
                 Messenger.Send(new CompetitionMessage(CurrentCompetition));
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Признак того, что соревнования студенческие.
+    /// </summary>
+    public bool IsStudentCompetition
+    {
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+            {
+                CurrentCompetition?.IsStudentCompetition = value;
+                
+                // Обновляем список доступных возрастных групп во всей коллекции
+                SportEventObservables.ForEach(seo => seo.UpdateAvailableAgeGroups());
             }
         }
     }
@@ -429,6 +450,11 @@ public sealed class SettingVM : ObservableRecipient,
     /// Коллекция трудностей вида программы.
     /// </summary>
     private IList<Difficulty> _difficulties = [];
+    
+    /// <summary>
+    /// Коллекция возрастных групп.
+    /// </summary>
+    private IList<AgeGroup> _ageGroups = [];
 
     /// <summary>
     /// Коллекция Observable-видов программы.
@@ -521,18 +547,19 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private async Task GetSportEventObservablesAsync()
     {
-        var difficultiesResult = await _sportEventService.GetSportEventsAsync(CurrentCompetition!);
-        if (difficultiesResult)
+        // Получаем виды программы
+        var sportEventsResult = await _sportEventService.GetSportEventsAsync(CurrentCompetition!);
+        if (sportEventsResult)
         {
             // Перезаписываем коллекцию
             SportEventObservables.Clear();
-            difficultiesResult.Value.ForEach(item => SportEventObservables.Add(
-                new SportEventObservable(_sportEventService, _difficulties, item)));
+            sportEventsResult.Value.ForEach(item => SportEventObservables.Add(
+                new SportEventObservable(_sportEventService, _difficulties, _ageGroups, item)));
         }
         else
         {
             // Пишем в статус-бар и лог об ошибке
-            _viewModelHelper.HandleException(difficultiesResult.Excptn, 
+            _viewModelHelper.HandleException(sportEventsResult.Excptn, 
                 this.ToString(), nameof(GetSportEventObservablesAsync));
         }
     }
@@ -551,7 +578,7 @@ public sealed class SettingVM : ObservableRecipient,
                 index = SportEventObservables.Count;
 
             SportEventObservables.Insert(index, 
-                new SportEventObservable(_sportEventService, _difficulties, sportEventResult.Value!));
+                new SportEventObservable(_sportEventService, _difficulties, _ageGroups, sportEventResult.Value!));
                 
             // Увеличиваем индекс
             SportEventObservables.SelectedIndex = ++index;
@@ -693,7 +720,7 @@ public sealed class SettingVM : ObservableRecipient,
             _viewModelHelper.HandleException(disciplinesResult.Excptn, this.ToString(), nameof(GetDisciplinesAsync));        
         }
     }
-    
+
     /// <summary>
     /// Получение (создание) коллекции трудностей видов программы.
     /// </summary>
@@ -712,7 +739,26 @@ public sealed class SettingVM : ObservableRecipient,
                 this.ToString(), nameof(GetDifficultiesAsync));        
         }
     }
-    
+
+    /// <summary>
+    /// Получение (создание) коллекции возрастных групп.
+    /// </summary>
+    private async Task GetAgeGroupsAsync()
+    {
+        var ageGroupsResult = await _sportEventService.GetAllAgeGroupsAsync();
+        if (ageGroupsResult)
+        {
+            // Создаем коллекцию
+            _ageGroups = ageGroupsResult.Value!;
+        }
+        else
+        {
+            // Пишем в статус-бар и лог об ошибке
+            _viewModelHelper.HandleException(ageGroupsResult.Excptn, 
+                this.ToString(), nameof(GetAgeGroupsAsync));        
+        }
+    }
+
     #endregion
     
     #region [---------- Судьи ----------]

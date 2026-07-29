@@ -160,6 +160,14 @@ public class RepositoryHelper : IRepositoryHelper
         // ReSharper disable once UnusedVariable
         var difficultyLst = resultDifficultyLst.Value;
             
+        // Добавляем возрастные группы
+        var resultAgeGroupLst = 
+            await RepositoryPlaceholder.FillAgeGroups(_repository);
+        if (!resultAgeGroupLst.HasValue)
+            return Result<bool>.Fail(resultAgeGroupLst.Excptn!);
+        // ReSharper disable once UnusedVariable
+        var ageGroupLst = resultAgeGroupLst.Value;
+
         return Result<bool>.Done(true);
     }
 }

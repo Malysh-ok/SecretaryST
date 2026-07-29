@@ -33,7 +33,7 @@
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <!-- 1️⃣1️⃣ Левая верхняя зона - Данные о соревнованиях -->
-                <ColumnDefinition Width="5*" MinWidth="150"/>
+                <ColumnDefinition Width="4*" MinWidth="150"/>
                 
                 <!-- 1️⃣2️⃣ Столбец для разделителя -->
                 <ColumnDefinition Width="Auto"/>
@@ -59,8 +59,9 @@
                         <RowDefinition Height="Auto" />     <!-- 5. Дата, место проведения - DatePicker, Текстовое поле -->
                         <RowDefinition Height="Auto" />     <!-- 6. Статус и наименование соревнования - Метка -->
                         <RowDefinition Height="Auto" />     <!-- 7. Статус и наименование соревнования - Текстовое поле, Выпад. список -->
-                        <RowDefinition Height="Auto" />     <!-- 8. Примечание - Метка -->
-                        <RowDefinition Height="Auto" />     <!-- 9. Примечание - Текстовое поле -->
+                        <RowDefinition Height="Auto" />     <!-- 8. Признак студ. соревнований - Флажок -->
+                        <RowDefinition Height="Auto" />     <!-- 9. Примечание - Метка -->
+                        <RowDefinition Height="Auto" />     <!-- 10. Примечание - Текстовое поле -->
                     </Grid.RowDefinitions>
 
                     <!-- Краткое название соревнований -->
@@ -223,12 +224,20 @@
                               SelectedItem="{Binding CurrentCompetition.DetailedCompetitionStatus, 
                                 UpdateSourceTrigger=LostFocus}" />
                     
+                    <!-- Признак соревнований среди студентов -->
+                    <CheckBox Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
+                              x:Name="IsStudentCompetition" 
+                              Style="{DynamicResource BaseCheckBox.Bold}"
+                              IsChecked="{Binding IsStudentCompetition, 
+                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              Content="{DynamicResource SettingControl_IsStudentCompetition}" />
+
                     <!-- Примечание -->
-                    <Label Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"
+                    <Label Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
                            x:Name="CompetitionNote"
                            Style="{DynamicResource BaseLabel.ContentLeft.Bold}"
                            Content="{DynamicResource SettingControl_CompetitionNote}" />
-                    <TextBox Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
+                    <TextBox Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2"
                              Style="{DynamicResource BaseTextBox}"
                              MinWidth="200"
                              HorizontalAlignment="Stretch"
@@ -300,7 +309,7 @@
                     </DataGridTextColumn>
                     
                     <!-- Дисциплина -->
-                    <DataGridTemplateColumn Width="1.7*">
+                    <DataGridTemplateColumn Width="1.55*">
                         <DataGridTemplateColumn.Header>
                             <TextBlock Text="{DynamicResource SettingControl_SportEventList_Discipline}" />
                         </DataGridTemplateColumn.Header>
@@ -336,19 +345,27 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <!--
-                    ItemsSource="{Binding Path=DataContext.DifficultiesDic, 
-                    RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                    DisplayMemberPath="Value"
-                    SelectedItem="{Binding Path=DataContext.DifficultiesDic.SelectedIndex, 
-                    RelativeSource={RelativeSource AncestorType={x:Type UserControl}},
-                    Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    BorderThickness="0" />
-                    -->
 
+                    <!-- Возрастная группа -->
+                    <DataGridTemplateColumn Width="1*">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock 
+                                Text="{DynamicResource SettingControl_SportEventList_AgeGroup}" />
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox
+                                    ItemsSource="{Binding AvailableAgeGroups}"
+                                    SelectedValue="{Binding AgeGroup, 
+                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
+                                    BorderThickness="0">
+                                </ComboBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     
                     <!-- Признак короткой дистанции -->
-                    <DataGridTemplateColumn Width="0.7*">
+                    <DataGridTemplateColumn Width="0.45*">
                         <DataGridTemplateColumn.Header>
                             <TextBlock Text="{DynamicResource SettingControl_SportEventList_IsShort}" />
                         </DataGridTemplateColumn.Header>

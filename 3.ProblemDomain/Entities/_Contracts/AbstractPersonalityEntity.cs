@@ -14,15 +14,11 @@ public abstract class AbstractPersonalityEntity : AbstractEntity<int>, IPersonal
     /// <param name="description">Описание.</param>
     protected AbstractPersonalityEntity(string lastName, string firstName, 
         string? patronymic = null, string? description = null)
-        : base(string.Empty, description)
+        : base(null!, description)
     {
         LastName = lastName;
         FirstName = firstName;
         Patronymic = patronymic;
-        // ReSharper disable once VirtualMemberCallInConstructor
-        Name = patronymic is null
-            ? $"{lastName} {firstName}"
-            : $"{lastName} {firstName} {patronymic}";
     }
 
     /// <inheritdoc />
@@ -37,7 +33,9 @@ public abstract class AbstractPersonalityEntity : AbstractEntity<int>, IPersonal
     /// <summary>
     /// Полное имя.
     /// </summary>
-    public override string Name { get; set; }
+    public override string Name => Patronymic is null
+        ? $"{LastName} {FirstName}"
+        : $"{LastName} {FirstName} {Patronymic}";
 
     /// <summary>
     /// Короткое имя (фамилия, инициалы).

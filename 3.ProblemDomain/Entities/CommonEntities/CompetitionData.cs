@@ -23,9 +23,10 @@ public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEn
     /// <param name="endDate">Конечная дата проведения.</param>
     /// <param name="venue">Место проведения.</param>
     /// <param name="shortName">Краткое название.</param>
+    /// <param name="isStudentCompetition">Признак того, что соревнования студенческие.</param>
     private CompetitionData(string name, 
         IList<string> conductingOrganizations, DateTime initialDate, DateTime endDate, string venue, string shortName,
-        string? description = null) 
+        bool isStudentCompetition = false, string? description = null) 
         : base(name, description)
     {
         ConductingOrganizations = conductingOrganizations;
@@ -33,6 +34,7 @@ public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEn
         EndDate = endDate;
         Venue = venue;
         ShortName = shortName;
+        IsStudentCompetition = isStudentCompetition;
     }
     
     /// <summary>
@@ -46,6 +48,7 @@ public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEn
             source.EndDate,
             source.Venue,
             source.ShortName,
+            source.IsStudentCompetition,
             source.Description
         )
     {
@@ -68,7 +71,8 @@ public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEn
         string shortName,
         CompetitionsStatus competitionsStatus, 
         DetailedCompetitionStatus detailedCompetitionStatus,
-        string? description = null) : this(name, conductingOrganizations, initialDate, endDate, venue, shortName, description)
+        bool isStudentCompetition = false,
+        string? description = null) : this(name, conductingOrganizations, initialDate, endDate, venue, shortName, isStudentCompetition, description)
     {
         CompetitionsStatus = competitionsStatus;
         DetailedCompetitionStatus = detailedCompetitionStatus;
@@ -99,6 +103,11 @@ public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEn
     /// </summary>
     public string ShortName { get; set; }
 
+    /// <summary>
+    /// Признак того, что соревнования студенческие.
+    /// </summary>
+    public bool IsStudentCompetition { get; set; }
+    
     /// <summary>
     /// Статус соревнований.
     /// </summary>
@@ -131,6 +140,22 @@ public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEn
     /// Коллекция делегаций.
     /// </summary>
     public ICollection<Delegation> Delegations { get; set; } = new HashSet<Delegation>();
+
+    /// <summary>
+    /// Признак того, что соревнование является первенством.
+    /// </summary>
+    public bool IsJuniorChampionship()
+    {
+        var juniorStatus = new HashSet<DetailedCompetitionStatusEnm>()
+        {
+            DetailedCompetitionStatusEnm.RussianJuniorChampionship,
+            DetailedCompetitionStatusEnm.FederalDistrictJuniorChampionship,
+            DetailedCompetitionStatusEnm.RegionalJuniorChampionship,
+            DetailedCompetitionStatusEnm.MunicipalJuniorChampionship
+        };
+
+        return juniorStatus.Contains(DetailedCompetitionStatusId);
+    }
     
     /// <summary>
     /// Клонирование.

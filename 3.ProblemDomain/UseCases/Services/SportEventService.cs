@@ -75,25 +75,51 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
                          ?? availableDisciplines.FirstOrDefault(d => d.DisciplineGroupId == DisciplineGroupEnm.Distance) 
                          ?? availableDisciplines.First();
         
+        // Получаем возрастную группу
+        var ageGroupId = competition.IsJuniorChampionship() || competition.IsStudentCompetition
+            // Id возрастной группы для всех первенств или студ. соревнований - юниоры/юниорки, иначе - м/ж
+            ? AgeGroupEnm.Juniors
+            : AgeGroupEnm.Adults;
+        var ageGroupResult =  await GetAgeGroupAsync(ageGroupId, discipline.DisciplineSubGroupId);
+        if (! ageGroupResult)
+        {
+            var innerException = problemErrorMsgProvider.CreateException(
+                ProblemErrorCodes.AgeGroupLoadError, ageGroupResult.Excptn);
+        
+            return Result<SportEvent>.Fail(
+                problemErrorMsgProvider.CreateException(
+                    ProblemErrorCodes.SportEventCreateError, innerException)
+            );
+        }
+
+        var ageGroup = ageGroupResult.Value!;
+        ageGroup.IsStudentCompetition = competition.IsStudentCompetition;
+
         // Получаем трудность
         DifficultyEnm difficultyId;
         if (discipline.DisciplineGroupId == DisciplineGroupEnm.Trek)
         {
-            // TODO: Маршрут (пока только для мужчин/женщин)
-            difficultyId = competition.CompetitionsStatusId switch
-            {
-                CompetitionsStatusEnm.Municipal     => DifficultyEnm.First,
-                CompetitionsStatusEnm.Regional      => DifficultyEnm.Second,
-                CompetitionsStatusEnm.Interregional => DifficultyEnm.Fourth,
-                _                                   => DifficultyEnm.Fifth,     // всероссийские
-            };
+            // Маршрут
+            if (ageGroupId == AgeGroupEnm.Adults)
+                // мужчины/женщины
+                difficultyId = competition.CompetitionsStatusId switch
+                {
+                    CompetitionsStatusEnm.Municipal     => DifficultyEnm.First,
+                    CompetitionsStatusEnm.Regional      => DifficultyEnm.Second,
+                    CompetitionsStatusEnm.Interregional => DifficultyEnm.Fourth,
+                    _                                   => DifficultyEnm.Fifth, // всероссийские
+                };
+            else
+                // юниоры/юниорки
+                difficultyId = DifficultyEnm.Third;
         }
         else
         {
-            // TODO: Дистанция (требует проверки)
+            // Дистанция
+            // TODO: Дистанция - требует проверки
             difficultyId = competition.CompetitionsStatusId switch
             {
-                CompetitionsStatusEnm.Municipal     => DifficultyEnm.First,
+                CompetitionsStatusEnm.Municipal     => DifficultyEnm.Second,
                 CompetitionsStatusEnm.Regional      => DifficultyEnm.Third,
                 CompetitionsStatusEnm.Interregional => DifficultyEnm.Fourth,
                 _                                   => DifficultyEnm.Fifth,     // всероссийские
@@ -110,13 +136,15 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
                     ProblemErrorCodes.SportEventCreateError, innerException)
             );
         }
+        var difficulty = difficultyResult.Value!;
         
         // Новый вид программы
         var newSportEvent = new SportEvent(
             "НОВЫЙ ВИД ПРОГРАММЫ",
             null,
-            difficultyResult.Value!,
+            difficulty,
             discipline,
+            ageGroup,
             competition);
 
         // Добавляем в репозиторий
@@ -259,7 +287,7 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
     /// <summary>
     /// Получение отфильтрованной коллекции значений трудности.
     /// </summary>
-    /// <param name="difficulties">Исходная коллекция значений трудности</param>
+    /// <param name="difficulties">Исходная коллекция значений трудности.</param>
     /// <param name="discipline">Дисциплина, которой ограничиваем значения трудностей.</param>
     public IList<Difficulty> GetAvailableDifficulties(
         IList<Difficulty> difficulties,
@@ -271,6 +299,67 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
         return difficulties
                .Where(d => d.DisciplineGroupId == discipline.DisciplineGroupId)
                .ToList();
+    }
+            
+    /// <summary>
+    /// Получение коллекции возрастных групп.
+    /// </summary>
+    public async Task<Result<IList<AgeGroup>>> GetAllAgeGroupsAsync()
+    {
+        var ageGroupsResult = await repository.GetAllAsync<AgeGroup>();
+        
+        return ageGroupsResult
+            ? Result<IList<AgeGroup>>.Done(ageGroupsResult.Value!)
+            : Result<IList<AgeGroup>>.Fail(
+                problemErrorMsgProvider.CreateException(
+                    ProblemErrorCodes.AgeGroupsLoadError, ageGroupsResult.Excptn)
+            );
+    }
+
+    /// <summary>
+    /// Получение возрастной группы.
+    /// </summary>
+    // ReSharper disable once MemberCanBePrivate.Global
+    public async Task<Result<AgeGroup>> GetAgeGroupAsync(
+            AgeGroupEnm ageGroupId,
+            DisciplineSubGroupEnm disciplineSubGroupId
+        )
+    {
+        var ageGroupResult = await repository.GetByConditionAsync<AgeGroup>(
+            ag => ag.Id == ageGroupId && ag.DisciplineSubGroupId == disciplineSubGroupId);
+        
+        return ageGroupResult
+            ? Result<AgeGroup>.Done(ageGroupResult.Value!)
+            : Result<AgeGroup>.Fail(
+                problemErrorMsgProvider.CreateException(
+                    ProblemErrorCodes.AgeGroupLoadError, ageGroupResult.Excptn)
+            );
+    }
+
+    /// <summary>
+    /// Получение отфильтрованной коллекции возрастных групп.
+    /// </summary>
+    /// <param name="ageGroups">Исходная коллекция возрастных групп.</param>
+    /// <param name="discipline">Дисциплина, которой ограничиваем значения трудностей.</param>
+    /// <param name="isStudentCompetition">Признак того, что соревнования студенческие.</param>
+    public IList<AgeGroup> GetAvailableAgeGroups(
+        IList<AgeGroup> ageGroups,
+        Discipline? discipline,
+        bool isStudentCompetition)
+    {
+        if (discipline == null)
+            return [];
+
+        var availableAgeGroups = ageGroups
+              .Where(ag => ag.DisciplineSubGroupId == discipline.DisciplineSubGroupId
+                           // Если соревнования студенческие - то только юниоры/юниорки
+                           && (! isStudentCompetition || ag.Id == AgeGroupEnm.Juniors))
+              .ToList();
+            
+        // Копируем признак студенческих соревнований во всю коллекцию
+        availableAgeGroups.ForEach(ag => ag.IsStudentCompetition = isStudentCompetition);
+        
+        return availableAgeGroups;
     }
     
     /// <summary>

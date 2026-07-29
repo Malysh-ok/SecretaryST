@@ -233,17 +233,19 @@ public class CompetitionDataService(IRepository repository, IProblemErrorMsgProv
     /// <param name="shortName">Краткое название соревнований.</param>
     /// <param name="competitionsStatus">Статус соревнования.</param>
     /// <param name="detailedCompetitionStatus">Статус и обобщенное наименование соревнования.</param>
+    /// <param name="isStudentCompetition">Признак того, что соревнования студенческие.</param>
     /// <param name="description">Описание.</param>
     public async Task<Result<CompetitionData>> CreateCompetitionDataAsync(string name, 
         IList<string> conductingOrganizations, DateTime initialDate, DateTime endDate, string venue, string shortName,
         CompetitionsStatus competitionsStatus, DetailedCompetitionStatus detailedCompetitionStatus,
+        bool isStudentCompetition = false,
         string? description = null)
     {
         // Создаем данные о соревновании и добавляем в репозиторий
         var competition =
             new CompetitionData(name, conductingOrganizations, initialDate, endDate, venue, shortName,
                 competitionsStatus, detailedCompetitionStatus,
-                description);
+                isStudentCompetition, description);
         var intResult = repository.Add(competition);
         if (! intResult)
         {

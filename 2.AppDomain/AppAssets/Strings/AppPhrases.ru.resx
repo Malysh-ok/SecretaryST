@@ -122,4 +122,10 @@
     <data name="DifficultyLoadError" xml:space="preserve">
         <value>Не удалось получить трудность из репозитория.</value>
     </data>
+    <data name="AgeGroupLoadError" xml:space="preserve">
+        <value>Не удалось получить возрастную группу из репозитория.</value>
+    </data>
+    <data name="AgeGroupsLoadError" xml:space="preserve">
+        <value>Не удалось получить список возрастных групп из репозитория.</value>
+    </data>
 </root>

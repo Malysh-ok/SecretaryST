@@ -19,9 +19,9 @@ public sealed class Difficulty : AbstractEntity<DifficultyEnm>, IEntityCopyable,
     /// </summary>
     /// <param name="id">Первичный идентификатор.</param>
     /// <param name="disciplineGroupId">Вторичный идентификатор (идентификатор группы дисциплин).</param>
+    /// <inheritdoc />
     /// <param name="fullName">Полное наименование.</param>
     /// <param name="fullNameGenitive">Полное наименование в родительном падеже.</param>
-    /// <inheritdoc cref="AbstractEntity(string,string?)"/>
     public Difficulty(
         DifficultyEnm id, 
         DisciplineGroupEnm disciplineGroupId, 
