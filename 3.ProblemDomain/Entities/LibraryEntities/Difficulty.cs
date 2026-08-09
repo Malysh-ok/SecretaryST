@@ -108,6 +108,22 @@ public sealed class Difficulty : AbstractEntity<DifficultyEnm>, IEntityCopyable,
     /// <inheritdoc />
     public override bool Equals(object? obj)
         => Equals(obj as Difficulty);
+    
+    /// <summary>
+    /// Сравнение на равенство.
+    /// </summary>
+    public static bool operator ==(Difficulty? left, Difficulty? right)
+    {
+        return left?.Equals(right) ?? right is null;
+    }
+
+    /// <summary>
+    /// Сравнение на неравенство.
+    /// </summary>
+    public static bool operator !=(Difficulty? left, Difficulty? right)
+    {
+        return ! (left == right);
+    }
 
     /// <inheritdoc />
     public override int GetHashCode()

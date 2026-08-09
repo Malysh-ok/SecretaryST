@@ -164,6 +164,22 @@ public sealed class AgeGroup : AbstractEntity<AgeGroupEnm>, IEntityCopyable, IEq
     public override bool Equals(object? obj)
         => Equals(obj as AgeGroup);
 
+    /// <summary>
+    /// Сравнение на равенство.
+    /// </summary>
+    public static bool operator ==(AgeGroup? left, AgeGroup? right)
+    {
+        return left?.Equals(right) ?? right is null;
+    }
+
+    /// <summary>
+    /// Сравнение на неравенство.
+    /// </summary>
+    public static bool operator !=(AgeGroup? left, AgeGroup? right)
+    {
+        return ! (left == right);
+    }
+
     /// <inheritdoc />
     public override int GetHashCode()
     {

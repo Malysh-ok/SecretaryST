@@ -112,9 +112,7 @@ public class Lang : IEquatable<Lang>, ICloneable
     /// </summary>
     public static bool operator ==(Lang? left, Lang? right)
     {
-        if (left is null || right is null) return false;
-        
-        return left.Equals(right);
+        return left?.Equals(right) ?? right is null;
     }
 
     /// <summary>
