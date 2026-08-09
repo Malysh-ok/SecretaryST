@@ -1,7 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Threading;
 using AppDomain.AppEntities;
 using AppDomain.AppExceptions;
 using AppDomain.AppUseCases._Contracts;
@@ -99,7 +97,7 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
     /// <remarks>
     /// <see cref="Receive"/> извне прийти не может.
     /// </remarks>
-    public async void Receive(LocalizationMessage message)
+    public void Receive(LocalizationMessage message)
     {
         try
         {
@@ -107,15 +105,11 @@ public class AppSettingVM : ObservableRecipient, IRecipient<LocalizationMessage>
             var langResult = _appLocalizationService.SetCurrentLang(message.Lang);
             if (langResult)
             {
-                // Локализация представления асинхронно в UI-потоке, но без блокировки
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+                if (! _viewLocalizationService.LocalizeView(_view, message.Lang))
                 {
-                    if (! _viewLocalizationService.LocalizeView(_view, message.Lang))
-                    {
-                        // Если локализовать не получилось - восстанавливаем текущий язык
-                        _appLocalizationService.SetCurrentLang(message.OldLang);
-                    }
-                }, DispatcherPriority.Normal);
+                    // Если локализовать не получилось - восстанавливаем текущий язык
+                    _appLocalizationService.SetCurrentLang(message.OldLang);
+                }
             }
             else
             {

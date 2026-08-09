@@ -46,7 +46,7 @@
         <Setter Property="DisplayMemberPath" Value="Value"/>
         <Setter Property="SelectedValuePath" Value="Key"/>
         <Setter Property="ItemContainerStyle" Value="{StaticResource KeyValuePairItemStyle}"/>
-        <!-- Серый цвет поля ввода при выборе null -->
+        <!-- Серый цвет переднего плана поля ввода при выборе null -->
         <Style.Triggers>
             <DataTrigger Binding="{Binding SelectedValue, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
                 <Setter Property="Foreground" Value="{StaticResource LightGrayTextBrush}"/>

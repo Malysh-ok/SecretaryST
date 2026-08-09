@@ -155,37 +155,27 @@
                 <fluent:RibbonGroupBox x:Name="SettingSportEvents" 
                                        Header="{DynamicResource MainView_Ribbon_Setting_SportEvents}" >
                     <StackPanel Orientation="Horizontal" >
-                        <fluent:RadioButton
-                            GroupName="SportEvents"
-                            IsChecked="{Binding IsFilteredByDisciplineGroup, Mode=TwoWay}" />
                         <Label 
                             x:Name="LblRestrictedDisciplineGroup"
-                            Content="{DynamicResource MainView_Ribbon_Setting_DisciplineGroupFilter}"
-                            IsEnabled="{Binding IsFilteredByDisciplineGroup}" />
+                            Content="{DynamicResource MainView_Ribbon_Setting_DisciplineGroupFilter}" />
                         <fluent:ComboBox
                             x:Name="CmboxRestrictedDisciplineGroup"
                             Style="{StaticResource FluentKeyValuePairComboBoxStyle}"
                             MinWidth="120"
                             HorizontalAlignment="Left"
-                            IsEnabled="{Binding IsFilteredByDisciplineGroup}"
                             ItemsSource="{Binding DisciplineGroupsWithNull}"
                             SelectedIndex="{Binding  DisciplineGroupsWithNull.SelectedIndex,
                                             Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" >
-                        <fluent:RadioButton
-                            GroupName="SportEvents"
-                            IsChecked="{Binding IsFilteredByDisciplineSubGroup, Mode=OneWay}" />
                         <Label 
                             x:Name="LblRestrictedDisciplineSubGroup"
-                            Content="{DynamicResource MainView_Ribbon_Setting_DisciplineSubGroupFilter}"
-                            IsEnabled="{Binding IsFilteredByDisciplineSubGroup}"/>
+                            Content="{DynamicResource MainView_Ribbon_Setting_DisciplineSubGroupFilter}" />
                         <fluent:ComboBox
                             x:Name="CmboxRestrictedDisciplineSubGroup"
                             Style="{StaticResource FluentKeyValuePairComboBoxStyle}"
                             MinWidth="260"
                             HorizontalAlignment="Left"
-                            IsEnabled="{Binding IsFilteredByDisciplineSubGroup}"
                             ItemsSource="{Binding DisciplineSubGroupsWithNull}"
                             SelectedIndex="{Binding  DisciplineSubGroupsWithNull.SelectedIndex,
                                             Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />

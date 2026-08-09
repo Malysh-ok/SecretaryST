@@ -1,6 +1,7 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Specialized;
+using Common.WpfModule.Components.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Presentation.ViewModels.Shared.Validation;
 using ProblemDomain.Entities.DistanceEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.UseCases.Services;
@@ -10,7 +11,7 @@ namespace Presentation.ViewModels.Shared.Models;
 /// <summary>
 /// ObservableObject, инкапсулирующий свойства и методы для работы со <see cref="SportEvent"/>.
 /// </summary>
-public class SportEventObservable : ObservableValidator
+public class SportEventObservable : ObservableValidator, IEquatable<SportEventObservable>
 {
     private readonly SportEventService _sportEventService;
 
@@ -31,15 +32,28 @@ public class SportEventObservable : ObservableValidator
         SportEventService sportEventService,
         IList<Difficulty> difficulties,
         IList<AgeGroup> ageGroups,
-        SportEvent sportEvent)
+        SportEvent sportEvent,
+        ObservableCollectionEx<Discipline> availableDisciplines)
     {
         _sportEventService = sportEventService;
         _difficulties = difficulties;
         _ageGroups = ageGroups;
         SportEvent = sportEvent;
         Discipline = sportEvent.Discipline;
+        DisplayDiscipline = Discipline;
         Difficulty = sportEvent.Difficulty;
         AgeGroup = sportEvent.AgeGroup;
+        DisplayAgeGroup = AgeGroup;
+
+        // Уставливаем коллекцию дисциплин и подписываемся на событие её изменения
+        AvailableDisciplines = availableDisciplines;
+        AvailableDisciplines.CollectionChanged += OnAvailableDisciplinesChanged;
+
+        // Подписываемся на событие изменения коллекции возрастных групп
+        AvailableAgeGroups.CollectionChanged += OnAvailableAgeGroupsChanged;
+
+        // Валидация всех свойств
+        ValidateAfterLoad();
     }
 
     /// <summary>
@@ -48,41 +62,46 @@ public class SportEventObservable : ObservableValidator
     public SportEvent SportEvent
     {
         get;
-        init
-        {
-            if (SetProperty(ref field, value))
-            {
-            }
-        }
+        init => SetProperty(ref field, value);
     }
 
     /// <summary>
     /// Текущая дисциплина.
     /// </summary>
-    // TODO: временно [Required(ErrorMessage = "Ошибка: недопустимое значение дисциплины.")]
-    [Required(ErrorMessage = "Ошибка: недопустимое значение дисциплины.")]
-    public Discipline Discipline
+    private Discipline Discipline
     {
-        get;
+        get => SportEvent.Discipline;
         set
         {
-            if (SetProperty(ref field, value, true))
-            {
-                SportEvent.Discipline = value;
-                
-                // Обновляем коллекцию доступных трудностей
-                UpdateGetAvailableDifficulties();
-                
-                // Обновляем коллекцию доступных возрастных групп
-                UpdateAvailableAgeGroups();
+            // Обновляем SportEvent
+            SportEvent.Discipline = value;
 
-                // Обновляем при необходимости признак короткой дистанции
-                if (_sportEventService.IsShortUpdate(value,  SportEvent))
-                    OnPropertyChanged(nameof(SportEvent));
-                
-                // Дополнительно уведомляем UI об изменении
-                OnPropertyChanged(nameof(Difficulty));
-                OnPropertyChanged(nameof(IsShortAvailable));
+            // Обновляем зависимые коллекции
+            UpdateAvailableDifficulties();
+            UpdateAvailableAgeGroups();
+
+            // Обновляем флаг короткой дистанции
+            if (_sportEventService.IsShortUpdate(value, SportEvent))
+                OnPropertyChanged(nameof(SportEvent));
+
+            // Уведомляем UI об изменении
+            OnPropertyChanged(nameof(Difficulty));
+            OnPropertyChanged(nameof(IsShortAvailable));
+        }
+    }
+
+    /// <summary>
+    /// Дисциплина - свойство для привязки к ComboBox
+    /// </summary>
+    [DisciplineAvailability]
+    public Discipline? DisplayDiscipline
+    {
+        get;
+        set {
+            if (SetProperty(ref field, value))
+            {
+                // При выборе из ComboBox обновляем реальную дисциплину
+                Discipline = value ?? Discipline;
             }
         }
     }
@@ -90,7 +109,7 @@ public class SportEventObservable : ObservableValidator
     /// <summary>
     /// Текущая трудность вида программы.
     /// </summary>
-    [Required]
+    [DifficultyAvailability]
     public Difficulty Difficulty
     {
         get;
@@ -102,40 +121,46 @@ public class SportEventObservable : ObservableValidator
             }
         }
     }
-    
+
     /// <summary>
     /// Текущая возрастная группа.
     /// </summary>
-    [Required]
-    public AgeGroup AgeGroup
+    private AgeGroup AgeGroup
+    {
+        get => SportEvent.AgeGroup;
+        set => SportEvent.AgeGroup = value;
+    }
+
+    /// <summary>
+    /// Возрастная группа - свойство для привязки к ComboBox.
+    /// </summary>
+    [AgeGroupAvailability]
+    public AgeGroup? DisplayAgeGroup
     {
         get;
         set
         {
-            if (SetProperty(ref field, value, true))
+            if (SetProperty(ref field, value))
             {
-                SportEvent.AgeGroup = value;
+                AgeGroup = value ?? AgeGroup;
             }
         }
     }
 
     /// <summary>
-    /// Коллекция допустимых значений трудности для текущей группы дисциплин.
+    /// Коллекция доступных для выбора дисциплин. 
     /// </summary>
-    public ObservableCollection<Difficulty> AvailableDifficulties
-    {
-        get;
-        private set => SetProperty(ref field, value);
-    } = [];
-    
+    public ObservableCollectionEx<Discipline> AvailableDisciplines { get; }
+
     /// <summary>
     /// Коллекция допустимых значений трудности для текущей группы дисциплин.
     /// </summary>
-    public ObservableCollection<AgeGroup> AvailableAgeGroups
-    {
-        get;
-        private set => SetProperty(ref field, value);
-    } = [];
+    public ObservableCollectionEx<Difficulty> AvailableDifficulties { get; } = [];
+
+    /// <summary>
+    /// Коллекция допустимых значений трудности для текущей группы дисциплин.
+    /// </summary>
+    public ObservableCollectionEx<AgeGroup> AvailableAgeGroups { get; } = [];
 
     /// <summary>
     /// Флаг доступности признака короткой дистанции.
@@ -146,18 +171,69 @@ public class SportEventObservable : ObservableValidator
     /// Обновляем коллекцию доступных трудностей.
     /// </summary>
     // ReSharper disable once MemberCanBePrivate.Global
-    public void UpdateGetAvailableDifficulties()
+    public void UpdateAvailableDifficulties()
     {
-        AvailableDifficulties = new ObservableCollection<Difficulty>(
+        AvailableDifficulties.ClearAndAddRange(
             _sportEventService.GetAvailableDifficulties(_difficulties, Discipline));
     }
-    
+
     /// <summary>
     /// Обновляем коллекцию доступных возрастных групп.
     /// </summary>
     public void UpdateAvailableAgeGroups()
     {
-        AvailableAgeGroups = new ObservableCollection<AgeGroup>(
+        AvailableAgeGroups.ClearAndAddRange(
             _sportEventService.GetAvailableAgeGroups(_ageGroups, Discipline, SportEvent.CompetitionData.IsStudentCompetition));
     }
+
+    /// <summary>
+    /// Принудительная валидация <see cref="SportEventObservable"/>.
+    /// </summary>
+    private void ValidateAfterLoad()
+    {
+        // Запускаем валидацию всех свойств
+        ValidateAllProperties();
+    }
+
+    /// <summary>
+    /// Обработчик события изменения коллекции доступных дисциплин.
+    /// </summary>
+    private void OnAvailableDisciplinesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        // Восстанавливаем отображаемую дисциплину из текущей
+        if (DisplayDiscipline != Discipline)
+            DisplayDiscipline = Discipline;
+        
+        ValidateAllProperties();
+    }
+
+    /// <summary>
+    /// Обработчик события изменения коллекции доступных возрастных групп.
+    /// </summary>
+    private void OnAvailableAgeGroupsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        // Восстанавливаем отображаемую возрастную группу из текущей
+        if (DisplayAgeGroup != AgeGroup)
+            DisplayAgeGroup = AgeGroup;
+        
+        ValidateAllProperties();
+    }
+
+    public bool Equals(SportEventObservable? other)
+    {
+        if (other is null || GetType() != other.GetType()) return false;
+
+        return SportEvent.Id == other.SportEvent.Id;
+    }
+    
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+        => Equals(obj as SportEventObservable);
+    
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(SportEvent.Id);
+    }
+
 }

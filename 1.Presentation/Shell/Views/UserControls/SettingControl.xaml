@@ -275,7 +275,6 @@
                         Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                       SelectedIndex="{Binding SportEventObservables.SelectedIndex, 
                         Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      SelectedValuePath=""
                       AllowDrop="True" >
 
                 <i:Interaction.Behaviors>
@@ -318,7 +317,7 @@
                                 <ComboBox
                                     ItemsSource="{Binding Path=DataContext.AvailableDisciplines, 
                                         RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
-                                    SelectedItem="{Binding  Discipline,
+                                    SelectedItem="{Binding  DisplayDiscipline,
                                         Mode=TwoWay, UpdateSourceTrigger=PropertyChanged,
                                         ValidatesOnDataErrors=True,
                                         NotifyOnValidationError=True}"
@@ -338,8 +337,10 @@
                             <DataTemplate>
                                 <ComboBox
                                     ItemsSource="{Binding AvailableDifficulties}"
-                                    SelectedValue="{Binding Difficulty, 
-                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
+                                    SelectedItem="{Binding Difficulty, 
+                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, 
+                                        ValidatesOnDataErrors=True,
+                                        NotifyOnValidationError=True}"
                                     BorderThickness="0">
                                 </ComboBox>
                             </DataTemplate>
@@ -356,8 +357,10 @@
                             <DataTemplate>
                                 <ComboBox
                                     ItemsSource="{Binding AvailableAgeGroups}"
-                                    SelectedValue="{Binding AgeGroup, 
-                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
+                                    SelectedItem="{Binding DisplayAgeGroup, 
+                                        Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, 
+                                        ValidatesOnDataErrors=True,
+                                        NotifyOnValidationError=True}"
                                     BorderThickness="0">
                                 </ComboBox>
                             </DataTemplate>

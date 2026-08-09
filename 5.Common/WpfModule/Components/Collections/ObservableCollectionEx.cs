@@ -9,9 +9,6 @@ namespace Common.WpfModule.Components.Collections;
 /// </summary>
 public class ObservableCollectionEx<T>: ObservableCollection<T>
 {
-    private Action<int>? _onSelectedIndexChanged;
-    private Action? _onCollectionChanged;
-    
     public ObservableCollectionEx()
     {
     }
@@ -48,33 +45,105 @@ public class ObservableCollectionEx<T>: ObservableCollection<T>
                 field = value;
 
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(SelectedIndex)));
-            _onSelectedIndexChanged?.Invoke(value);
+            SelectedIndexChanged?.Invoke(field);
         }
     } = -1;
+    
+    /// <summary>
+    /// Событие изменения индекса активного элемента коллекции.
+    /// </summary>
+    public event Action<int>? SelectedIndexChanged;
 
     /// <summary>
-    /// Добавление коллекции элементов.
+    /// Событие изменения коллекции.
     /// </summary>
-    public void AddRange(IList<T>? enumerable)
+    public new event EventHandler<NotifyCollectionChangedEventArgs>? CollectionChanged;
+    
+    /// <inheritdoc/>
+    protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
     {
-        if (enumerable is null)
-            return;
-        
-        // Проверяем на возможность изменения
-        CheckReentrancy();
+        base.OnCollectionChanged(e);
+        CollectionChanged?.Invoke(this, e);
 
-        if (enumerable.Count > 0)
+        // Если коллекция изменилась, и SelectedIndex выходит за пределы — берем максимальный
+        if (SelectedIndex >= Count)
+            SelectedIndex = Count - 1;
+    }
+
+    #region [---------- Изменения коллекции ----------]
+    
+    /// <summary>
+    /// Обновляет коллекцию, вызывая одно событие изменения.
+    /// </summary>
+    private void RefreshCollection()
+    {
+        using (BlockReentrancy())
         {
-            foreach (var item in enumerable)
-                Items.Add(item);
-
-            // Вызываем необходимые события
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-            OnPropertyChanged(new PropertyChangedEventArgs("Count"));
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
             OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
         }
     }
 
+    /// <summary>
+    /// Очищает коллекцию и добавляет один элемент.
+    /// </summary>
+    public void ClearAndAdd(T item)
+    {
+        CheckReentrancy();
+    
+        Items.Clear();
+        Items.Add(item);
+    
+        RefreshCollection();
+    }
+    
+    /// <summary>
+    /// Добавление коллекции элементов.
+    /// </summary>
+    public void AddRange(IEnumerable<T>? items)
+    {
+        if (items is null)
+            return;
+        
+        // Проверяем, пустая ли добавляемая коллекция
+        if (items is ICollection<T> { Count: 0 })
+            return;
+        
+        // Проверяем на возможность изменения
+        CheckReentrancy();
+        
+        foreach (var item in items)
+            Items.Add(item);
+
+        // Вызываем необходимые события
+        RefreshCollection();
+    }
+    
+    /// <summary>
+    /// Очищает коллекцию и добавляет коллекцию элементов.
+    /// </summary>
+    public void ClearAndAddRange(IEnumerable<T>? items)
+    {
+        if (items is null)
+            return;
+            
+        // Проверяем, пустая ли добавляемая коллекция
+        if (items is ICollection<T> { Count: 0 })
+            return;
+
+        // Проверяем на возможность изменения
+        CheckReentrancy();
+    
+        Items.Clear();
+        foreach (var item in items)
+            Items.Add(item);
+    
+        RefreshCollection();
+    }
+
+    #endregion
+    
     #region [---------- Сортировки ----------]
 
     /// <summary>
@@ -134,31 +203,4 @@ public class ObservableCollectionEx<T>: ObservableCollection<T>
     }
 
     #endregion // [---------- Сортировки ----------]
-    
-    /// <summary>
-    /// Устанавливает функцию обратного вызова на изменение SelectedIndex,
-    /// где параметр этой функции - новое значение SelectedIndex.
-    /// </summary>
-    public void OnSelectedIndexChanged(Action<int> callback)
-    {
-        _onSelectedIndexChanged = callback;
-    }
-
-    /// <summary>
-    /// Устанавливает функцию обратного вызова на любое изменение коллекции (Add, Remove, Clear, Replace)
-    /// </summary>
-    public void OnCollectionChanged(Action callback)
-    {
-        _onCollectionChanged = callback;
-    }
-
-    protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
-    {
-        base.OnCollectionChanged(e);
-        _onCollectionChanged?.Invoke();
-
-        // Если коллекция изменилась, и SelectedIndex выходит за пределы — сбрасываем
-        if (SelectedIndex >= Count)
-            SelectedIndex = Count - 1;
-    }
 }
