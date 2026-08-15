@@ -166,6 +166,16 @@ public partial class App
                     exceptionsProvider.Exception = exception;
                     return;
                 }
+                
+                // Заполнение репозитория библиотечными данными
+                result = await repositoryHelper.FillDatabase();
+                if (! result)
+                {
+                    // Пробрасываем исключение "Ошибка создания БД."
+                    exception = dataAccessErrorMsgProvider.CreateException(DataAccessErrorCodes.DbCreateError, result.Excptn);
+                    exceptionsProvider.Exception = exception;
+                    return;
+                }
 
                 // Пробрасываем исключение "Одна или несколько сущностей Библиотеки отсутствуют..."
                 var innerEx = dataAccessErrorMsgProvider.CreateException(

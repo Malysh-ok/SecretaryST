@@ -68,20 +68,17 @@ public class RepositoryHelper : IRepositoryHelper
             {
                 await _dbContext.Database.EnsureCreatedAsync();
             }
+            
+            return Result<bool>.Done(true);
         }
         catch (Exception ex)
         {
             return Result<bool>.Fail(ex);
         }
-
-        // Наполняем БД библиотечными данными
-        return await FillDatabase();
     }
 
-    /// <summary>
-    /// Заполняем БД библиотечными данными.
-    /// </summary>
-    private async Task<Result<bool>> FillDatabase()
+    /// <inheritdoc />
+    public async Task<Result<bool>> FillDatabase()
     {
         // Добавляем статусы соревнований
         var resultCompetitionsStatusLst = 

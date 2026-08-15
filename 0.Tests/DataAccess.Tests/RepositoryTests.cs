@@ -253,15 +253,31 @@ public class RepositoryTests
             repository = new Repository<AppDbContext>(dbContext, dbErrorMsgProvider);
             var repositoryHelper = new RepositoryHelper(repository, dbContext);
 
+            // Пересоздаем БД
             result = await repositoryHelper.RebuildRepository(isUseMigrations: true);
+            string? exMsg = null; 
+            if (! result)
+            {
+                exMsg = "Не смогли применить миграции, но БД создана:\n" + result.Excptn?.Message!;
+                result = await repositoryHelper.RebuildRepository(isUseMigrations: false);
+                if (! result)
+                    Assert.Fail(result.Excptn?.Message!);
+            }
+            
+            // Заполняем БД
+            result = await repositoryHelper.FillDatabase();
             if (result)
-                Assert.Pass();
-
-            var resultPost = await repositoryHelper.RebuildRepository(isUseMigrations: false);
-            if (resultPost)
-                Assert.Inconclusive("Не смогли применить миграции, но БД создана:\n" + result.Excptn?.Message!);
+            {
+                if (exMsg != null)
+                    Assert.Inconclusive(exMsg);
+            }
             else
-                Assert.Fail(resultPost.Excptn?.Message!);
+            {
+                exMsg = exMsg == null
+                    ? result.Excptn?.Message!
+                    : exMsg + $"\n\nОшибка заполнения БД:\n{result.Excptn?.Message!}";
+                Assert.Fail(exMsg);
+            }
         }
         finally
         {
