@@ -40,7 +40,8 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
             );
         
         // Загружаем данные из репозитория
-        var sportEventsResult = await repository.GetAllAsync<SportEvent>(
+        var sportEventsResult = await repository.GetNumberedAllAsync<SportEvent>(
+            true,
             se => se.CompetitionDataId == competition.Id,
             nameof(Discipline));
         if (! sportEventsResult)
@@ -55,9 +56,11 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
     /// <summary>
     /// Создание нового вида программы.
     /// </summary>
+    /// <param name="number">Номер вида программы.</param>
     /// <param name="competition">Текущее соревнование.</param>
     /// <param name="availableDisciplines">Коллекция доступных дисциплин.</param>
     public async Task<Result<SportEvent>> CreateSportEventAsync(
+        int number,
         CompetitionData? competition, 
         IList<Discipline> availableDisciplines)
     {
@@ -141,6 +144,7 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
         // Новый вид программы
         var newSportEvent = new SportEvent(
             "НОВЫЙ ВИД ПРОГРАММЫ",
+            number,
             null,
             difficulty,
             discipline,

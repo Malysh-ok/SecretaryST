@@ -11,17 +11,19 @@ namespace ProblemDomain.Entities.DistanceEntities;
 /// <summary>
 /// Вид программы.
 /// </summary>
-public sealed class SportEvent : AbstractEntity<int>, IEntityCloneable, IEntityCopyable
+public sealed class SportEvent : AbstractEntity<int>, INumberedEntity, IEntityCloneable, IEntityCopyable
 {
     /// <summary>
     /// Конструктор для EF.
     /// </summary>
     /// <inheritdoc />
+    /// <param name="number">Номер.</param>
     /// <param name="isShort">Признак короткой дистанции.</param>
     /// <param name="difficulty">Категория сложности маршрута или класс дистанции.</param>
-    private SportEvent(string name, bool? isShort, string? description = null) 
+    private SportEvent(string name, int number, bool? isShort = null, string? description = null) 
         : base(name, description)
     {
+        Number = number;
         IsShort = isShort;
     }
 
@@ -31,6 +33,7 @@ public sealed class SportEvent : AbstractEntity<int>, IEntityCloneable, IEntityC
     private SportEvent(SportEvent source)
         : this(
             source.Name,
+            source.Number,
             source.IsShort,
             source.Description
         )
@@ -47,13 +50,14 @@ public sealed class SportEvent : AbstractEntity<int>, IEntityCloneable, IEntityC
     /// <param name="discipline">Дисциплина.</param>
     /// <param name="competitionData">Соревнование.</param>
     public SportEvent(
-        string name, 
-        bool? isShort, 
-        Difficulty difficulty, 
+        string name,
+        int number,
+        bool? isShort,
+        Difficulty difficulty,
         Discipline discipline,
         AgeGroup ageGroup,
-        CompetitionData competitionData, 
-        string? description = null) : this(name, isShort, description)
+        CompetitionData competitionData,
+        string? description = null) : this(name, number, isShort, description)
     {
         Difficulty = difficulty;
         Discipline = discipline;
@@ -62,7 +66,10 @@ public sealed class SportEvent : AbstractEntity<int>, IEntityCloneable, IEntityC
         DisciplineSubGroupId = Discipline.DisciplineSubGroupId;
         CompetitionData = competitionData;
     }
-
+    
+    /// <inheritdoc />
+    public int Number { get; set; }
+    
     /// <summary>
     /// Признак короткой дистанции.
     /// </summary>
@@ -152,6 +159,7 @@ public sealed class SportEvent : AbstractEntity<int>, IEntityCloneable, IEntityC
     public void Copy(SportEvent destination)
     {
         destination.Name = Name;
+        destination.Number = Number;
         destination.IsShort = IsShort;
         destination.Description = Description;
     }

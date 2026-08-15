@@ -279,7 +279,8 @@
 
                 <i:Interaction.Behaviors>
                     <dataGrids:DataGridDragAndDropBehavior 
-                        Items="{Binding SportEventObservables}" />
+                        Items="{Binding SportEventObservables}"
+                        AfterItemMovedCommand="{Binding RenumberSportEventsCommand}" />
                 </i:Interaction.Behaviors>
                 
                 <DataGrid.Columns>
@@ -287,14 +288,11 @@
                     <DataGridTextColumn
                         Header="№"
                         Width="Auto"
-                        MinWidth="30">
+                        MinWidth="30"
+                        Binding="{Binding Number}">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center" />
-                                <Setter Property="Text" 
-                                        Value="{Binding RelativeSource=
-                                                    {RelativeSource AncestorType=DataGridRow}, 
-                                                    Converter={StaticResource RowIndexConverter}}"/>
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>

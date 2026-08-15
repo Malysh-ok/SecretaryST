@@ -155,6 +155,9 @@ public sealed partial class AppDbContext : ICommonDbContext
             entity.Property(r => r.Id)
                   .ValueGeneratedOnAdd();
 
+            entity.Property(d => d.Number)
+                  .IsRequired();
+            
             entity.Property(r => r.FirstName)
                   .IsRequired()
                   .HasMaxLength(100);

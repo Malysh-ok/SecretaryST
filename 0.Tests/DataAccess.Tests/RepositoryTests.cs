@@ -154,15 +154,15 @@ public class RepositoryTests
         // Создаем Виды программ
         var sportEvents = new List<SportEvent>()
         {
-            new("Вид программы 1", true,
+            new("Вид программы 1", 1, true,
                 (await repository.GetByConditionAsync<Difficulty>(
                     d => d.Id == DifficultyEnm.Third && d.DisciplineGroupId == disciplineResult.Value!.DisciplineGroupId)
                 ).Value!, disciplineResult.Value!, ageGroupResult.Value!, competitionData),
-            new("Вид программы 2", false,
+            new("Вид программы 2", 2, false,
                 (await repository.GetByConditionAsync<Difficulty>(
                     d => d.Id == DifficultyEnm.Fourth && d.DisciplineGroupId == disciplineResult.Value!.DisciplineGroupId)
                 ).Value!, disciplineResult.Value!, ageGroupResult.Value!, competitionData),
-            new("Вид программы 3", null,
+            new("Вид программы 3", 3, null,
                 (await repository.GetByConditionAsync<Difficulty>(
                     d => d.Id == DifficultyEnm.Fifth && d.DisciplineGroupId == disciplineResult.Value!.DisciplineGroupId)
                 ).Value!, disciplineResult.Value!, ageGroupResult.Value!, competitionData),

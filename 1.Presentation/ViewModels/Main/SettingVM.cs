@@ -96,6 +96,7 @@ public sealed class SettingVM : ObservableRecipient,
         GetSportEventsCommand = new AsyncRelayCommand(GetSportEventObservablesAsync);
         CreateSportEventCommand = new AsyncRelayCommand(CreateSportEventAsync);
         RemoveSportEventCommand =  new RelayCommand(RemoveSportEvent);
+        RenumberSportEventsCommand = new RelayCommand(RenumberSportEvents);
 
         // Судьи
         GetRefereesCommand = new AsyncRelayCommand(GetRefereesAsync);
@@ -506,6 +507,11 @@ public sealed class SettingVM : ObservableRecipient,
     /// Команда удаления вида программы.
     /// </summary>
     public ICommand RemoveSportEventCommand { get; } = null!;
+    
+    /// <summary>
+    /// Команда перенумеровывания видов программы.
+    /// </summary>
+    public ICommand RenumberSportEventsCommand { get; } = null!;
 
     #endregion
 
@@ -540,30 +546,23 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private async Task CreateSportEventAsync()
     {
-        var sportEventResult = await _sportEventService.CreateSportEventAsync(CurrentCompetition, AvailableDisciplines);
+        // Индекс
+        var index = SportEventObservables.SelectedIndex;
+        if (index < 0)
+            index = SportEventObservables.Count;
+        else
+            index++;
+
+        var sportEventResult = await _sportEventService.CreateSportEventAsync(index, CurrentCompetition, AvailableDisciplines);
         if (sportEventResult)
         {
-            System.Diagnostics.Debug.WriteLine($"=== Insert ===");
-            System.Diagnostics.Debug.WriteLine($"SelectedIndex before = {SportEventObservables.SelectedIndex}");
-            System.Diagnostics.Debug.WriteLine($"Count before = {SportEventObservables.Count}");
-            
-            // Индекс
-            var index = SportEventObservables.SelectedIndex;
-            if (index < 0)
-                index = SportEventObservables.Count;
-            else
-                index++;
-            
-            System.Diagnostics.Debug.WriteLine($"Calculated insert index = {index}");
-
+            // Добавляем в коллекцию Observable-вид программы и перенумеровываем коллекцию
             SportEventObservables.Insert(index, 
                 new SportEventObservable(_sportEventService, _difficulties, _ageGroups, sportEventResult.Value!, AvailableDisciplines));
+            RenumberSportEvents();
 
-            // Присваеваем новый индекс
+            // Присваиваем новый индекс
             SportEventObservables.SelectedIndex = index;
-            
-            // TODO: Временно - посылаем сообщение для обновления таблицы Видов программы в UI
-            Messenger.Send(EventArgs.Empty);
 
             // TODO: Временно (без ожидания окончания)
             _ = _statusBarService.SetTextAsync("Добавили вид программы.", ExcptnTypeEnm.Info);
@@ -589,9 +588,9 @@ public sealed class SettingVM : ObservableRecipient,
         var intResult = _sportEventService.RemoveSportEvent(SportEventObservables[index].SportEvent);
         if (intResult)
         {
-
-            // Удаляем из коллекции
+            // Удаляем из коллекции Observable-вид программы и перенумеровываем коллекцию
             SportEventObservables.RemoveAt(index);
+            RenumberSportEvents();
 
             // Обновляем индекс
             SportEventObservables.SelectedIndex = index == 0 ? 0 : --index;
@@ -775,6 +774,17 @@ public sealed class SettingVM : ObservableRecipient,
             // Пишем в статус-бар и лог об ошибке
             _viewModelHelper.HandleException(ageGroupsResult.Excptn, 
                 this.ToString(), nameof(GetAgeGroupsAsync));        
+        }
+    }
+    
+    /// <summary>
+    /// Перенумерация коллекции Observable-видов программы.
+    /// </summary>
+    private void RenumberSportEvents()
+    {
+        for (var i = 0; i < SportEventObservables.Count; i++)
+        {
+            SportEventObservables[i].Number = i + 1;
         }
     }
 

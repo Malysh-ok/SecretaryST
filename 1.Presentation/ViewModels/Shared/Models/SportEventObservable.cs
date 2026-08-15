@@ -39,6 +39,7 @@ public class SportEventObservable : ObservableValidator, IEquatable<SportEventOb
         _difficulties = difficulties;
         _ageGroups = ageGroups;
         SportEvent = sportEvent;
+        Number = sportEvent.Number;
         Discipline = sportEvent.Discipline;
         DisplayDiscipline = Discipline;
         Difficulty = sportEvent.Difficulty;
@@ -63,6 +64,19 @@ public class SportEventObservable : ObservableValidator, IEquatable<SportEventOb
     {
         get;
         init => SetProperty(ref field, value);
+    }
+    
+    /// <summary>
+    /// Номер вида программы.
+    /// </summary>
+    public int Number
+    {
+        get;
+        set
+        {
+            if (SetProperty(ref field, value))
+                SportEvent.Number = value;
+        }
     }
 
     /// <summary>

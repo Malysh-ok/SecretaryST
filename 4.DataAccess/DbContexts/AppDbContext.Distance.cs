@@ -39,13 +39,21 @@ public sealed partial class AppDbContext : IDistanceDbContext
             entity.ToTable($"{DISTANCE_TABLE_PRE}SportEvents", DISTANCE_SCHEMA_NAME,
                 t => t.HasComment("Виды программ"));
 
-            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Id)
+                  .ValueGeneratedOnAdd();
+            
+            entity.Property(d => d.Number)
+                  .IsRequired();
                 
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
 
-            entity.Property(e => e.Description).HasMaxLength(300);
+            entity.Property(e => e.Description)
+                  .HasMaxLength(300);
 
-            entity.Property(e => e.IsShort).IsRequired(false);
+            entity.Property(e => e.IsShort)
+                  .IsRequired(false);
                 
             entity.HasKey(e => e.Id)
                 .HasName("PK_SportEvents");
@@ -86,14 +94,18 @@ public sealed partial class AppDbContext : IDistanceDbContext
             entity.ToTable($"{DISTANCE_TABLE_PRE}SportUnits", DISTANCE_SCHEMA_NAME,
                 t => t.HasComment("Спортивные юниты"));
 
-            entity.Property(su => su.Id).ValueGeneratedOnAdd();
+            entity.Property(su => su.Id)
+                  .ValueGeneratedOnAdd();
 
             entity.HasKey(su => su.Id)
                 .HasName("PK_SportUnits");
                 
-            entity.Property(su => su.Name).IsRequired().HasMaxLength(100);
+            entity.Property(su => su.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
 
-            entity.Property(su => su.Description).HasMaxLength(300);
+            entity.Property(su => su.Description)
+                  .HasMaxLength(300);
 
             // Вторичный ключ - Тип спортивного юнита
             entity.HasOne(su => su.SportUnitType)
