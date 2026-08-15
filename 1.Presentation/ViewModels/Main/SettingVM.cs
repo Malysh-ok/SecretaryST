@@ -101,7 +101,7 @@ public sealed class SettingVM : ObservableRecipient,
         GetRefereesCommand = new AsyncRelayCommand(GetRefereesAsync);
         CreateRefereeCommand = new AsyncRelayCommand(CreateRefereeAsync);
         RemoveRefereeCommand = new RelayCommand(RemoveReferee);
-        RenumberRefereesCommand = new RelayCommand(RenumberReferee);
+        RenumberRefereesCommand = new RelayCommand(RenumberReferees);
 
         // Подписываемся на получение сообщений
         Messenger.Register<LocalizationMessage>(this);
@@ -169,8 +169,8 @@ public sealed class SettingVM : ObservableRecipient,
     {
         // TODO: Возможно нужно сделать проверку результатов вызовов, и если false - как-то реагировать
         await GetDetailedCompetitionStatusesAsync();
-        await GetRefereeLevels();
-        await GetRefereeJobTitles();
+        await GetRefereeLevelsAsync();
+        await GetRefereeJobTitlesAsync();
         await GetDisciplineGroupsAsync();
         await GetDisciplineSubGroupsAsync();
         await GetDisciplinesAsync();
@@ -824,7 +824,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// <summary>
     /// Получение судейских категорий.
     /// </summary>
-    private async Task GetRefereeLevels()
+    private async Task GetRefereeLevelsAsync()
     {
         var refereeLevelsResult = await _refereeService.GetRefereeLevelsAsync();
         if (refereeLevelsResult)
@@ -836,14 +836,14 @@ public sealed class SettingVM : ObservableRecipient,
         {
             // Пишем в статус-бар и лог об ошибке
             _viewModelHelper.HandleException(refereeLevelsResult.Excptn, 
-                this.ToString(), nameof(GetRefereeLevels));        
+                this.ToString(), nameof(GetRefereeLevelsAsync));        
         }
     }
 
     /// <summary>
     /// Получение судейских должностей.
     /// </summary>
-    private async Task GetRefereeJobTitles()
+    private async Task GetRefereeJobTitlesAsync()
     {
         var refereeJobTitlesResult = await _refereeService.GetRefereeJobTitlesAsync();
         if (refereeJobTitlesResult)
@@ -855,7 +855,7 @@ public sealed class SettingVM : ObservableRecipient,
         {
             // Пишем в статус-бар и лог об ошибке
             _viewModelHelper.HandleException(refereeJobTitlesResult.Excptn, 
-                this.ToString(), nameof(GetRefereeJobTitles));        
+                this.ToString(), nameof(GetRefereeJobTitlesAsync));        
         }
     }
 
@@ -919,7 +919,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// <summary>
     /// Перенумерация коллекции судей.
     /// </summary>
-    private void RenumberReferee()
+    private void RenumberReferees()
     {
         var index = Referees.SelectedIndex;
         _refereeService.RenumberReferees(Referees);
