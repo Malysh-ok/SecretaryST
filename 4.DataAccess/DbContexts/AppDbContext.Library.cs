@@ -76,20 +76,26 @@ public sealed partial class AppDbContext : IConfigurationDbContext
             entity.ToTable($"{CONFIGURATION_TABLE_PRE}CompetitionsStatuses", CONFIGURATION_SCHEMA_NAME, 
                 t => t.HasComment("Статусы соревнований"));
 
-            entity.Property(cs => cs.Id).ValueGeneratedNever()
-                .HasConversion(
-                    enm => enm.ToInt(),
-                    i => i.ToEnumWithException<CompetitionsStatusEnm>()
-                );
+            entity.Property(cs => cs.Id)
+                  .ValueGeneratedNever()
+                  .HasConversion(
+                      enm => enm.ToInt(),
+                      i => i.ToEnumWithException<CompetitionsStatusEnm>()
+                  );
                 
-            entity.Property(cs => cs.Name).IsRequired().HasMaxLength(100);
+            entity.Property(cs => cs.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
                 
-            entity.Property(cs => cs.NamePlural).IsRequired().HasMaxLength(100);
+            entity.Property(cs => cs.NamePlural)
+                  .IsRequired()
+                  .HasMaxLength(100);
 
-            entity.Property(cs => cs.Description).HasMaxLength(300);
+            entity.Property(cs => cs.Description)
+                  .HasMaxLength(300);
 
             entity.HasKey(cs => cs.Id)
-                .HasName("PK_CompetitionsStatuses");
+                  .HasName("PK_CompetitionsStatuses");
         });
     }
         
@@ -103,18 +109,22 @@ public sealed partial class AppDbContext : IConfigurationDbContext
             entity.ToTable($"{CONFIGURATION_TABLE_PRE}DetailedCompetitionStatuses", CONFIGURATION_SCHEMA_NAME, 
                 t => t.HasComment("Статусы и наименования соревнований"));
 
-            entity.Property(dcs => dcs.Id).ValueGeneratedNever()
-                .HasConversion(
-                    enm => enm.ToInt(),
-                    i => i.ToEnumWithException<DetailedCompetitionStatusEnm>()
-                );
+            entity.Property(dcs => dcs.Id)
+                  .ValueGeneratedNever()
+                  .HasConversion(
+                      enm => enm.ToInt(),
+                      i => i.ToEnumWithException<DetailedCompetitionStatusEnm>()
+                  );
                 
-            entity.Property(dcs => dcs.Name).IsRequired().HasMaxLength(100);
+            entity.Property(dcs => dcs.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
 
-            entity.Property(dcs => dcs.Description).HasMaxLength(300);
+            entity.Property(dcs => dcs.Description)
+                  .HasMaxLength(300);
 
             entity.HasKey(dcs => dcs.Id)
-                .HasName("PK_DetailedCompetitionStatuses");
+                  .HasName("PK_DetailedCompetitionStatuses");
             
             // Вторичный ключ - Статус соревнований
             entity.HasOne(dcs => dcs.CompetitionsStatus)
@@ -134,18 +144,22 @@ public sealed partial class AppDbContext : IConfigurationDbContext
             entity.ToTable($"{CONFIGURATION_TABLE_PRE}DisciplineGroups", CONFIGURATION_SCHEMA_NAME, 
                 t => t.HasComment("Группы дисциплин"));
 
-            entity.Property(dg => dg.Id).ValueGeneratedNever()
-                .HasConversion(
-                    enm => enm.ToInt(),
-                    i => i.ToEnumWithException<DisciplineGroupEnm>()
-                );
+            entity.Property(dg => dg.Id)
+                  .ValueGeneratedNever()
+                  .HasConversion(
+                      enm => enm.ToInt(),
+                      i => i.ToEnumWithException<DisciplineGroupEnm>()
+                  );
                 
-            entity.Property(dg => dg.Name).IsRequired().HasMaxLength(100);
+            entity.Property(dg => dg.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
 
-            entity.Property(dg => dg.Description).HasMaxLength(300);
+            entity.Property(dg => dg.Description)
+                  .HasMaxLength(300);
 
             entity.HasKey(dg => dg.Id)
-                .HasName("PK_DisciplineGroups");
+                  .HasName("PK_DisciplineGroups");
                 
             /*
             // Пример заполнения данных с помощью EF
@@ -168,24 +182,28 @@ public sealed partial class AppDbContext : IConfigurationDbContext
             entity.ToTable($"{CONFIGURATION_TABLE_PRE}DisciplineSubGroups", CONFIGURATION_SCHEMA_NAME,
                 t => t.HasComment("Подгруппы дисциплин"));
 
-            entity.Property(dsg => dsg.Id).ValueGeneratedNever()
-                .HasConversion(
-                    enm => enm.ToInt(),
-                    i => i.ToEnumWithException<DisciplineSubGroupEnm>()
-                );
+            entity.Property(dsg => dsg.Id)
+                  .ValueGeneratedNever()
+                  .HasConversion(
+                      enm => enm.ToInt(),
+                      i => i.ToEnumWithException<DisciplineSubGroupEnm>()
+                  );
                 
-            entity.Property(dsg => dsg.Name).IsRequired().HasMaxLength(100);
+            entity.Property(dsg => dsg.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
                 
-            entity.Property(dsg => dsg.Description).HasMaxLength(300);
+            entity.Property(dsg => dsg.Description)
+                  .HasMaxLength(300);
 
             entity.HasKey(dsg => dsg.Id)
                 .HasName("PK_DisciplineSubGroups");
 
             // Вторичный ключ - Группа дисциплин
             entity.HasOne(dsg => dsg.DisciplineGroup)
-                .WithMany(dg => dg.DisciplineSubGroups)
-                .HasForeignKey(dsg => dsg.DisciplineGroupId)
-                .HasConstraintName("FK_DisciplineSubGroups_DisciplineGroupId");
+                  .WithMany(dg => dg.DisciplineSubGroups)
+                  .HasForeignKey(dsg => dsg.DisciplineGroupId)
+                  .HasConstraintName("FK_DisciplineSubGroups_DisciplineGroupId");
         });
     }
         
@@ -199,30 +217,38 @@ public sealed partial class AppDbContext : IConfigurationDbContext
             entity.ToTable($"{CONFIGURATION_TABLE_PRE}Disciplines", CONFIGURATION_SCHEMA_NAME,
                 t => t.HasComment("Дисциплины"));
 
-            entity.Property(d => d.Id).ValueGeneratedNever()
-                .HasConversion(
-                    enm => enm.ToInt(),
-                    i => i.ToEnumWithException<DisciplineEnm>()
-                );
+            entity.Property(d => d.Id)
+                  .ValueGeneratedNever()
+                  .HasConversion(
+                      enm => enm.ToInt(),
+                      i => i.ToEnumWithException<DisciplineEnm>()
+                  );
 
-            entity.Property(d => d.Name).IsRequired().HasMaxLength(100);
+            entity.Property(d => d.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
+            
+            entity.Property(d => d.FullName)
+                  .IsRequired()
+                  .HasMaxLength(150);
                 
-            entity.Property(d => d.Description).HasMaxLength(300);
+            entity.Property(d => d.Description)
+                  .HasMaxLength(300);
 
             entity.HasKey(d => d.Id)
-                .HasName("PK_Disciplines");
+                  .HasName("PK_Disciplines");
 
             // Вторичный ключ - Подгруппа дисциплин
             entity.HasOne(d => d.DisciplineSubGroup)
-                .WithMany(dsg => dsg.Disciplines)
-                .HasForeignKey(d => d.DisciplineSubGroupId)
-                .HasConstraintName("FK_Disciplines_DisciplineSubGroupId");
-                
+                  .WithMany(dsg => dsg.Disciplines)
+                  .HasForeignKey(d => d.DisciplineSubGroupId)
+                  .HasConstraintName("FK_Disciplines_DisciplineSubGroupId");
+
             // Вторичный ключ - Группа дисциплин
             entity.HasOne(d => d.DisciplineGroup)
-                .WithMany(dg => dg.Disciplines)
-                .HasForeignKey(d => d.DisciplineGroupId)
-                .HasConstraintName("FK_Disciplines_DisciplineGroupId");
+                  .WithMany(dg => dg.Disciplines)
+                  .HasForeignKey(d => d.DisciplineGroupId)
+                  .HasConstraintName("FK_Disciplines_DisciplineGroupId");
         });
     }
 
@@ -236,20 +262,26 @@ public sealed partial class AppDbContext : IConfigurationDbContext
             entity.ToTable($"{CONFIGURATION_TABLE_PRE}RefereeLevels", CONFIGURATION_SCHEMA_NAME,
                 t => t.HasComment("Судейские категории"));
 
-            entity.Property(dg => dg.Id).ValueGeneratedNever()
-                .HasConversion(
-                    enm => enm.ToInt(),
-                    i => i.ToEnumWithException<RefereeLevelEnm>()
-                );
+            entity.Property(dg => dg.Id)
+                  .ValueGeneratedNever()
+                  .HasConversion(
+                      enm => enm.ToInt(),
+                      i => i.ToEnumWithException<RefereeLevelEnm>()
+                  );
 
-            entity.Property(dg => dg.Name).IsRequired().HasMaxLength(100);
+            entity.Property(dg => dg.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
                 
-            entity.Property(dg => dg.FullName).IsRequired().HasMaxLength(100);
+            entity.Property(dg => dg.FullName)
+                  .IsRequired()
+                  .HasMaxLength(100);
 
-            entity.Property(dg => dg.Description).HasMaxLength(300);
+            entity.Property(dg => dg.Description)
+                  .HasMaxLength(300);
 
             entity.HasKey(dg => dg.Id)
-                .HasName("PK_RefereeLevels");
+                  .HasName("PK_RefereeLevels");
         });
     }
         
@@ -263,18 +295,22 @@ public sealed partial class AppDbContext : IConfigurationDbContext
             entity.ToTable($"{CONFIGURATION_TABLE_PRE}RefereeJobTitles", CONFIGURATION_SCHEMA_NAME,
                 t => t.HasComment("Судейские должности"));
 
-            entity.Property(jt => jt.Id).ValueGeneratedNever()
-                .HasConversion(
-                    enm => enm.ToInt(),
-                    i => i.ToEnumWithException<RefereeJobTitleEnm>()
-                );
+            entity.Property(jt => jt.Id)
+                  .ValueGeneratedNever()
+                  .HasConversion(
+                      enm => enm.ToInt(),
+                      i => i.ToEnumWithException<RefereeJobTitleEnm>()
+                  );
 
-            entity.Property(dg => dg.Name).IsRequired().HasMaxLength(100);
+            entity.Property(dg => dg.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
 
-            entity.Property(dg => dg.Description).HasMaxLength(300);
+            entity.Property(dg => dg.Description)
+                  .HasMaxLength(300);
 
             entity.HasKey(dg => dg.Id)
-                .HasName("PK_RefereeJobTitles");
+                  .HasName("PK_RefereeJobTitles");
         });
     }
 
@@ -288,26 +324,36 @@ public sealed partial class AppDbContext : IConfigurationDbContext
             entity.ToTable($"{CONFIGURATION_TABLE_PRE}Sexes", CONFIGURATION_SCHEMA_NAME, 
                 t => t.HasComment("Варианты пола"));
 
-            entity.Property(dg => dg.Id).ValueGeneratedNever()
-                .HasConversion(
-                    enm => enm.ToInt(),
-                    i => i.ToEnumWithException<SexEnm>()
-                );
+            entity.Property(dg => dg.Id)
+                  .ValueGeneratedNever()
+                  .HasConversion(
+                      enm => enm.ToInt(),
+                      i => i.ToEnumWithException<SexEnm>()
+                  );
                 
-            entity.Property(dg => dg.Name).IsRequired().HasMaxLength(100);
+            entity.Property(dg => dg.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
                 
-            entity.Property(dg => dg.PersonalityName).HasMaxLength(100);
+            entity.Property(dg => dg.PersonalityName)
+                  .HasMaxLength(100);
 
-            entity.Property(dg => dg.PersonalityNamePlural).HasMaxLength(100);
+            entity.Property(dg => dg.PersonalityNamePlural)
+                  .HasMaxLength(100);
 
-            entity.Property(dg => dg.TeamName).IsRequired().HasMaxLength(100);
+            entity.Property(dg => dg.TeamName)
+                  .IsRequired()
+                  .HasMaxLength(100);
 
-            entity.Property(dg => dg.TeamNamePlural).IsRequired().HasMaxLength(100);
+            entity.Property(dg => dg.TeamNamePlural)
+                  .IsRequired()
+                  .HasMaxLength(100);
 
-            entity.Property(dg => dg.Description).HasMaxLength(300);
+            entity.Property(dg => dg.Description)
+                  .HasMaxLength(300);
 
             entity.HasKey(dg => dg.Id)
-                .HasName("PK_Sexes");
+                  .HasName("PK_Sexes");
         });
     }
         
@@ -321,20 +367,25 @@ public sealed partial class AppDbContext : IConfigurationDbContext
             entity.ToTable($"{CONFIGURATION_TABLE_PRE}SportUnitTypes", CONFIGURATION_SCHEMA_NAME, 
                 t => t.HasComment("Типы спортивных юнитов"));
 
-            entity.Property(dg => dg.Id).ValueGeneratedNever()
-                .HasConversion(
-                    enm => enm.ToInt(),
-                    i => i.ToEnumWithException<SportUnitTypeEnm>()
-                );
+            entity.Property(dg => dg.Id)
+                  .ValueGeneratedNever()
+                  .HasConversion(
+                      enm => enm.ToInt(),
+                      i => i.ToEnumWithException<SportUnitTypeEnm>()
+                  );
                 
-            entity.Property(dg => dg.Name).IsRequired().HasMaxLength(100);
+            entity.Property(dg => dg.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
                 
-            entity.Property(dg => dg.AuxName).HasMaxLength(100);
+            entity.Property(dg => dg.AuxName)
+                  .HasMaxLength(100);
 
-            entity.Property(dg => dg.Description).HasMaxLength(300);
+            entity.Property(dg => dg.Description)
+                  .HasMaxLength(300);
 
             entity.HasKey(dg => dg.Id)
-                .HasName("PK_SportUnitTypes");
+                  .HasName("PK_SportUnitTypes");
         });
     }
 
@@ -348,19 +399,25 @@ public sealed partial class AppDbContext : IConfigurationDbContext
             entity.ToTable($"{CONFIGURATION_TABLE_PRE}Difficulties", CONFIGURATION_SCHEMA_NAME, 
                 t => t.HasComment("Трудности"));
 
-            entity.Property(d => d.Id).ValueGeneratedNever()
+            entity.Property(d => d.Id)
+                  .ValueGeneratedNever()
                   .HasConversion(
                       enm => enm.ToInt(),
                       i => i.ToEnumWithException<DifficultyEnm>()
                   );
                 
-            entity.Property(d => d.Name).IsRequired().HasMaxLength(100);
+            entity.Property(d => d.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
             
-            entity.Property(d => d.FullName).HasMaxLength(100);
+            entity.Property(d => d.FullName)
+                  .HasMaxLength(100);
 
-            entity.Property(d => d.FullNameGenitive).HasMaxLength(100);
+            entity.Property(d => d.FullNameGenitive)
+                  .HasMaxLength(100);
 
-            entity.Property(d => d.Description).HasMaxLength(300);
+            entity.Property(d => d.Description)
+                  .HasMaxLength(300);
 
             // Первичный ключ - составной
             entity.HasKey(d => new { d.Id, d.DisciplineGroupId })
@@ -384,17 +441,22 @@ public sealed partial class AppDbContext : IConfigurationDbContext
             entity.ToTable($"{CONFIGURATION_TABLE_PRE}AgeGroups", CONFIGURATION_SCHEMA_NAME, 
                 t => t.HasComment("Возрастные группы"));
 
-            entity.Property(ag => ag.Id).ValueGeneratedNever()
+            entity.Property(ag => ag.Id)
+                  .ValueGeneratedNever()
                   .HasConversion(
                       enm => enm.ToInt(),
                       i => i.ToEnumWithException<AgeGroupEnm>()
                   );
                 
-            entity.Property(ag => ag.Name).IsRequired().HasMaxLength(100);
+            entity.Property(ag => ag.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
 
-            entity.Property(ag => ag.MinAge).IsRequired();
+            entity.Property(ag => ag.MinAge)
+                  .IsRequired();
 
-            entity.Property(ag => ag.Description).HasMaxLength(300);
+            entity.Property(ag => ag.Description)
+                  .HasMaxLength(300);
 
             entity.Ignore(ag => ag.FullName);
 

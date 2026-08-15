@@ -189,130 +189,46 @@ public static class RepositoryPlaceholder
 
         var disciplineLst = new List<Discipline>
         {
-            new(DisciplineEnm.TrekWater, "Маршрут - водный (1-6 категория)",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Trek)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Trek)!),
+            CreateTrek(DisciplineEnm.TrekWater, "Маршрут - водный"),
+            CreateTrek(DisciplineEnm.TrekMountain, "Маршрут - горный"),
+            CreateTrek(DisciplineEnm.TrekCombined, "Маршрут - комбинированный"),
+            CreateTrek(DisciplineEnm.TrekSki, "Маршрут - лыжный"),
+            CreateTrek(DisciplineEnm.TrekOnMovementItems, "Маршрут - на средствах передвижения"),
+            CreateTrek(DisciplineEnm.TrekSailing, "Маршрут - парусный"),
+            CreateTrek(DisciplineEnm.TrekHiking, "Маршрут - пешеходный"),
+            CreateTrek(DisciplineEnm.TrekSpeleo, "Маршрут - спелео"),
 
-            new(DisciplineEnm.TrekMountain, "Маршрут - горный (1-6 категория)",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Trek)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Trek)!),
+            CreateDistance(DisciplineEnm.DistanceWaterKayak, "Дистанция - водная - каяк", DisciplineSubGroupEnm.Water),
+            CreateDistance(DisciplineEnm.DistanceWaterTandemKayak, "Дистанция - водная - байдарка", DisciplineSubGroupEnm.Water),
+            CreateDistance(DisciplineEnm.DistanceWaterCatamaran2, "Дистанция - водная - катамаран - 2", DisciplineSubGroupEnm.Water),
+            CreateDistance(DisciplineEnm.DistanceWaterCatamaran4, "Дистанция - водная - катамаран - 4", DisciplineSubGroupEnm.Water),
+            CreateDistance(DisciplineEnm.DistanceWaterTeamRace, "Дистанция - водная - командная гонка", DisciplineSubGroupEnm.Water),
 
-            new(DisciplineEnm.TrekCombined, "Маршрут - комбинированный (1-6 категория)",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Trek)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Trek)!),
+            CreateDistance(DisciplineEnm.DistanceMountainGroup, "Дистанция - горная - группа", DisciplineSubGroupEnm.Mountain),
+            CreateDistance(DisciplineEnm.DistanceMountainBunch, "Дистанция - горная - связка", DisciplineSubGroupEnm.Mountain),
 
-            new(DisciplineEnm.TrekSki, "Маршрут - лыжный (1-6 категория)",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Trek)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Trek)!),
+            CreateDistance(DisciplineEnm.DistanceCombined, "Дистанция - комбинированная", DisciplineSubGroupEnm.Combined),
 
-            new(DisciplineEnm.TrekOnMovementItems, "Маршрут - на средствах передвижения (1-6 категория)",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Trek)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Trek)!),
+            CreateDistance(DisciplineEnm.DistanceSkiGroup, "Дистанция - лыжная - группа", DisciplineSubGroupEnm.Ski),
+            CreateDistance(DisciplineEnm.DistanceSkiBunch, "Дистанция - лыжная - связка", DisciplineSubGroupEnm.Ski),
+            CreateDistance(DisciplineEnm.DistanceSki, "Дистанция - лыжная", DisciplineSubGroupEnm.Ski),
 
-            new(DisciplineEnm.TrekSailing, "Маршрут - парусный (1-6 категория)",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Trek)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Trek)!),
+            CreateDistance(DisciplineEnm.DistanceOnMovementItemsGroup, "Дистанция - на средствах передвижения - группа", 
+                DisciplineSubGroupEnm.OnMovementItems),
+            CreateDistance(DisciplineEnm.DistanceOnMovementItems, "Дистанция - на средствах передвижения", 
+                DisciplineSubGroupEnm.OnMovementItems),
 
-            new(DisciplineEnm.TrekHiking, "Маршрут - пешеходный (1-6 категория)",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Trek)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Trek)!),
+            CreateDistance(DisciplineEnm.DistanceSailing, "Дистанция - парусная", DisciplineSubGroupEnm.Sailing),
 
-            new(DisciplineEnm.TrekSpeleo, "Маршрут - спелео (1-6 категория)",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Trek)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Trek)!),
+            CreateDistance(DisciplineEnm.DistanceHikingGroup, "Дистанция - пешеходная - группа", DisciplineSubGroupEnm.Hiking),
+            CreateDistance(DisciplineEnm.DistanceHikingBunch, "Дистанция - пешеходная - связка", DisciplineSubGroupEnm.Hiking),
+            CreateDistance(DisciplineEnm.DistanceHiking, "Дистанция - пешеходная", DisciplineSubGroupEnm.Hiking),
 
+            CreateDistance(DisciplineEnm.DistanceSpeleoGroup, "Дистанция - спелео - группа", DisciplineSubGroupEnm.Speleo),
+            CreateDistance(DisciplineEnm.DistanceSpeleoBunch, "Дистанция - спелео - связка", DisciplineSubGroupEnm.Speleo),
+            CreateDistance(DisciplineEnm.DistanceSpeleo, "Дистанция - спелео", DisciplineSubGroupEnm.Speleo),
 
-            new(DisciplineEnm.DistanceWaterKayak, "Дистанция - водная - каяк",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Water)!),
-
-            new(DisciplineEnm.DistanceWaterTandemKayak, "Дистанция - водная - байдарка",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Water)!),
-
-            new(DisciplineEnm.DistanceWaterCatamaran2, "Дистанция - водная - катамаран 2",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Water)!),
-
-            new(DisciplineEnm.DistanceWaterCatamaran4, "Дистанция - водная - катамаран 4",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Water)!),
-
-            new(DisciplineEnm.DistanceWaterTeamRace, "Дистанция - водная - командная гонка",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Water)!),
-
-
-            new(DisciplineEnm.DistanceMountainGroup, "Дистанция - горная - группа",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Mountain)!),
-
-            new(DisciplineEnm.DistanceMountainBunch, "Дистанция - горная - связка",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Mountain)!),
-
-
-            new(DisciplineEnm.DistanceCombined, "Дистанция - комбинированная",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Combined)!),
-
-
-            new(DisciplineEnm.DistanceSkiGroup, "Дистанция - лыжная - группа",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Ski)!),
-
-            new(DisciplineEnm.DistanceSkiBunch, "Дистанция - лыжная - связка",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Ski)!),
-
-            new(DisciplineEnm.DistanceSki, "Дистанция - лыжная",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Ski)!),
-
-
-            new(DisciplineEnm.DistanceOnMovementItemsGroup, "Дистанция - на средствах передвижения - группа",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.OnMovementItems)!),
-
-            new(DisciplineEnm.DistanceOnMovementItems, "Дистанция - на средствах передвижения",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.OnMovementItems)!),
-
-
-            new(DisciplineEnm.DistanceSailing, "Дистанция - парусная",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Sailing)!),
-
-
-            new(DisciplineEnm.DistanceHikingGroup, "Дистанция - пешеходная - группа",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Hiking)!),
-
-            new(DisciplineEnm.DistanceHikingBunch, "Дистанция - пешеходная - связка",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Hiking)!),
-
-            new(DisciplineEnm.DistanceHiking, "Дистанция - пешеходная",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Hiking)!),
-
-
-            new(DisciplineEnm.DistanceSpeleoGroup, "Дистанция - спелео - группа",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Speleo)!),
-
-            new(DisciplineEnm.DistanceSpeleoBunch, "Дистанция - спелео - связка",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Speleo)!),
-
-            new(DisciplineEnm.DistanceSpeleo, "Дистанция - спелео",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Speleo)!),
-
-
-            new(DisciplineEnm.NordicWalking, "Северная ходьба",
-                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.NordicWalking)!,
-                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.NordicWalking)!),
+            CreateNordicWalking(DisciplineEnm.NordicWalking, "Северная ходьба"),
         };
 
         result = repository.AddRange(disciplineLst);
@@ -324,6 +240,43 @@ public static class RepositoryPlaceholder
             return Result<List<Discipline>>.Fail(result.Excptn!);
 
         return Result<List<Discipline>>.Done(disciplineLst);
+
+        
+        // Создаем маршрут
+        Discipline CreateTrek(DisciplineEnm id, string name)
+        {
+            return new Discipline(
+                id,
+                name,
+                $"{name} (1-6 категория)",
+                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Trek)!,
+                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.Trek)!
+            );
+        }
+
+        // Создаем дистанцию
+        Discipline CreateDistance(DisciplineEnm id, string name, DisciplineSubGroupEnm disciplineSubGroup)
+        {
+            return new Discipline(
+                id,
+                name,
+                name,
+                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.Distance)!,
+                disciplineSubGroupLst.Find(dsg => dsg.Id == disciplineSubGroup)!
+            );
+        }
+
+        // Создаем северную ходьбу
+        Discipline CreateNordicWalking(DisciplineEnm id, string name)
+        {
+            return new Discipline(
+                id,
+                name,
+                name,
+                disciplineGroupLst.Find(dg => dg.Id == DisciplineGroupEnm.NordicWalking)!,
+                disciplineSubGroupLst.Find(dsg => dsg.Id == DisciplineSubGroupEnm.NordicWalking)!
+            );
+        }
     }
     
     /// <summary>

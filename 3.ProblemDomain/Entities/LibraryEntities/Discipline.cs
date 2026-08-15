@@ -17,10 +17,11 @@ public sealed class Discipline : AbstractEntity<DisciplineEnm>, IEntityCopyable
     /// </summary>
     /// <param name="id">Идентификатор.</param>
     /// <inheritdoc />
-    private Discipline(DisciplineEnm id, string name, string? description = null) 
+    private Discipline(DisciplineEnm id, string name, string fullName, string? description = null) 
         : base(name, description)
     {
         Id = id;
+        FullName = fullName;
     }
         
     /// <summary>
@@ -30,16 +31,22 @@ public sealed class Discipline : AbstractEntity<DisciplineEnm>, IEntityCopyable
     /// <param name="disciplineGroup">Группа дисциплин.</param>
     /// <param name="disciplineSubGroup">Подгруппа дисциплин.</param>
     public Discipline(
-        DisciplineEnm id, 
-        string name, 
-        DisciplineGroup disciplineGroup, 
-        DisciplineSubGroup disciplineSubGroup, 
-        string? description = null) : this(id, name, description)
+        DisciplineEnm id,
+        string name,
+        string fullName,
+        DisciplineGroup disciplineGroup,
+        DisciplineSubGroup disciplineSubGroup,
+        string? description = null) : this(id, name, fullName, description)
     {
         DisciplineGroup = disciplineGroup;
         DisciplineSubGroup = disciplineSubGroup;
     }
 
+    /// <summary>
+    /// Полное наименование.
+    /// </summary>
+    public string FullName { get; set; }
+    
     /// <summary>
     /// Связь с подгруппой дисциплин (объектом-владельцем).
     /// </summary>
@@ -67,6 +74,7 @@ public sealed class Discipline : AbstractEntity<DisciplineEnm>, IEntityCopyable
     public void Copy(Discipline destination)
     {
         destination.Name = Name;
+        destination.FullName = FullName;
         destination.Description = Description;
     }
     
