@@ -53,15 +53,6 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-    
-    <!-- _______________ ComboBox для внедрения в DataGrid _______________ -->
-    <!-- Стиль -->
-    <Style x:Key="ComboBoxForDataGrid"
-           TargetType="{x:Type ComboBox}"
-           BasedOn="{StaticResource BaseComboBox}">
-        <Setter Property="Height" Value="{x:Static sys:Double.NaN}"/>
-
-    </Style>
 
     
     <!-- TODO: Последующий код требует дальнейшей модификации с целью создания полноценного BaseComboBox -->

@@ -77,10 +77,23 @@
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
-
         </Setter>
     </Style>
     
+    <!-- Именованный стиль для TextBlock в ячейке -->
+    <Style x:Key="DataGridTextBlockStyle" 
+           TargetType="TextBlock">
+        <Setter Property="Margin" Value="5,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    
+    <!-- Именованный стиль для TextBlock в ячейке, с контентом по центру -->
+    <Style x:Key="DataGridTextBlockStyle.ContentCenter" 
+           TargetType="TextBlock"
+           BasedOn="{StaticResource DataGridTextBlockStyle}">
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
     
     <!-- _______________ СТИЛИ ЗАГОЛОВКОВ СТОЛБЦОВ _______________ -->
 

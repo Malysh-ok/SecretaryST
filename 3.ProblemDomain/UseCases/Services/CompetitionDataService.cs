@@ -1,6 +1,5 @@
 ﻿using Common.BaseComponents.Components;
 using Common.BaseExtensions.Collections;
-using Common.WpfModule.Components.Wrappers;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
@@ -17,101 +16,49 @@ namespace ProblemDomain.UseCases.Services;
 public class CompetitionDataService(IRepository repository, IProblemErrorMsgProvider problemErrorMsgProvider)
 {
     /// <summary>
-    /// Получение проводящих организаций, связанных с соревнованием, и обновление ими коллекции.
+    /// Получение проводящих организаций, связанных с соревнованием.
     /// </summary>
-    /// <param name="conductingOrganizations">Коллекция проводящих организаций, которую обновляем</param>
     /// <param name="competition">Текущее соревнование.</param>
-    public Result<int> GetConductingOrganizations(IList<StringItem> conductingOrganizations, CompetitionData? competition)
+    public Result<IList<string>> GetConductingOrganizations(CompetitionData? competition)
     {
-        try
+        // Проверяем наличие соревнования
+        if (competition == null)
         {
-            conductingOrganizations.Clear();
-            competition?.ConductingOrganizations.ForEach(item => conductingOrganizations.Add(new StringItem(item)));
-            
-            return Result<int>.Done(conductingOrganizations.Count);
+            return Result<IList<string>>.Fail(
+                problemErrorMsgProvider.CreateException(ProblemErrorCodes.ConductingOrganizationsLoadError,
+                    problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionDataIsNull))
+            );
         }
-        catch (Exception ex)
-        {
-            return Result<int>.Fail(problemErrorMsgProvider.CreateException(
-                ProblemErrorCodes.ConductingOrganizationsLoadError, ex));
-        }
+
+        return Result<IList<string>>.Done(competition.ConductingOrganizations);
     }
     
+    /// <summary>
+    /// Создание проводящей организации.
+    /// </summary>
+    public string CreateConductingOrganization()
+    {
+        return "НОВАЯ ПРОВОДЯЩАЯ ОРГАНИЗАЦИЯ";
+    }
+
     /// <summary>
     /// Установка проводящих организаций в связанном с ними соревновании.
     /// </summary>
-    /// <param name="competitionData">Соревнование, в которой устанавливаем проводящие организации.</param>
+    /// <param name="competition">Текущее соревнование.</param>
     /// <param name="conductingOrganizations">Коллекция проводящих организаций (источник данных).</param>
-    public Result<int> SetConductingOrganizations(IList<StringItem> conductingOrganizations, CompetitionData? competitionData)
+    public Result<bool> SetConductingOrganizations(CompetitionData? competition, IList<string> conductingOrganizations)
     {
-        try
+        // Проверяем наличие соревнования
+        if (competition == null)
         {
-            if (competitionData != null)
-            {
-                competitionData.ConductingOrganizations.Clear();
-                conductingOrganizations.ForEach(item => competitionData.ConductingOrganizations.Add(item.Value));
-            }
-            
-            return Result<int>.Done(competitionData!.ConductingOrganizations.Count);
+            return Result<bool>.Fail(
+                problemErrorMsgProvider.CreateException(ProblemErrorCodes.ConductingOrganizationsSetError,
+                    problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionDataIsNull))
+            );
         }
-        catch (Exception ex)
-        {
-            return Result<int>.Fail(problemErrorMsgProvider.CreateException(
-                ProblemErrorCodes.ConductingOrganizationsSetError, ex));
-        }
-    }
-    
-    /// <summary>
-    /// Создание новой проводящей организации, и добавление в коллекцию после текущего.
-    /// </summary>
-    /// <param name="conductingOrganizations">Обновляемая коллекция проводящих организаций.</param>
-    /// <param name="index">Индекс текущей проводящей организации.</param>
-    /// <returns>Индекс новой текущей проводящей организации.</returns>
-    public Result<int> CreateConductingOrganization(IList<StringItem> conductingOrganizations, int index)
-    {
-        try
-        {
-            var newIndex = (index >= conductingOrganizations.Count || index < 0)
-                ? conductingOrganizations.Count
-                : index + 1;
 
-            var newConductingOrganization = new StringItem("НОВАЯ ПРОВОДЯЩАЯ ОРГАНИЗАЦИЯ");
-        
-            // Добавляем в коллекцию организацию
-            conductingOrganizations.Insert(newIndex, newConductingOrganization);
-        
-            return Result<int>.Done(newIndex);
-        }
-        catch (Exception ex)
-        {
-            return Result<int>.Fail(problemErrorMsgProvider.CreateException(
-                ProblemErrorCodes.ConductingOrganizationCreateError, ex));
-        }
-    }
-    
-    /// <summary>
-    /// Удаление проводящей организации из коллекции.
-    /// </summary>
-    /// <param name="conductingOrganizations">Обновляемая коллекция проводящих организаций.</param>
-    /// <param name="index">Индекс удаляемой проводящей организации.</param>
-    /// <returns>Индекс новой текущей проводящей организации.</returns>
-    public Result<int> RemoveConductingOrganization(IList<StringItem> conductingOrganizations, int index)
-    {
-        try
-        {
-            if (index >= conductingOrganizations.Count || index < 0)
-                return Result<int>.Done(index);
-        
-            // Удаляем их коллекции организацию
-            conductingOrganizations.RemoveAt(index);
-        
-            return Result<int>.Done(index == 0 ? 0 : index - 1);
-        }
-        catch (Exception ex)
-        {
-            return Result<int>.Fail(problemErrorMsgProvider.CreateException(
-                ProblemErrorCodes.ConductingOrganizationRemoveError, ex));
-        }
+        competition.ConductingOrganizations = conductingOrganizations;
+        return Result<bool>.Done(true);
     }
 
     /// <summary>

@@ -7,7 +7,6 @@ using AppDomain.AppUseCases.Services;
 using Common.BaseComponents.Components.Exceptions;
 using Common.BaseExtensions.Collections;
 using Common.WpfModule.Components.Collections;
-using Common.WpfModule.Components.Wrappers;
 using Common.WpfModule.Ui.Services;
 using Common.WpfModule.Ui.Views._Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -86,8 +85,9 @@ public sealed class SettingVM : ObservableRecipient,
         // Соревнования
         CreateConductingOrganizationCommand = new RelayCommand(CreateConductingOrganization);
         RemoveConductingOrganizationCommand = new RelayCommand(RemoveConductingOrganization);
+        RenumberConductingOrganizationsCommand = new RelayCommand(RenumberConductingOrganizations);
         GetCompetitionCommand = new AsyncRelayCommand<int>(
-            GetCompetitionDataAsync,
+            GetCompetitionAsync,
             id => id > 0 // CanExecute: только если Id корректный);
         );
         SaveCompetitionCommand = new AsyncRelayCommand(SaveCompetitionAsync);
@@ -218,7 +218,7 @@ public sealed class SettingVM : ObservableRecipient,
             if (SetProperty(ref _currentCompetition, value) && value != null)
             {
                 // При смене выбранного соревнования подгружаем навигационные свойства
-                _ = GetCompetitionDataAsync(value.Id);
+                _ = GetCompetitionAsync(value.Id);
 
                 IsStudentCompetition = value.IsStudentCompetition;
                     
@@ -254,7 +254,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// <summary>
     /// Коллекция проводящих организаций.
     /// </summary>
-    public ObservableCollectionEx<StringItem> ConductingOrganizations { get; set; } = [];
+    public ObservableCollectionEx<ConductingOrganizationObservable> ConductingOrganizations { get; set; } = [];
 
     #region [---------- Команды ----------]
 
@@ -278,8 +278,64 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     public ICommand RemoveConductingOrganizationCommand { get; } = null!;
 
+    /// <summary>
+    /// Команда перенумеровывания проводящих организаций.
+    /// </summary>
+    public ICommand RenumberConductingOrganizationsCommand { get; } = null!;
+    
     #endregion
+    
+    /// <summary>
+    /// Получение полных данных о соревновании.
+    /// </summary>
+    private async Task GetCompetitionAsync(int id)
+    {
+        Exception? exception = null;
+        try
+        {
+            // Получаем
+            var competitionDataResult = await _competitionDataService.GetCompetitionDataAsync(id, true);
+            if (! competitionDataResult)
+            {
+                // Неудачное получение данных из репозитория
+                exception = competitionDataResult.Excptn;
+                return;
+            }
 
+            // Заменяем объект в коллекции
+            var existing = Competitions.FirstOrDefault(c => c.Id == id);
+            if (existing != null)
+            {
+                var index = Competitions.IndexOf(existing);
+                Competitions[index] = competitionDataResult.Value!;    // замена
+            }
+            else
+            {
+                Competitions.Add(competitionDataResult.Value!);        // добавление
+            }
+
+            // Заменяем текущие соревнования (меняем через поле, чтобы не вызвать данный метод повторно)
+            SetProperty(ref _currentCompetition, competitionDataResult.Value, nameof(CurrentCompetition));
+
+            // Посылаем сообщение об изменении текущего соревнования
+            Messenger.Send(new CompetitionMessage(CurrentCompetition));
+
+            // Заполняем проводящие организации
+            GetConductingOrganizations();
+
+            // Обновляем список видов программы
+            _ = GetSportEventObservablesAsync();
+
+            // Обновляем список судей
+            _ = GetRefereesAsync();
+        }
+        finally
+        {
+            // Пишем в статус-бар и лог об ошибке при ее наличии
+            _viewModelHelper.HandleException(exception, this.ToString(), nameof(GetCompetitionAsync));
+        }
+    }
+        
     /// <summary>
     /// Сохранение соревнования (включая зависимые сущности).
     /// </summary>
@@ -289,15 +345,10 @@ public sealed class SettingVM : ObservableRecipient,
         try
         {
             // Сохраняем проводящие организации
-            var intResult = _competitionDataService.SetConductingOrganizations(ConductingOrganizations, CurrentCompetition);
-            if (! intResult)
-            {
-                exception = intResult.Excptn;
-                return;
-            }
+            SaveConductingOrganizations();
 
             // Сохраняем изменения
-            intResult = await _competitionDataService.SaveCompetitionDataAsync();
+            var intResult = await _competitionDataService.SaveCompetitionDataAsync();
             if (! intResult)
             {
                 exception = intResult.Excptn;
@@ -337,101 +388,97 @@ public sealed class SettingVM : ObservableRecipient,
     }
 
     /// <summary>
-    /// Создание проводящей организации.
+    /// Получение (обновление) коллекции Observable-проводящих организаций.
+    /// </summary>
+    private void GetConductingOrganizations()
+    {
+        // Получаем проводящие организации
+        var getOrganizationsResult = _competitionDataService.GetConductingOrganizations(CurrentCompetition);
+        if (getOrganizationsResult)
+        {
+            var i = 1;
+            var newList = new List<ConductingOrganizationObservable>();
+            getOrganizationsResult.Value.ForEach(item =>
+            {
+                newList.Add(new ConductingOrganizationObservable(i++, item));
+            });
+            ConductingOrganizations.ClearAndAddRange(newList);
+        }
+        else
+        {
+            // Пишем в статус-бар и лог об ошибке
+            _viewModelHelper.HandleException(getOrganizationsResult.Excptn, 
+                this.ToString(), nameof(GetConductingOrganizations));
+        }
+    }
+
+    /// <summary>
+    /// Создание Observable-проводящей организации.
     /// </summary>
     private void CreateConductingOrganization()
     {
-        // Создаем новую организацию
-        var newIndexResult = _competitionDataService.CreateConductingOrganization(ConductingOrganizations, 
-            ConductingOrganizations.SelectedIndex);
-        if (newIndexResult)
-        {
-            // Перезаписываем индекс
-            ConductingOrganizations.SelectedIndex = newIndexResult.Value;
-        }
+        var index = ConductingOrganizations.SelectedIndex;
+        if (index < 0)
+            index = ConductingOrganizations.Count;
         else
-        {
-            // Пишем в статус-бар и лог об ошибке
-            _viewModelHelper.HandleException(newIndexResult.Excptn, 
-                this.ToString(), nameof(CreateConductingOrganization));
-        }
+            index++;
+
+        // Добавляем в коллекцию организацию и перенумеровываем коллекцию
+        ConductingOrganizations.Insert(index, 
+            new ConductingOrganizationObservable(0, _competitionDataService.CreateConductingOrganization()));
+        RenumberConductingOrganizations();
+        
+        // Присваиваем новый индекс
+        ConductingOrganizations.SelectedIndex = index;
     }
 
     /// <summary>
-    /// Удаление проводящей организации.
+    /// Удаление Observable-проводящей организации.
     /// </summary>
     private void RemoveConductingOrganization()
     {
-        // Удаляем организацию
-        var newIndexResult = _competitionDataService.RemoveConductingOrganization(ConductingOrganizations, 
-            ConductingOrganizations.SelectedIndex);
+        // Индекс
+        var index = ConductingOrganizations.SelectedIndex;
+        if (index < 0)
+            return;
 
-        if (newIndexResult)
-        {
-            // Перезаписываем индекс
-            ConductingOrganizations.SelectedIndex = newIndexResult.Value;
-        }
-        else
+        // Удаляем из коллекции организацию и перенумеровываем коллекцию
+        ConductingOrganizations.RemoveAt(index);
+        RenumberConductingOrganizations();
+        
+        // Присваиваем новый индекс
+        ConductingOrganizations.SelectedIndex = index == ConductingOrganizations.Count ? index - 1 : index;
+    }
+    
+    /// <summary>
+    /// Сохранение коллекции Observable-проводящих организаций.
+    /// </summary>
+    private void SaveConductingOrganizations()
+    {
+        // Получаем список строк
+        var conductingOrganizationList = new List<string>();
+        ConductingOrganizations.ForEach(item => 
+            conductingOrganizationList.Add(item.Name));
+        
+        // Сохраняем
+        var saveOrganisationsResult = 
+            _competitionDataService.SetConductingOrganizations(CurrentCompetition, conductingOrganizationList);
+        if (! saveOrganisationsResult)
         {
             // Пишем в статус-бар и лог об ошибке
-            _viewModelHelper.HandleException(newIndexResult.Excptn, 
-                this.ToString(), nameof(RemoveConductingOrganization));
+            _viewModelHelper.HandleException(saveOrganisationsResult.Excptn, 
+                this.ToString(), nameof(SaveConductingOrganizations));
         }
     }
 
     /// <summary>
-    /// Получение полных данных о соревновании.
+    /// Перенумерация коллекции Observable-проводящих организаций.
     /// </summary>
-    private async Task GetCompetitionDataAsync(int id)
+    private void RenumberConductingOrganizations()
     {
-        Exception? exception = null;
-        try
+        for (var i = 0; i < ConductingOrganizations.Count; i++)
         {
-            // Получаем
-            var competitionDataResult = await _competitionDataService.GetCompetitionDataAsync(id, true);
-            if (! competitionDataResult)
-            {
-                // Неудачное получение данных из репозитория
-                exception = competitionDataResult.Excptn;
-                return;
-            }
-
-            // Заменяем объект в коллекции
-            var existing = Competitions.FirstOrDefault(c => c.Id == id);
-            if (existing != null)
-            {
-                var index = Competitions.IndexOf(existing);
-                Competitions[index] = competitionDataResult.Value!;    // замена
-            }
-            else
-            {
-                Competitions.Add(competitionDataResult.Value!);        // добавление
-            }
-
-            // Заменяем текущие соревнования (меняем через поле, чтобы не вызвать данный метод повторно)
-            SetProperty(ref _currentCompetition, competitionDataResult.Value, nameof(CurrentCompetition));
-
-            // Посылаем сообщение об изменении текущего соревнования
-            Messenger.Send(new CompetitionMessage(CurrentCompetition));
-
-            // Заполняем проводящие организации
-            var intResult = _competitionDataService.GetConductingOrganizations(
-                ConductingOrganizations, CurrentCompetition);
-            if (! intResult)
-            {
-                exception = intResult.Excptn;
-            }
-
-            // Обновляем список видов программы
-            _ = GetSportEventObservablesAsync();
-
-            // Обновляем список судей
-            _ = GetRefereesAsync();
-        }
-        finally
-        {
-            // Пишем в статус-бар и лог об ошибке при ее наличии
-            _viewModelHelper.HandleException(exception, this.ToString(), nameof(GetCompetitionDataAsync));
+            ConductingOrganizations[i].Number = i + 1;
         }
     }
 
@@ -516,7 +563,7 @@ public sealed class SettingVM : ObservableRecipient,
     #endregion
 
     /// <summary>
-    /// Получение (обновление) коллекции <see cref="SportEventObservable"/>.
+    /// Получение (обновление) коллекции Observable-видов программы.
     /// </summary>
     private async Task GetSportEventObservablesAsync()
     {
@@ -593,7 +640,7 @@ public sealed class SettingVM : ObservableRecipient,
             RenumberSportEvents();
 
             // Обновляем индекс
-            SportEventObservables.SelectedIndex = index == 0 ? 0 : --index;
+            SportEventObservables.SelectedIndex = index == SportEventObservables.Count ? index - 1 : index;
 
             // TODO: Временно (без ожидания окончания)
             _ = _statusBarService.SetTextAsync("Удалили вид программы.", ExcptnTypeEnm.Error);
