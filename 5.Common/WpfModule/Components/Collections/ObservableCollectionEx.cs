@@ -127,10 +127,6 @@ public class ObservableCollectionEx<T>: ObservableCollection<T>
     {
         if (items is null)
             return;
-            
-        // Проверяем, пустая ли добавляемая коллекция
-        if (items is ICollection<T> { Count: 0 })
-            return;
 
         // Проверяем на возможность изменения
         CheckReentrancy();
