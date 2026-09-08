@@ -8,8 +8,8 @@ public class DisciplineAvailabilityAttribute : ValidationAttribute
 {
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
-        var vm = (SportEventObservable)validationContext.ObjectInstance;
-        if (value == null || ! vm.AvailableDisciplines.Contains((Discipline)value))
+        var seo = (SportEventObservable)validationContext.ObjectInstance;
+        if (value == null || ! seo.AvailableDisciplines.Contains((Discipline)value))
         {
             return new ValidationResult("Ошибка: недопустимое значение дисциплины.");
         }

@@ -36,7 +36,7 @@ public sealed class Delegation : AbstractEntity<int>, INumberedEntity, IEntityCl
         )
     {
         RepresentativeId = source.RepresentativeId;
-        CompetitionDataId = source.CompetitionDataId;
+        CompetitionId = source.CompetitionId;
     }
     
     /// <summary>
@@ -49,11 +49,11 @@ public sealed class Delegation : AbstractEntity<int>, INumberedEntity, IEntityCl
         string name, 
         string region, 
         Representative representative, 
-        CompetitionData competitionData, 
+        Competition competition, 
         string? description = null) : this(number, name, region, description)
     {
         Representative = representative;
-        CompetitionData = competitionData;
+        Competition = competition;
     }
 
     /// <inheritdoc />
@@ -75,10 +75,10 @@ public sealed class Delegation : AbstractEntity<int>, INumberedEntity, IEntityCl
     /// <summary>
     /// Связь с соревнованием (объектом-владельцем).
     /// </summary>
-    public int CompetitionDataId { get; set; }
+    public int CompetitionId { get; set; }
 
-    /// <inheritdoc cref="CompetitionDataId"/>
-    public CompetitionData CompetitionData { get; set; } = null!;
+    /// <inheritdoc cref="CompetitionId"/>
+    public Competition Competition { get; set; } = null!;
 
     /// <summary>
     /// Коллекция спортсменов.

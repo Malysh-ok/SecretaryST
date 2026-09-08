@@ -3,10 +3,10 @@ namespace ProblemDomain.Entities.LibraryEntities.Enums;
 /// <summary>
 /// Судейские должности.
 /// </summary>
-public enum RefereeJobTitleEnm
+public enum RefereeRoleEnm
 {
     /// <summary>
-    /// Главный судья
+    /// Главный судья.
     /// </summary>
     ChiefReferee = 1,
 
@@ -37,6 +37,11 @@ public enum RefereeJobTitleEnm
     DeputyForSTS,
     
     /// <summary>
+    /// Зам. гл. судьи по виду.
+    /// </summary>
+    DeputyForDiscipline,
+    
+    /// <summary>
     /// Зам. гл. судьи.
     /// </summary>
     Deputy,
@@ -54,7 +59,7 @@ public enum RefereeJobTitleEnm
     /// <summary>
     /// Старший судья-инспектор.
     /// </summary>
-    MajorInspector,
+    SeniorInspector,
     
     /// <summary>
     /// Судья-инспектор.
@@ -62,37 +67,67 @@ public enum RefereeJobTitleEnm
     Inspector,
     
     /// <summary>
+    /// Старший судья по виду.
+    /// </summary>
+    SeniorRefereeForDiscipline,
+    
+    /// <summary>
+    /// Старший судья-эксперт.
+    /// </summary>
+    SeniorExpertReferee,
+
+    /// <summary>
     /// Старший судья старта.
     /// </summary>
-    MajorStartReferee,
-    
+    SeniorStartReferee,
+
     /// <summary>
     /// Старший судья этапа.
     /// </summary>
-    MajorStageReferee,
+    SeniorStageReferee,
     
     /// <summary>
     /// Старший судья финиша.
     /// </summary>
-    MajorFinishReferee,
+    SeniorFinishReferee,
     
+    /// <summary>
+    /// Старший судья-контролёр.
+    /// </summary>
+    SeniorRefereeController,
+            
+    /// <summary>
+    /// Судья по виду.
+    /// </summary>
+    RefereeForDiscipline,
+    
+    /// <summary>
+    /// Судья-эксперт.
+    /// </summary>
+    ExpertReferee,
+
+    /// <summary>
+    /// Судья-постановщик.
+    /// </summary>
+    InstallerReferee,
+
     /// <summary>
     /// Судья этапа.
     /// </summary>
     StageReferee,
     
     /// <summary>
-    /// Судья-постановщик.
+    /// Судья-контролёр.
     /// </summary>
-    InstallerReferee,
-    
+    RefereeController,
+
     /// <summary>
     /// Судья-секретарь.
     /// </summary>
     Secretary,
     
     /// <summary>
-    /// Судья-стартер.
+    /// Судья-стартёр.
     /// </summary>
     StarterReferee,
     
@@ -106,6 +141,8 @@ public enum RefereeJobTitleEnm
     /// </summary>
     InformationReferee,
     
+    // REMARK: в Правилах отсутствует Судья по безопасности (хотя есть зам. гл. судьи и сама служба)
+    
     /// <summary>
     /// Судья-страховщик.
     /// </summary>
@@ -116,14 +153,22 @@ public enum RefereeJobTitleEnm
     /// </summary>
     AccompanyingReferee,
 
-        
+    #region [---------- "Не судейские" должности ----------]
+
     /// <summary>
     /// Председатель комиссии по допуску.
     /// </summary>
     MandateChairman,
 
     /// <summary>
+    /// Председатель Maршрутно-квалификационной комиссии (Route Certification Commission).
+    /// </summary>
+    RccChairman,
+
+    /// <summary>
     /// Председатель технической комиссии.
     /// </summary>
     TechCommissionChairman
+
+    #endregion
 }

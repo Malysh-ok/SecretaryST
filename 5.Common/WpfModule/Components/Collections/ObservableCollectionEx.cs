@@ -40,9 +40,14 @@ public class ObservableCollectionEx<T>: ObservableCollection<T>
             // Проверяем на возможность изменения
             CheckReentrancy();
 
-            field = -1;
+            var newValue = -1;
             if (value >= 0 && value < Count)
-                field = value;
+                newValue = value;
+
+            if (field == newValue)
+                return;
+
+            field = newValue;
 
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(SelectedIndex)));
             SelectedIndexChanged?.Invoke(field);

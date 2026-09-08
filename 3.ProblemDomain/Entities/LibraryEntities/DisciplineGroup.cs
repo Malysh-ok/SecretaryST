@@ -42,6 +42,11 @@ public sealed class DisciplineGroup : AbstractEntity<DisciplineGroupEnm>, IEntit
     // ReSharper disable once CollectionNeverUpdated.Global
     public ICollection<Difficulty> Difficulties { get; set; } = new HashSet<Difficulty>();
     
+    /// <summary>
+    /// Коллекция судейских должностей.
+    /// </summary>
+    public ICollection<RefereeRole> RefereeRoles { get; set; } = new HashSet<RefereeRole>();
+    
     /// <inheritdoc cref="IEntityCopyable.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
     public void Copy(DisciplineGroup destination)

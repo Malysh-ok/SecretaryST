@@ -71,64 +71,64 @@ public class RepositoryTests
     /// <summary>
     /// Получение коллекции судей.
     /// </summary>
-    private async Task<IList<Referee>> GetReferees(IRepository repository, CompetitionData competitionData)
+    private async Task<IList<Referee>> GetReferees(IRepository repository, Competition competition)
     {
         List<Referee> referees = [];
 
         var jobTitle = // должность
-            RefereeJobTitleEnm.ChiefReferee;
+            RefereeRoleEnm.ChiefReferee;
         referees.Add(new Referee(1,
                 "Сретенский", "Сергей", 
                 "г. Чебоксары", 
-                (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category1)).Value!,
-                (await repository.FindAsync<RefereeJobTitle>(jobTitle)).Value!,
-                competitionData,
+                (await repository.FindAsync<RefereeCategory>(RefereeCategoryEnm.AllRussCategory)).Value!,
+                (await repository.FindAsync<RefereeRole>(jobTitle)).Value!,
+                competition,
                 "Валентинович",
-                description: competitionData.ShortName  // временно
+                description: competition.ShortName  // временно
             )
         );
         
-        jobTitle = RefereeJobTitleEnm.ChiefSecretary;
+        jobTitle = RefereeRoleEnm.ChiefSecretary;
         referees.Add(new Referee(2,
                 "Иванова", "Кристина", 
                 "г. Чебоксары", 
-                (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category1)).Value!,
-                (await repository.FindAsync<RefereeJobTitle>(jobTitle)).Value!,
-                competitionData,
-                description: competitionData.ShortName  // временно
+                (await repository.FindAsync<RefereeCategory>(RefereeCategoryEnm.Category1)).Value!,
+                (await repository.FindAsync<RefereeRole>(jobTitle)).Value!,
+                competition,
+                description: competition.ShortName  // временно
             )
         );
         
-        jobTitle = RefereeJobTitleEnm.MandateChairman;
+        jobTitle = RefereeRoleEnm.MandateChairman;
         referees.Add(new Referee(3,
                 "Черкасова", "Маргарита", 
                 "г. Санкт-Петербург", 
-                (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.AllRussCategory)).Value!,
-                (await repository.FindAsync<RefereeJobTitle>(jobTitle)).Value!,
-                competitionData,
-                description: competitionData.ShortName  // временно
+                (await repository.FindAsync<RefereeCategory>(RefereeCategoryEnm.AllRussCategory)).Value!,
+                (await repository.FindAsync<RefereeRole>(jobTitle)).Value!,
+                competition,
+                description: competition.ShortName  // временно
             )
         );
         
-        jobTitle = RefereeJobTitleEnm.Secretary;
+        jobTitle = RefereeRoleEnm.Secretary;
         referees.Add(new Referee(4,
                 "Тетка", "1", 
                 "г. Чебоксары", 
-                (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category2)).Value!,
-                (await repository.FindAsync<RefereeJobTitle>(jobTitle)).Value!,
-                competitionData,
-                description: competitionData.ShortName  // временно
+                (await repository.FindAsync<RefereeCategory>(RefereeCategoryEnm.Category2)).Value!,
+                (await repository.FindAsync<RefereeRole>(jobTitle)).Value!,
+                competition,
+                description: competition.ShortName  // временно
             )
         );
         
-        jobTitle = RefereeJobTitleEnm.MajorStageReferee;
+        jobTitle = RefereeRoleEnm.SeniorStageReferee;
         referees.Add(new Referee(5,
                 "Тетка", "2", 
                 "г. Чебоксары", 
-                (await repository.FindAsync<RefereeLevel>(RefereeLevelEnm.Category3)).Value!,
-                (await repository.FindAsync<RefereeJobTitle>(jobTitle)).Value!,
-                competitionData,
-                description: competitionData.ShortName  // временно
+                (await repository.FindAsync<RefereeCategory>(RefereeCategoryEnm.Category3)).Value!,
+                (await repository.FindAsync<RefereeRole>(jobTitle)).Value!,
+                competition,
+                description: competition.ShortName  // временно
             )
         );
         
@@ -138,7 +138,7 @@ public class RepositoryTests
     /// <summary>
     /// Получение коллекции видов программы.
     /// </summary>
-    private async Task<IList<SportEvent>> GetSportEvents(IRepository repository, CompetitionData competitionData)
+    private async Task<IList<SportEvent>> GetSportEvents(IRepository repository, Competition competition)
     {
        var difficultyResult = await repository.GetAllAsync<Difficulty>();
         
@@ -157,22 +157,22 @@ public class RepositoryTests
             new("Вид программы 1", 1, true,
                 (await repository.GetByConditionAsync<Difficulty>(
                     d => d.Id == DifficultyEnm.Third && d.DisciplineGroupId == disciplineResult.Value!.DisciplineGroupId)
-                ).Value!, disciplineResult.Value!, ageGroupResult.Value!, competitionData),
+                ).Value!, disciplineResult.Value!, ageGroupResult.Value!, competition),
             new("Вид программы 2", 2, false,
                 (await repository.GetByConditionAsync<Difficulty>(
                     d => d.Id == DifficultyEnm.Fourth && d.DisciplineGroupId == disciplineResult.Value!.DisciplineGroupId)
-                ).Value!, disciplineResult.Value!, ageGroupResult.Value!, competitionData),
+                ).Value!, disciplineResult.Value!, ageGroupResult.Value!, competition),
             new("Вид программы 3", 3, null,
                 (await repository.GetByConditionAsync<Difficulty>(
                     d => d.Id == DifficultyEnm.Fifth && d.DisciplineGroupId == disciplineResult.Value!.DisciplineGroupId)
-                ).Value!, disciplineResult.Value!, ageGroupResult.Value!, competitionData),
+                ).Value!, disciplineResult.Value!, ageGroupResult.Value!, competition),
         };
         
         return sportEvents;
     }
 
     private async Task<IList<SportUnit>> GetSportUnits(IRepository repository, 
-        CompetitionData  competitionData, IList<SportEvent> sportEvents)
+        Competition  competition, IList<SportEvent> sportEvents)
     {
         var sexes = (await repository.GetAllAsync<Sex>()).Value!.ToList();
         var sportUnitTypes = (await repository.GetAllAsync<SportUnitType>()).Value!;
@@ -202,7 +202,7 @@ public class RepositoryTests
         }
     }
 
-    private async Task<IList<Delegation>> GetDelegations(IRepository repository, CompetitionData competitionData)
+    private async Task<IList<Delegation>> GetDelegations(IRepository repository, Competition competition)
     {
         // Представитель
         var representative = await GetRepresentative(repository);
@@ -211,14 +211,14 @@ public class RepositoryTests
         var delegations = new List<Delegation>()
         {
             new(1, name: "Делегация 11111", "Якутия", 
-                representative, competitionData, 
-                competitionData.ShortName), // временно
+                representative, competition, 
+                competition.ShortName), // временно
             new(2, name: "Делегация 22222", "Сахалин", 
-                representative, competitionData, 
-                competitionData.ShortName), // временно
+                representative, competition, 
+                competition.ShortName), // временно
             new(3, name: "Делегация 33333", "Камчатка", 
-                representative, competitionData, 
-                competitionData.ShortName), // временно
+                representative, competition, 
+                competition.ShortName), // временно
         };
         
         return delegations;
@@ -273,10 +273,10 @@ public class RepositoryTests
             }
             else
             {
-                exMsg = exMsg == null
-                    ? result.Excptn?.Message!
-                    : exMsg + $"\n\nОшибка заполнения БД:\n{result.Excptn?.Message!}";
-                Assert.Fail(exMsg);
+                exMsg = (exMsg == null ? string.Empty : $"{exMsg}\n\n") +
+                        $"Ошибка заполнения БД:\n{result.Excptn?.Message!}";
+                if (exMsg != null)
+                    Assert.Fail(exMsg);
             }
         }
         finally
@@ -314,9 +314,9 @@ public class RepositoryTests
         var repository = new Repository<AppDbContext>(dbContext, dbErrorMsgProvider);
         const string description = "Проверка";
 
-        var competitionDataResult =
-            (await repository.FindAsync<CompetitionData>(0));
-        Assert.That(competitionDataResult.Excptn, Is.Null);
+        var competitionResult =
+            (await repository.FindAsync<Competition>(0));
+        Assert.That(competitionResult.Excptn, Is.Null);
         
         repository.Dispose();
     }
@@ -362,7 +362,7 @@ public class RepositoryTests
         //     typeof(Athlete), typeof(Delegation),
         //     typeof(Representative),
         //     typeof(SportUnit), typeof(SportEvent),
-        //     typeof(CompetitionData), typeof(Referee));
+        //     typeof(Competition), typeof(Referee));
         //
         // dbContext.Dispose();
     }
@@ -384,7 +384,7 @@ public class RepositoryTests
         }
         
         // Получаем все соревнования
-        var competitionResult = await repository.GetAllAsync<CompetitionData>();
+        var competitionResult = await repository.GetAllAsync<Competition>();
         using (Assert.EnterMultipleScope())
         {
             Assert.That(competitionResult.Excptn, Is.Null, competitionResult.Excptn?.Message);
@@ -429,7 +429,7 @@ public class RepositoryTests
         }
 
         // Получаем все соревнования
-        var competitionResult = await repository.GetAllAsync<CompetitionData>();
+        var competitionResult = await repository.GetAllAsync<Competition>();
         using (Assert.EnterMultipleScope())
         {
             Assert.That(competitionResult.Excptn, Is.Null, competitionResult.Excptn?.Message);
@@ -531,7 +531,7 @@ public class RepositoryTests
         ExceptionList<BaseException> exceptionsList = [];
 
         // Получаем все соревнования
-        var competitionResult = await repository.GetAllAsync<CompetitionData>();
+        var competitionResult = await repository.GetAllAsync<Competition>();
         using (Assert.EnterMultipleScope())
         {
             Assert.That(competitionResult.Excptn, Is.Null, competitionResult.Excptn?.Message);
@@ -560,24 +560,24 @@ public class RepositoryTests
 
     [Test, Order(1)]
     [RecreateEntities]
-    public async Task CompetitionData_Test()
+    public async Task Competition_Test()
     {
         var dbContext = new DbContextFactory().CreateDbContext([]);
         var dbErrorMsgProvider = new DataAccessErrorMsgProvider();
         var repository = new Repository<AppDbContext>(dbContext, dbErrorMsgProvider);
         IProblemErrorMsgProvider problemErrorMsgProvider = new DomainErrorMsgProvider();
-        var competitionService = new CompetitionDataService(repository, problemErrorMsgProvider);
+        var competitionService = new CompetitionService(repository, problemErrorMsgProvider);
         Result<int> result;
         
         // Удаляем все сущности при атрибуте RecreateEntities
         if (_isRecreateEntities)
         {
-            result = repository.RemoveAllQuickly<CompetitionData>();
+            result = repository.RemoveAllQuickly<Competition>();
             Assert.That(result.Excptn, Is.Null, result.Excptn?.Message);
         }
 
         // Создаем данные о соревновании 1
-        var resultCompetition = await competitionService.CreateCompetitionDataAsync(
+        var resultCompetition = await competitionService.CreateCompetitionAsync(
             "Кубок России по спортивному туризму на горных дистанциях", 
             new List<string> {"ФСТ ЧР", "Авангард"},
             new DateTime(2023, 2, 23), new DateTime(2023, 2, 26),
@@ -588,7 +588,7 @@ public class RepositoryTests
         Assert.That(resultCompetition.Excptn, Is.Null, resultCompetition.Excptn?.Message);
         
         // Создаем данные о соревновании 2
-        resultCompetition = await competitionService.CreateCompetitionDataAsync(
+        resultCompetition = await competitionService.CreateCompetitionAsync(
             "Чемпионат Чувашской Республики по спортивному туризму на горных дистанциях", 
             new List<string> {"ФСТ ЧР", "Авангард", "Администрация Ядринского МО"},
             new DateTime(2026, 4, 10), new DateTime(2026, 4, 12),
@@ -599,7 +599,7 @@ public class RepositoryTests
         Assert.That(resultCompetition.Excptn, Is.Null, resultCompetition.Excptn?.Message);
 
         // Проверяем
-        var competitionsResult = await repository.GetAllAsync<CompetitionData>();
+        var competitionsResult = await repository.GetAllAsync<Competition>();
         Assert.That(competitionsResult.Excptn, Is.Null,  competitionsResult.Excptn?.Message);
         
         repository.Dispose();

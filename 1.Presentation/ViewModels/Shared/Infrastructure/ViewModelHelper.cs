@@ -32,7 +32,8 @@ public class ViewModelHelper(
     /// отображается в статус-баре и логируется. Если исключение отсутствует или не фатально,
     /// запускается задача, ошибки которой обрабатываются через ContinueWith.
     /// </remarks>
-    public void HandleExceptionsProvider(IExceptionsProvider exceptionsProvider,
+    public void HandleExceptionsProvider(
+        IExceptionsProvider exceptionsProvider,
         Func<Task> taskFactory)
     {
         // Получаем имя вызывающего метода и его имя класса
@@ -70,12 +71,14 @@ public class ViewModelHelper(
     /// <param name="exception">Исключение.</param>
     /// <param name="callerClassName">Имя вызывающего класса.</param>
     /// <param name="callerMethodName">Имя вызывающего метода.</param>
+    /// <param name="isWriteToStatusBar">Признак записи и в статус-бар.</param>
     /// <remarks>
     /// При наличии исключения оно отображается в статус-баре и логируется.
     /// </remarks>
     public void HandleException(Exception? exception,
         string? callerClassName,
-        string? callerMethodName)
+        string? callerMethodName,
+        bool isWriteToStatusBar = true)
     {
         if (exception == null) 
             return;
@@ -108,8 +111,8 @@ public class ViewModelHelper(
         }
         
         // Пишем в статус-бар об ошибке,
-        // только если сервис статус-бара не null и тип исключения - ошибка
-        if (statusBarService != null && baseException?.ExcptnType == ExcptnTypeEnm.Error)
+        // только при установленном признаке и если сервис статус-бара не null и тип исключения - ошибка
+        if (isWriteToStatusBar && statusBarService != null && baseException?.ExcptnType == ExcptnTypeEnm.Error)
             _ = statusBarService.SetTextAsync(exception.Message,
                 ExcptnTypeEnm.Error, 0);
     }

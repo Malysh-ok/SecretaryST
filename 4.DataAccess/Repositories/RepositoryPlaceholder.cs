@@ -1,4 +1,5 @@
 ﻿using Common.BaseComponents.Components;
+using Common.BaseExtensions.ValueTypes;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
 using ProblemDomain.UseCases._Contracts;
@@ -282,83 +283,589 @@ public static class RepositoryPlaceholder
     /// <summary>
     /// Заполняем судейские категории.
     /// </summary>
-    public static async Task<Result<List<RefereeLevel>>> FillRefereeLevels(IRepository repository)
+    public static async Task<Result<List<RefereeCategory>>> FillRefereeCategories(IRepository repository)
     {
         // Удаляем судейские категории
-        var result = repository.RemoveAllQuickly<RefereeLevel>();
+        var result = repository.RemoveAllQuickly<RefereeCategory>();
         if (!result)
-            return Result<List<RefereeLevel>>.Fail(result.Excptn!);
+            return Result<List<RefereeCategory>>.Fail(result.Excptn!);
 
-        var refereeLevelLst = new List<RefereeLevel>
+        var refereeCategoryLst = new List<RefereeCategory>
         {
-            new(RefereeLevelEnm.YoungCategory, "ЮСС", "Юный спортивный судья"),
-            new(RefereeLevelEnm.Category3, "СС3К", "Спортивный судья третьей категории"),
-            new(RefereeLevelEnm.Category2, "СС2К", "Спортивный судья второй категории"),
-            new(RefereeLevelEnm.Category1, "СС1К", "Спортивный судья первой категории"),
-            new(RefereeLevelEnm.AllRussCategory, "ССВК", "Спортивный судья всероссийской категории"),
+            new(RefereeCategoryEnm.YoungCategory, "ЮСС", "Юный спортивный судья"),
+            new(RefereeCategoryEnm.Category3, "СС3К", "Спортивный судья третьей категории"),
+            new(RefereeCategoryEnm.Category2, "СС2К", "Спортивный судья второй категории"),
+            new(RefereeCategoryEnm.Category1, "СС1К", "Спортивный судья первой категории"),
+            new(RefereeCategoryEnm.AllRussCategory, "ССВК", "Спортивный судья всероссийской категории"),
         };
 
-        result = repository.AddRange(refereeLevelLst);
+        result = repository.AddRange(refereeCategoryLst);
         if (!result)
-            return Result<List<RefereeLevel>>.Fail(result.Excptn!);
+            return Result<List<RefereeCategory>>.Fail(result.Excptn!);
         
         result = await repository.SaveChangesAsync();
         if (!result)
-            return Result<List<RefereeLevel>>.Fail(result.Excptn!);
+            return Result<List<RefereeCategory>>.Fail(result.Excptn!);
 
-        return Result<List<RefereeLevel>>.Done(refereeLevelLst);
+        return Result<List<RefereeCategory>>.Done(refereeCategoryLst);
     }
     
     /// <summary>
     /// Заполняем судейские должности.
     /// </summary>
-    public static async Task<Result<List<RefereeJobTitle>>> FillRefereeJobTitles(IRepository repository)
+    public static async Task<Result<List<RefereeRole>>> FillRefereeRoles(IRepository repository,
+        List<DisciplineGroup> disciplineGroupLst)
     {
         // Удаляем судейские должности
-        var result = repository.RemoveAllQuickly<RefereeJobTitle>();
+        var result = repository.RemoveAllQuickly<RefereeRole>();
         if (!result)
-            return Result<List<RefereeJobTitle>>.Fail(result.Excptn!);
+            return Result<List<RefereeRole>>.Fail(result.Excptn!);
 
-        var refereeJobTitlesLst = new List<RefereeJobTitle>
+        var refereeRoleLst = new List<RefereeRole>
         {
-            new(RefereeJobTitleEnm.ChiefReferee, "Главный судья"),
-            new(RefereeJobTitleEnm.ChiefSecretary, "Главный секретарь"),
-            new(RefereeJobTitleEnm.DeputyForRefereeing, "Зам. гл. судьи по судейству"),
-            new(RefereeJobTitleEnm.DeputyForSecurity, "Зам. гл. судьи по безопасности"),
-            new(RefereeJobTitleEnm.DeputyForInformation, "Зам. гл. судьи по информации"),
-            new(RefereeJobTitleEnm.DeputyForSTS, "Зам. гл. судьи по СТО"),
-            new(RefereeJobTitleEnm.DeputyChiefSecretary, "Зам. гл. секретаря"),
-            new(RefereeJobTitleEnm.Deputy, "Зам. гл. судьи"),
-            new(RefereeJobTitleEnm.HeadOfDistance, "Начальник дистанции"),
-            new(RefereeJobTitleEnm.MajorInspector, "Старший судья-инспектор"),
-            new(RefereeJobTitleEnm.Inspector, "Судья-инспектор"),
-            new(RefereeJobTitleEnm.MajorStartReferee, "Старший судья старта"),
-            new(RefereeJobTitleEnm.MajorStageReferee, "Старший судья этапа"),
-            new(RefereeJobTitleEnm.MajorFinishReferee, "Старший судья финиша"),
-            new(RefereeJobTitleEnm.StageReferee, "Судья этапа"),
-            new(RefereeJobTitleEnm.InstallerReferee, "Судья-постановщик"),
-            new(RefereeJobTitleEnm.Secretary, "Судья-секретарь"),           // REMARK: в Правилах - "Судья секретарь", что неправильно
-            new(RefereeJobTitleEnm.StarterReferee, "Судья-стартер"),
-            new(RefereeJobTitleEnm.TimekeeperReferee, "Судья-хронометрист"),
-            new(RefereeJobTitleEnm.InformationReferee, "Судья по информации"),
-            new(RefereeJobTitleEnm.InsurerReferee, "Судья-страховщик"),
-            new(RefereeJobTitleEnm.AccompanyingReferee, "Судья при участниках"),
+            new(RefereeRoleEnm.ChiefReferee, "Главный судья", GetAllDisciplineGroups()),
+            new(RefereeRoleEnm.ChiefSecretary, "Главный секретарь", GetAllDisciplineGroups()),
+            new(RefereeRoleEnm.DeputyForRefereeing, "Зам. гл. судьи по судейству", GetAllDisciplineGroups()),
+            new(RefereeRoleEnm.DeputyForSecurity, "Зам. гл. судьи по безопасности", GetAllDisciplineGroups()),
+            new(RefereeRoleEnm.DeputyForInformation, "Зам. гл. судьи по информации", GetAllDisciplineGroups()),
+            new(RefereeRoleEnm.DeputyForSTS, "Зам. гл. судьи по СТО", GetDistanceOrNordicWalkingDisciplineGroups(),
+                description: "Пока отсутствует в Квал. требованиях"), // REMARK: пока отсутствует в Квал. требованиях
+            new(RefereeRoleEnm.DeputyForDiscipline, "Зам. гл. судьи по виду", GetTrekDisciplineGroups()),
+            new(RefereeRoleEnm.Deputy, "Зам. гл. судьи", GetAllDisciplineGroups()),
+            new(RefereeRoleEnm.DeputyChiefSecretary, "Зам. гл. секретаря", GetAllDisciplineGroups()),
+            new(RefereeRoleEnm.HeadOfDistance, "Начальник дистанции", GetDistanceOrNordicWalkingDisciplineGroups()),
+            new(RefereeRoleEnm.SeniorInspector, "Старший судья-инспектор", GetAllDisciplineGroups()),
+            new(RefereeRoleEnm.Inspector, "Судья-инспектор", GetAllDisciplineGroups()),
+            new(RefereeRoleEnm.SeniorRefereeForDiscipline, "Старший судья по виду", GetTrekDisciplineGroups()),
+            new(RefereeRoleEnm.SeniorExpertReferee, "Старший судья-эксперт", GetTrekDisciplineGroups()),
+            new(RefereeRoleEnm.SeniorStartReferee, "Старший судья старта", GetDistanceOrNordicWalkingDisciplineGroups()),
+            new(RefereeRoleEnm.SeniorStageReferee, "Старший судья этапа", GetDistanceDisciplineGroups()),
+            new(RefereeRoleEnm.SeniorFinishReferee, "Старший судья финиша", GetDistanceOrNordicWalkingDisciplineGroups()),
+            new(RefereeRoleEnm.SeniorRefereeController, "Старший cудья-контролёр", GetNordicWalkingDisciplineGroups(),
+                description: "Пока отсутствует в Квал. требованиях"), // REMARK: пока отсутствует в Квал. требованиях
+            new(RefereeRoleEnm.RefereeForDiscipline, "Судья по виду", GetTrekDisciplineGroups()),
+            new(RefereeRoleEnm.ExpertReferee, "Судья-эксперт", GetTrekDisciplineGroups()),
+            new(RefereeRoleEnm.InstallerReferee, "Судья-постановщик", GetDistanceOrNordicWalkingDisciplineGroups()),
+            new(RefereeRoleEnm.StageReferee, "Судья этапа", GetDistanceDisciplineGroups()),
+            new(RefereeRoleEnm.RefereeController, "Судья-контролёр", GetNordicWalkingDisciplineGroups(),
+                description: "Пока отсутствует в Квал. требованиях"), // REMARK: пока отсутствует в Квал. требованиях
+            new(RefereeRoleEnm.Secretary, "Судья-секретарь", GetAllDisciplineGroups(),
+                description: "В Правилах - \"Судья секретарь\", что неправильно"), // REMARK: в Правилах - "Судья секретарь", что неправильно
+            new(RefereeRoleEnm.StarterReferee, "Судья-стартер", GetDistanceOrNordicWalkingDisciplineGroups()),
+            new(RefereeRoleEnm.TimekeeperReferee, "Судья-хронометрист", GetDistanceOrNordicWalkingDisciplineGroups()),
+            new(RefereeRoleEnm.InformationReferee, "Судья по информации", GetDistanceOrNordicWalkingDisciplineGroups()),
+            new(RefereeRoleEnm.InsurerReferee, "Судья-страховщик", GetDistanceDisciplineGroups()),
+            new(RefereeRoleEnm.AccompanyingReferee, "Судья при участниках", GetDistanceOrNordicWalkingDisciplineGroups()),
             
-            new(RefereeJobTitleEnm.MandateChairman, "Предс. комиссии по допуску"),
-            new(RefereeJobTitleEnm.TechCommissionChairman, "Предс. техн. комиссии"),
+            new(RefereeRoleEnm.MandateChairman, "Председатель комиссии по допуску", GetAllDisciplineGroups()),
+            new(RefereeRoleEnm.RccChairman, "Председатель МКК", GetTrekDisciplineGroups()),
+            new(RefereeRoleEnm.TechCommissionChairman, "Председатель техн. комиссии", GetDistanceOrNordicWalkingDisciplineGroups()),
         };
 
-        result = repository.AddRange(refereeJobTitlesLst);
+        result = repository.AddRange(refereeRoleLst);
         if (!result)
-            return Result<List<RefereeJobTitle>>.Fail(result.Excptn!);
+            return Result<List<RefereeRole>>.Fail(result.Excptn!);
         
         result = await repository.SaveChangesAsync();
         if (!result)
-            return Result<List<RefereeJobTitle>>.Fail(result.Excptn!);
+            return Result<List<RefereeRole>>.Fail(result.Excptn!);
 
-        return Result<List<RefereeJobTitle>>.Done(refereeJobTitlesLst);
+        return Result<List<RefereeRole>>.Done(refereeRoleLst);
+        
+
+        // Получаем коллекцию всех групп дисциплин
+        ICollection<DisciplineGroup> GetAllDisciplineGroups()
+            => disciplineGroupLst;
+
+        // Получаем коллекцию групп дисциплин, состоящую только из Маршрута
+        ICollection<DisciplineGroup> GetTrekDisciplineGroups()
+            => new List<DisciplineGroup> { disciplineGroupLst.Find(item => 
+                item.Id == DisciplineGroupEnm.Trek)! };
+        
+        // Получаем коллекцию групп дисциплин, состоящую только из Дистанции
+        ICollection<DisciplineGroup> GetDistanceDisciplineGroups()
+            => new List<DisciplineGroup> { disciplineGroupLst.Find(item => 
+                item.Id == DisciplineGroupEnm.Distance)! };
+
+        // Получаем коллекцию групп дисциплин, состоящую только из Сев. ходьбы
+        ICollection<DisciplineGroup> GetNordicWalkingDisciplineGroups()
+            => new List<DisciplineGroup> { disciplineGroupLst.Find(item => 
+                item.Id == DisciplineGroupEnm.NordicWalking)! };
+        
+        // Получаем коллекцию групп дисциплин, состоящую только из Дистанции и Сев. ходьбы
+        ICollection<DisciplineGroup> GetDistanceOrNordicWalkingDisciplineGroups()
+            => new List<DisciplineGroup> { disciplineGroupLst.Find(item => 
+                item.Id == DisciplineGroupEnm.Distance || item.Id == DisciplineGroupEnm.NordicWalking)! };
     }
+
+    /// <summary>
+    /// Заполняем доступность судейских должностей.
+    /// </summary>
+    public static async Task<Result<List<RefereeRoleAvailability>>> FillRefereeRoleAvailabilities(
+        IRepository repository)
+    {
+        // Удаляем старые записи
+        var result = repository.RemoveAllQuickly<RefereeRoleAvailability>();
+        if (! result.HasValue)
+            return Result<List<RefereeRoleAvailability>>.Fail(result.Excptn!);
+
+        var availableRoleLst = new List<RefereeRoleAvailability>();
+        DetailedCompetitionStatusEnm[] allowedStatuses;
+
+        // Словарь: должность -> макс. количество судей в зависимости от статуса соревнований
+        // Индексы статусов: 
+        // 0-RussianChampionship, 1-RussianCup, 2-RussianJuniorChampionship, 
+        // 3-OtherRussianCompetition, 4-FederalDistrictChampionship, 5-FederalDistrictJuniorChampionship,
+        // 6-RegionalChampionship, 7-RegionalCup, 8-RegionalJuniorChampionship, 9-OtherRegionalCompetition,
+        // 10-MunicipalChampionship, 11-MunicipalJuniorChampionship, 12-OtherMunicipalCompetition
+        var roleMaxCounts = new Dictionary<RefereeRoleEnm, int[]>
+        {
+            // Главный судья: везде 1
+            [RefereeRoleEnm.ChiefReferee] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Главный секретарь: везде 1
+            [RefereeRoleEnm.ChiefSecretary] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Зам. главного судьи: везде 2 кроме региональных и муниципальных (там 1)
+            [RefereeRoleEnm.Deputy] = [2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1],
+
+            // Зам. гл. судьи по судейству: везде 1
+            [RefereeRoleEnm.DeputyForRefereeing] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Зам. гл. судьи по безопасности: везде 1
+            [RefereeRoleEnm.DeputyForSecurity] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Зам. гл. судьи по информации: везде 1
+            [RefereeRoleEnm.DeputyForInformation] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Зам. гл. судьи по СТО: как DeputyForInformation (везде 1)
+            [RefereeRoleEnm.DeputyForSTS] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Зам. гл. судьи по виду: везде 1
+            [RefereeRoleEnm.DeputyForDiscipline] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Зам. гл. секретаря: везде 1
+            [RefereeRoleEnm.DeputyChiefSecretary] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Начальник дистанции: 2 для всероссов и федеральных, 1 для региональных и муниципальных
+            [RefereeRoleEnm.HeadOfDistance] = [2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Старший судья-инспектор: везде 1
+            [RefereeRoleEnm.SeniorInspector] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Судья-инспектор: везде 1
+            [RefereeRoleEnm.Inspector] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Старший судья по виду: 6,6,5,5,3,3,2,2,2,2,1,1,1
+            [RefereeRoleEnm.SeniorRefereeForDiscipline] = [6, 6, 5, 5, 3, 3, 2, 2, 2, 2, 1, 1, 1],
+
+            // Старший судья-эксперт: 3,3,2,2,2,2,2,2,2,2,2,1,1
+            [RefereeRoleEnm.SeniorExpertReferee] = [3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1],
+
+            // Старший судья старта: 2,2,2,2,2,1,1,1,1,1,1,1,1
+            [RefereeRoleEnm.SeniorStartReferee] = [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Старший судья этапа: 12,12,12,12,12,12,12,12,12,10,10,10,10
+            [RefereeRoleEnm.SeniorStageReferee] = [12, 12, 12, 12, 12, 12, 12, 12, 12, 10, 10, 10, 10],
+
+            // Старший судья-контролёр: как SeniorStageReferee
+            [RefereeRoleEnm.SeniorRefereeController] = [12, 12, 12, 12, 12, 12, 12, 12, 12, 10, 10, 10, 10],
+
+            // Старший судья финиша: 2,2,2,2,2,1,1,1,1,1,1,1,1
+            [RefereeRoleEnm.SeniorFinishReferee] = [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Судья-постановщик: 4,4,4,4,4,4,3,3,3,3,3,3,3
+            [RefereeRoleEnm.InstallerReferee] = [4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3],
+
+            // Судья этапа: 30 везде
+            [RefereeRoleEnm.StageReferee] = [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
+
+            // Судья-контролёр: как StageReferee (30 везде)
+            [RefereeRoleEnm.RefereeController] = [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
+
+            // Судья по виду: 20,20,15,15,6,6,5,5,5,5,4,4,4
+            [RefereeRoleEnm.RefereeForDiscipline] = [20, 20, 15, 15, 6, 6, 5, 5, 5, 5, 4, 4, 4],
+
+            // Судья-эксперт: 12,12,12,12,12,12,6,6,6,6,5,5,5
+            [RefereeRoleEnm.ExpertReferee] = [12, 12, 12, 12, 12, 12, 6, 6, 6, 6, 5, 5, 5],
+
+            // Судья-секретарь: 4,4,4,4,3,3,2,2,2,2,1,1,1
+            [RefereeRoleEnm.Secretary] = [4, 4, 4, 4, 3, 3, 2, 2, 2, 2, 1, 1, 1],
+
+            // Судья-стартёр: 2,2,2,2,2,2,2,2,1,1,1,1,1
+            [RefereeRoleEnm.StarterReferee] = [2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1],
+
+            // Судья-хронометрист: 2 везде
+            [RefereeRoleEnm.TimekeeperReferee] = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+
+            // Судья по информации: 3,3,2,2,2,2,1,1,1,1,1,1,1
+            [RefereeRoleEnm.InformationReferee] = [3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1],
+
+            // Судья-страховщик: 10 везде
+            [RefereeRoleEnm.InsurerReferee] = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+
+            // Судья при участниках: 2 везде
+            [RefereeRoleEnm.AccompanyingReferee] = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+            
+            // -----------------------------
+            
+            // Председатель комиссии по допуску: везде 1
+            [RefereeRoleEnm.MandateChairman] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            
+            // Председатель МКК: везде 1
+            [RefereeRoleEnm.RccChairman] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+
+            // Председатель технической комиссии: везде 1
+            [RefereeRoleEnm.TechCommissionChairman] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        };
+
+        // ========== ЮСС, СС3К ==========
+
+        // Муниципальные
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.MunicipalChampionship,
+            DetailedCompetitionStatusEnm.MunicipalJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherMunicipalCompetition
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.AddRange([
+                // REMARK: Старший судья-контролёр пока так (нет в Квал. треб. к СС)
+                // REMARK: Судья-контролёр пока так (нет в Квал. треб. к СС)
+                Create(RefereeRoleEnm.SeniorRefereeForDiscipline, status, RefereeCategoryEnm.YoungCategory), // Старший судья по виду
+                Create(RefereeRoleEnm.SeniorExpertReferee, status, RefereeCategoryEnm.YoungCategory),        // Старший судья-эксперт
+                Create(RefereeRoleEnm.SeniorStartReferee, status, RefereeCategoryEnm.YoungCategory),         // Старший судья старта
+                Create(RefereeRoleEnm.SeniorStageReferee, status, RefereeCategoryEnm.YoungCategory),         // Старший судья этапа
+                Create(RefereeRoleEnm.SeniorFinishReferee, status, RefereeCategoryEnm.YoungCategory),        // Старший судья финиша
+                Create(RefereeRoleEnm.SeniorRefereeController, status, RefereeCategoryEnm.YoungCategory),    // Старший судья-контролёр
+                Create(RefereeRoleEnm.InstallerReferee, status, RefereeCategoryEnm.YoungCategory),           // Судья-постановщик
+                Create(RefereeRoleEnm.StageReferee, status, RefereeCategoryEnm.YoungCategory),               // Судья этапа
+                Create(RefereeRoleEnm.RefereeController, status, RefereeCategoryEnm.YoungCategory),          // Судья-контролёр
+            ]);
+        }
+
+        // Региональные и ниже
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.RegionalChampionship,
+            DetailedCompetitionStatusEnm.RegionalCup,
+            DetailedCompetitionStatusEnm.RegionalJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherRegionalCompetition,
+            DetailedCompetitionStatusEnm.MunicipalChampionship,
+            DetailedCompetitionStatusEnm.MunicipalJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherMunicipalCompetition
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.AddRange([
+                Create(RefereeRoleEnm.RefereeForDiscipline, status, RefereeCategoryEnm.YoungCategory), // Судья по виду
+                Create(RefereeRoleEnm.ExpertReferee, status, RefereeCategoryEnm.YoungCategory),        // Судья-эксперт
+                Create(RefereeRoleEnm.Secretary, status, RefereeCategoryEnm.YoungCategory),            // Судья-секретарь
+                Create(RefereeRoleEnm.StarterReferee, status, RefereeCategoryEnm.YoungCategory),       // Судья-стартёр
+                Create(RefereeRoleEnm.TimekeeperReferee, status, RefereeCategoryEnm.YoungCategory),    // Судья-хронометрист
+                Create(RefereeRoleEnm.InformationReferee, status, RefereeCategoryEnm.YoungCategory),   // Судья по информации
+                Create(RefereeRoleEnm.InsurerReferee, status, RefereeCategoryEnm.YoungCategory),       // Судья-страховщик
+                Create(RefereeRoleEnm.AccompanyingReferee, status, RefereeCategoryEnm.YoungCategory),  // Судья при участниках
+            ]);
+        }
     
+
+        // ========== СС2К ==========
+
+        // Другие оф. муницип. образования
+        {
+            var status = DetailedCompetitionStatusEnm.OtherMunicipalCompetition;
+            availableRoleLst.Add(
+                Create(RefereeRoleEnm.SeniorInspector, status, RefereeCategoryEnm.Category2) // Старший судья-инспектор
+            );
+        }
+
+        // Муниципальные
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.MunicipalChampionship,
+            DetailedCompetitionStatusEnm.MunicipalJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherMunicipalCompetition,
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.AddRange([
+                Create(RefereeRoleEnm.ChiefReferee, status, RefereeCategoryEnm.Category2),        // Главный судья
+                Create(RefereeRoleEnm.ChiefSecretary, status, RefereeCategoryEnm.Category2),      // Главный секретарь
+                Create(RefereeRoleEnm.DeputyForRefereeing, status, RefereeCategoryEnm.Category2), // Зам. гл. судьи по судейству
+                Create(RefereeRoleEnm.DeputyForSecurity, status, RefereeCategoryEnm.Category2),   // Зам. гл. судьи по безопасности
+                Create(RefereeRoleEnm.DeputyForDiscipline, status, RefereeCategoryEnm.Category2), // Зам. гл. судьи по виду
+                Create(RefereeRoleEnm.Inspector, status, RefereeCategoryEnm.Category2)            // Судья-инспектор
+            ]);
+        }
+
+        // Кубок субъекта и ниже
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.RegionalCup,
+            DetailedCompetitionStatusEnm.RegionalJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherRegionalCompetition,
+            DetailedCompetitionStatusEnm.MunicipalChampionship,
+            DetailedCompetitionStatusEnm.MunicipalJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherMunicipalCompetition
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.AddRange([
+                // REMARK: Зам. гл. судьи по СТО пока так (нет в Квал. треб. к СС)
+                Create(RefereeRoleEnm.Deputy, status, RefereeCategoryEnm.Category2),               // Зам. гл. судьи
+                Create(RefereeRoleEnm.DeputyForInformation, status, RefereeCategoryEnm.Category2), // Зам. гл. судьи по информации
+                Create(RefereeRoleEnm.DeputyForSTS, status, RefereeCategoryEnm.Category2),         // Зам. гл. судьи по СТО
+                Create(RefereeRoleEnm.DeputyChiefSecretary, status, RefereeCategoryEnm.Category2), // Зам. гл. секретаря
+                Create(RefereeRoleEnm.HeadOfDistance, status, RefereeCategoryEnm.Category2)        // Начальник дистанции
+            ]);
+        }
+
+        // Чемп. субъекта - Другие оф. субъекта
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.RegionalChampionship,
+            DetailedCompetitionStatusEnm.RegionalCup,
+            DetailedCompetitionStatusEnm.RegionalJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherRegionalCompetition
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.AddRange([
+                Create(RefereeRoleEnm.SeniorRefereeForDiscipline, status, RefereeCategoryEnm.Category2), // Старший судья по виду
+                Create(RefereeRoleEnm.SeniorExpertReferee, status, RefereeCategoryEnm.Category2)         // Старший судья-эксперт
+            ]);
+        }
+
+        // Чемп. ФО - Другие оф. субъекта
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.FederalDistrictChampionship,
+            DetailedCompetitionStatusEnm.FederalDistrictJuniorChampionship,
+            DetailedCompetitionStatusEnm.RegionalChampionship,
+            DetailedCompetitionStatusEnm.RegionalCup,
+            DetailedCompetitionStatusEnm.RegionalJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherRegionalCompetition
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.AddRange([
+                // REMARK: Старший судья-контролёр пока так (нет в Квал. треб. к СС)
+                Create(RefereeRoleEnm.SeniorStartReferee, status, RefereeCategoryEnm.Category2),      // Старший судья старта
+                Create(RefereeRoleEnm.SeniorStageReferee, status, RefereeCategoryEnm.Category2),      // Старший судья этапа
+                Create(RefereeRoleEnm.SeniorFinishReferee, status, RefereeCategoryEnm.Category2),     // Старший судья финиша
+                Create(RefereeRoleEnm.SeniorRefereeController, status, RefereeCategoryEnm.Category2), // Старший судья-контролёр
+            ]);
+        }
+
+        // Другие оф. субъекта и выше
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.RussianChampionship,
+            DetailedCompetitionStatusEnm.RussianCup,
+            DetailedCompetitionStatusEnm.RussianJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherRussianCompetition,
+            DetailedCompetitionStatusEnm.FederalDistrictChampionship,
+            DetailedCompetitionStatusEnm.FederalDistrictJuniorChampionship,
+            DetailedCompetitionStatusEnm.RegionalChampionship,
+            DetailedCompetitionStatusEnm.RegionalCup,
+            DetailedCompetitionStatusEnm.RegionalJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherRegionalCompetition
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.AddRange([
+                // REMARK: Судья-контролёр пока так (нет в Квал. треб. к СС)
+                Create(RefereeRoleEnm.InstallerReferee, status, RefereeCategoryEnm.Category2), // Судья-постановщик
+                Create(RefereeRoleEnm.StageReferee, status, RefereeCategoryEnm.Category2),     // Судья этапа
+                Create(RefereeRoleEnm.RefereeController, status, RefereeCategoryEnm.Category2) // Судья-контролёр
+            ]);
+        }
+
+        // Выше чемп. субъекта
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.RussianChampionship,
+            DetailedCompetitionStatusEnm.RussianCup,
+            DetailedCompetitionStatusEnm.RussianJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherRussianCompetition,
+            DetailedCompetitionStatusEnm.FederalDistrictChampionship,
+            DetailedCompetitionStatusEnm.FederalDistrictJuniorChampionship
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.AddRange([
+                Create(RefereeRoleEnm.RefereeForDiscipline, status, RefereeCategoryEnm.Category2), // Судья по виду
+                Create(RefereeRoleEnm.ExpertReferee, status, RefereeCategoryEnm.Category2),        // Судья-эксперт
+                Create(RefereeRoleEnm.Secretary, status, RefereeCategoryEnm.Category2),            // Судья-секретарь
+                Create(RefereeRoleEnm.StarterReferee, status, RefereeCategoryEnm.Category2),       // Судья-стартёр
+                Create(RefereeRoleEnm.TimekeeperReferee, status, RefereeCategoryEnm.Category2),    // Судья-хронометрист
+                Create(RefereeRoleEnm.InformationReferee, status, RefereeCategoryEnm.Category2),   // Судья по информации
+                Create(RefereeRoleEnm.InsurerReferee, status, RefereeCategoryEnm.Category2),       // Судья-страховщик
+                Create(RefereeRoleEnm.AccompanyingReferee, status, RefereeCategoryEnm.Category2)   // Судья при участниках
+            ]);
+        }
+
+        // ========== СС1К ==========
+
+        // Чемп. ФО - Другие оф. субъекта
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.FederalDistrictChampionship,
+            DetailedCompetitionStatusEnm.FederalDistrictJuniorChampionship,
+            DetailedCompetitionStatusEnm.RegionalChampionship,
+            DetailedCompetitionStatusEnm.RegionalCup,
+            DetailedCompetitionStatusEnm.RegionalJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherRegionalCompetition
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.AddRange([
+                Create(RefereeRoleEnm.ChiefReferee, status, RefereeCategoryEnm.Category1),        // Главный судья
+                Create(RefereeRoleEnm.ChiefSecretary, status, RefereeCategoryEnm.Category1),      // Главный секретарь
+                Create(RefereeRoleEnm.DeputyForRefereeing, status, RefereeCategoryEnm.Category1), // Зам. гл. судьи по судейству
+                Create(RefereeRoleEnm.DeputyForSecurity, status, RefereeCategoryEnm.Category1),   // Зам. гл. судьи по безопасности
+                Create(RefereeRoleEnm.DeputyForDiscipline, status, RefereeCategoryEnm.Category1), // Зам. гл. судьи по виду
+                Create(RefereeRoleEnm.Inspector, status, RefereeCategoryEnm.Category1)            // Судья-инспектор
+            ]);
+        }
+
+        // Чемп. ФО - выше других оф. муницип. образования
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.FederalDistrictChampionship,
+            DetailedCompetitionStatusEnm.FederalDistrictJuniorChampionship,
+            DetailedCompetitionStatusEnm.RegionalChampionship,
+            DetailedCompetitionStatusEnm.RegionalCup,
+            DetailedCompetitionStatusEnm.RegionalJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherRegionalCompetition,
+            DetailedCompetitionStatusEnm.MunicipalChampionship,
+            DetailedCompetitionStatusEnm.MunicipalJuniorChampionship
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.Add(
+                Create(RefereeRoleEnm.SeniorInspector, status, RefereeCategoryEnm.Category1) // Старший судья-инспектор
+            );
+        }
+
+        // Чемп. субъекта и выше
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.RussianChampionship,
+            DetailedCompetitionStatusEnm.RussianCup,
+            DetailedCompetitionStatusEnm.RussianJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherRussianCompetition,
+            DetailedCompetitionStatusEnm.FederalDistrictChampionship,
+            DetailedCompetitionStatusEnm.FederalDistrictJuniorChampionship,
+            DetailedCompetitionStatusEnm.RegionalChampionship,
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.AddRange([
+                // REMARK: Зам. гл. судьи по СТО пока так (нет в Квал. треб. к СС)
+                Create(RefereeRoleEnm.Deputy, status, RefereeCategoryEnm.Category1),               // Зам. гл. судьи
+                Create(RefereeRoleEnm.DeputyForInformation, status, RefereeCategoryEnm.Category1), // Зам. гл. судьи по информации
+                Create(RefereeRoleEnm.DeputyForSTS, status, RefereeCategoryEnm.Category1),         // Зам. гл. судьи по СТО
+                Create(RefereeRoleEnm.DeputyChiefSecretary, status, RefereeCategoryEnm.Category1), // Зам. гл. секретаря
+                Create(RefereeRoleEnm.HeadOfDistance, status, RefereeCategoryEnm.Category1)        // Начальник дистанции
+            ]);
+        }
+
+        // Выше чемп. субъекта
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.RussianChampionship,
+            DetailedCompetitionStatusEnm.RussianCup,
+            DetailedCompetitionStatusEnm.RussianJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherRussianCompetition,
+            DetailedCompetitionStatusEnm.FederalDistrictChampionship,
+            DetailedCompetitionStatusEnm.FederalDistrictJuniorChampionship,
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.AddRange([
+                Create(RefereeRoleEnm.SeniorRefereeForDiscipline, status, RefereeCategoryEnm.Category1), // Старший судья по виду
+                Create(RefereeRoleEnm.SeniorExpertReferee, status, RefereeCategoryEnm.Category1)         // Старший судья-эксперт
+            ]);
+        }
+
+        // Всероссы
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.RussianChampionship,
+            DetailedCompetitionStatusEnm.RussianCup,
+            DetailedCompetitionStatusEnm.RussianJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherRussianCompetition
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.AddRange([
+                // REMARK: Старший судья-контролёр пока так (нет в Квал. треб. к СС)
+                Create(RefereeRoleEnm.SeniorStartReferee, status, RefereeCategoryEnm.Category1),      // Старший судья старта
+                Create(RefereeRoleEnm.SeniorStageReferee, status, RefereeCategoryEnm.Category1),      // Старший судья этапа
+                Create(RefereeRoleEnm.SeniorFinishReferee, status, RefereeCategoryEnm.Category1),     // Старший судья финиша
+                Create(RefereeRoleEnm.SeniorRefereeController, status, RefereeCategoryEnm.Category1), // Старший судья-контролёр
+            ]);
+        }
+
+        // ========== ССВК ==========
+
+        // Всероссы
+        allowedStatuses =
+        [
+            DetailedCompetitionStatusEnm.RussianChampionship,
+            DetailedCompetitionStatusEnm.RussianCup,
+            DetailedCompetitionStatusEnm.RussianJuniorChampionship,
+            DetailedCompetitionStatusEnm.OtherRussianCompetition,
+        ];
+        foreach (var status in allowedStatuses)
+        {
+            availableRoleLst.AddRange([
+                Create(RefereeRoleEnm.ChiefReferee, status, RefereeCategoryEnm.AllRussCategory),        // Главный судья
+                Create(RefereeRoleEnm.ChiefSecretary, status, RefereeCategoryEnm.AllRussCategory),      // Главный секретарь
+                Create(RefereeRoleEnm.DeputyForRefereeing, status, RefereeCategoryEnm.AllRussCategory), // Зам. гл. судьи по судейству
+                Create(RefereeRoleEnm.DeputyForSecurity, status, RefereeCategoryEnm.AllRussCategory),   // Зам. гл. судьи по безопасности
+                Create(RefereeRoleEnm.DeputyForDiscipline, status, RefereeCategoryEnm.AllRussCategory), // Зам. гл. судьи по виду
+                Create(RefereeRoleEnm.SeniorInspector, status, RefereeCategoryEnm.AllRussCategory),     // Старший судья-инспектор
+                Create(RefereeRoleEnm.Inspector, status, RefereeCategoryEnm.AllRussCategory)            // Судья-инспектор
+            ]);
+        }
+        
+        // Для "Не судейских" должностей - в количестве 1 для всех статусов и мин. категорией ЮСС
+        foreach (var status in Enum.GetValues<DetailedCompetitionStatusEnm>())
+        {
+            availableRoleLst.AddRange([
+                Create(RefereeRoleEnm.MandateChairman, status, RefereeCategoryEnm.YoungCategory),
+                Create(RefereeRoleEnm.RccChairman, status, RefereeCategoryEnm.YoungCategory),
+                Create(RefereeRoleEnm.TechCommissionChairman, status, RefereeCategoryEnm.YoungCategory),
+            ]);
+        }
+
+        result = repository.AddRange(availableRoleLst);
+        if (! result)
+            return Result<List<RefereeRoleAvailability>>.Fail(result.Excptn!);
+
+        result = await repository.SaveChangesAsync();
+        if (! result)
+            return Result<List<RefereeRoleAvailability>>.Fail(result.Excptn!);
+
+        return Result<List<RefereeRoleAvailability>>.Done(availableRoleLst);
+
+        // Внутренняя функция для создания RefereeRoleAvailability
+        RefereeRoleAvailability Create(RefereeRoleEnm role, DetailedCompetitionStatusEnm status, RefereeCategoryEnm category) =>
+            new(role, status, category, GetMaxCount(role, status));
+
+        // Внутренняя функция для получения количества судей
+        int GetMaxCount(RefereeRoleEnm role, DetailedCompetitionStatusEnm status)
+        {
+            return ! roleMaxCounts.TryGetValue(role, out var counts) 
+                ? 1 
+                : counts[status.ToInt() - 1];
+        }
+    }
+
     /// <summary>
     /// Заполняем варианты пола.
     /// </summary>

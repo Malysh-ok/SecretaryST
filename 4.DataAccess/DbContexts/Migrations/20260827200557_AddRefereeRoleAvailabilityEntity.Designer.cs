@@ -11,14 +11,29 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.DbContexts.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240515203301_Initial")]
-    partial class Initial
+    [Migration("20260827200557_AddRefereeRoleAvailabilityEntity")]
+    partial class AddRefereeRoleAvailabilityEntity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
+
+            modelBuilder.Entity("DisciplineGroupRefereeRole", b =>
+                {
+                    b.Property<int>("DisciplineGroupsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RefereeRolesId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("DisciplineGroupsId", "RefereeRolesId");
+
+                    b.HasIndex("RefereeRolesId");
+
+                    b.ToTable("Lib_RefereeRoleDisciplineGroups", (string)null);
+                });
 
             modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Athlete", b =>
                 {
@@ -45,12 +60,6 @@ namespace DataAccess.DbContexts.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("TEXT")
-                        .HasComputedColumnSql("LastName || ' ' || FirstName || IIF(Patronymic IS NULL, '', ' ' || Patronymic)", true);
-
                     b.Property<string>("Patronymic")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
@@ -76,7 +85,7 @@ namespace DataAccess.DbContexts.Migrations
                         });
                 });
 
-            modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.CompetitionData", b =>
+            modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Competition", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -85,10 +94,9 @@ namespace DataAccess.DbContexts.Migrations
                     b.Property<int>("CompetitionsStatusId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("ConductingOrganizations")
+                    b.PrimitiveCollection<string>("ConductingOrganizations")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("json");
 
                     b.Property<string>("Description")
                         .HasMaxLength(300)
@@ -103,9 +111,17 @@ namespace DataAccess.DbContexts.Migrations
                     b.Property<DateTime>("InitialDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsStudentCompetition")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShortName")
+                        .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Venue")
@@ -120,7 +136,7 @@ namespace DataAccess.DbContexts.Migrations
 
                     b.HasIndex("DetailedCompetitionStatusId");
 
-                    b.ToTable("Common_CompetitionData", "Common", t =>
+                    b.ToTable("Common_Competitions", "Common", t =>
                         {
                             t.HasComment("Данные о соревновании");
                         });
@@ -130,6 +146,9 @@ namespace DataAccess.DbContexts.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CompetitionId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
@@ -155,6 +174,8 @@ namespace DataAccess.DbContexts.Migrations
                     b.HasKey("Id")
                         .HasName("PK_Delegations");
 
+                    b.HasIndex("CompetitionId");
+
                     b.HasIndex("RepresentativeId");
 
                     b.ToTable("Common_Delegations", "Common", t =>
@@ -167,6 +188,15 @@ namespace DataAccess.DbContexts.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("CategoryGrantedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CompetitionId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
@@ -187,12 +217,6 @@ namespace DataAccess.DbContexts.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("TEXT")
-                        .HasComputedColumnSql("LastName || ' ' || FirstName || IIF(Patronymic IS NULL, '', ' ' || Patronymic)", true);
-
                     b.Property<int>("Number")
                         .HasColumnType("INTEGER");
 
@@ -200,19 +224,17 @@ namespace DataAccess.DbContexts.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("RefereeJobTitleId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("RefereeLevelId")
+                    b.Property<int>("RoleId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id")
                         .HasName("PK_Referees");
 
-                    b.HasIndex("RefereeJobTitleId")
-                        .IsUnique();
+                    b.HasIndex("CategoryId");
 
-                    b.HasIndex("RefereeLevelId");
+                    b.HasIndex("CompetitionId");
+
+                    b.HasIndex("RoleId");
 
                     b.ToTable("Common_Referees", "Common", t =>
                         {
@@ -243,12 +265,6 @@ namespace DataAccess.DbContexts.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("TEXT")
-                        .HasComputedColumnSql("LastName || ' ' || FirstName || IIF(Patronymic IS NULL, '', ' ' || Patronymic)", true);
-
                     b.Property<string>("Patronymic")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
@@ -277,14 +293,26 @@ namespace DataAccess.DbContexts.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("AgeGroupId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CompetitionId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Description")
                         .HasMaxLength(300)
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Difficulty")
+                    b.Property<int>("DifficultyId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DisciplineGroupId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("DisciplineId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DisciplineSubGroupId")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool?>("IsShort")
@@ -295,10 +323,19 @@ namespace DataAccess.DbContexts.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Number")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id")
                         .HasName("PK_SportEvents");
 
+                    b.HasIndex("CompetitionId");
+
                     b.HasIndex("DisciplineId");
+
+                    b.HasIndex("AgeGroupId", "DisciplineSubGroupId");
+
+                    b.HasIndex("DifficultyId", "DisciplineGroupId");
 
                     b.ToTable("Distance_SportEvents", "Distance", t =>
                         {
@@ -347,6 +384,49 @@ namespace DataAccess.DbContexts.Migrations
                     b.ToTable("Distance_SportUnits", "Distance", t =>
                         {
                             t.HasComment("Спортивные юниты");
+                        });
+                });
+
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.AgeGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DisciplineSubGroupId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsStudentCompetition")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("MaxAge")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("MaxStudentAge")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MinAge")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("MinStudentAge")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id", "DisciplineSubGroupId")
+                        .HasName("PK_Difficulties");
+
+                    b.HasIndex("DisciplineSubGroupId");
+
+                    b.ToTable("Lib_AgeGroups", "Library", t =>
+                        {
+                            t.HasComment("Возрастные группы");
                         });
                 });
 
@@ -406,6 +486,44 @@ namespace DataAccess.DbContexts.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.Difficulty", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DisciplineGroupId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FullNameGenitive")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id", "DisciplineGroupId")
+                        .HasName("PK_Difficulties");
+
+                    b.HasIndex("DisciplineGroupId");
+
+                    b.ToTable("Lib_Difficulties", "Library", t =>
+                        {
+                            t.HasComment("Трудности");
+                        });
+                });
+
             modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.Discipline", b =>
                 {
                     b.Property<int>("Id")
@@ -420,6 +538,11 @@ namespace DataAccess.DbContexts.Migrations
 
                     b.Property<int>("DisciplineSubGroupId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -490,7 +613,35 @@ namespace DataAccess.DbContexts.Migrations
                         });
                 });
 
-            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeJobTitle", b =>
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id")
+                        .HasName("PK_RefereeCategories");
+
+                    b.ToTable("Lib_RefereeCategories", "Library", t =>
+                        {
+                            t.HasComment("Судейские категории");
+                        });
+                });
+
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeRole", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("INTEGER");
@@ -505,39 +656,43 @@ namespace DataAccess.DbContexts.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id")
-                        .HasName("PK_RefereeJobTitles");
+                        .HasName("PK_RefereeRoles");
 
-                    b.ToTable("Lib_RefereeJobTitles", "Library", t =>
+                    b.ToTable("Lib_RefereeRoles", "Library", t =>
                         {
                             t.HasComment("Судейские должности");
                         });
                 });
 
-            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeLevel", b =>
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeRoleAvailability", b =>
                 {
                     b.Property<int>("Id")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DetailedCompetitionStatusId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
                         .HasMaxLength(300)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("LongName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
+                    b.Property<int>("MaxRefereesPerRole")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id")
-                        .HasName("PK_RefereeLevels");
+                    b.Property<int>("RefereeCategoryId")
+                        .HasColumnType("INTEGER");
 
-                    b.ToTable("Lib_RefereeLevels", "Library", t =>
+                    b.HasKey("Id", "DetailedCompetitionStatusId")
+                        .HasName("PK_RefereeRoles");
+
+                    b.ToTable("Lib_RefereeRoleAvailabilities", "Library", t =>
                         {
-                            t.HasComment("Судейские категории");
+                            t.HasComment("Доступности судейских должностей");
                         });
                 });
 
@@ -609,6 +764,21 @@ namespace DataAccess.DbContexts.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DisciplineGroupRefereeRole", b =>
+                {
+                    b.HasOne("ProblemDomain.Entities.LibraryEntities.DisciplineGroup", null)
+                        .WithMany()
+                        .HasForeignKey("DisciplineGroupsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProblemDomain.Entities.LibraryEntities.RefereeRole", null)
+                        .WithMany()
+                        .HasForeignKey("RefereeRolesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Athlete", b =>
                 {
                     b.HasOne("ProblemDomain.Entities.CommonEntities.Delegation", "Delegation")
@@ -639,7 +809,7 @@ namespace DataAccess.DbContexts.Migrations
                     b.Navigation("SportUnit");
                 });
 
-            modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.CompetitionData", b =>
+            modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Competition", b =>
                 {
                     b.HasOne("ProblemDomain.Entities.LibraryEntities.CompetitionsStatus", "CompetitionsStatus")
                         .WithMany("Competitions")
@@ -662,6 +832,13 @@ namespace DataAccess.DbContexts.Migrations
 
             modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Delegation", b =>
                 {
+                    b.HasOne("ProblemDomain.Entities.CommonEntities.Competition", "Competition")
+                        .WithMany("Delegations")
+                        .HasForeignKey("CompetitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Delegations_CompetitionId");
+
                     b.HasOne("ProblemDomain.Entities.CommonEntities.Representative", "Representative")
                         .WithMany("Delegations")
                         .HasForeignKey("RepresentativeId")
@@ -669,28 +846,39 @@ namespace DataAccess.DbContexts.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_Delegations_RepresentativeId");
 
+                    b.Navigation("Competition");
+
                     b.Navigation("Representative");
                 });
 
             modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Referee", b =>
                 {
-                    b.HasOne("ProblemDomain.Entities.LibraryEntities.RefereeJobTitle", "RefereeJobTitle")
-                        .WithOne()
-                        .HasForeignKey("ProblemDomain.Entities.CommonEntities.Referee", "RefereeJobTitleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("FK_Referees_RefereeingPositionId");
-
-                    b.HasOne("ProblemDomain.Entities.LibraryEntities.RefereeLevel", "RefereeLevel")
+                    b.HasOne("ProblemDomain.Entities.LibraryEntities.RefereeCategory", "Category")
                         .WithMany("Referees")
-                        .HasForeignKey("RefereeLevelId")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Referees_RefereeLevelId");
+                        .HasConstraintName("FK_Referees_CategoryId");
 
-                    b.Navigation("RefereeJobTitle");
+                    b.HasOne("ProblemDomain.Entities.CommonEntities.Competition", "Competition")
+                        .WithMany("Referees")
+                        .HasForeignKey("CompetitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Referees_CompetitionId");
 
-                    b.Navigation("RefereeLevel");
+                    b.HasOne("ProblemDomain.Entities.LibraryEntities.RefereeRole", "Role")
+                        .WithMany("Referees")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Referees_RoleId");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Competition");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Representative", b =>
@@ -706,12 +894,39 @@ namespace DataAccess.DbContexts.Migrations
 
             modelBuilder.Entity("ProblemDomain.Entities.DistanceEntities.SportEvent", b =>
                 {
+                    b.HasOne("ProblemDomain.Entities.CommonEntities.Competition", "Competition")
+                        .WithMany("SportEvents")
+                        .HasForeignKey("CompetitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_SportEvents_CompetitionId");
+
                     b.HasOne("ProblemDomain.Entities.LibraryEntities.Discipline", "Discipline")
                         .WithMany("SportEvents")
                         .HasForeignKey("DisciplineId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_SportEvents_DisciplineId");
+
+                    b.HasOne("ProblemDomain.Entities.LibraryEntities.AgeGroup", "AgeGroup")
+                        .WithMany("SportEvents")
+                        .HasForeignKey("AgeGroupId", "DisciplineSubGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_SportEvents_AgeGroupId_DisciplineSubGroupId");
+
+                    b.HasOne("ProblemDomain.Entities.LibraryEntities.Difficulty", "Difficulty")
+                        .WithMany("SportEvents")
+                        .HasForeignKey("DifficultyId", "DisciplineGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_SportEvents_DifficultyId_DisciplineGroupId");
+
+                    b.Navigation("AgeGroup");
+
+                    b.Navigation("Competition");
+
+                    b.Navigation("Difficulty");
 
                     b.Navigation("Discipline");
                 });
@@ -754,15 +969,40 @@ namespace DataAccess.DbContexts.Migrations
                     b.Navigation("SportUnitType");
                 });
 
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.AgeGroup", b =>
+                {
+                    b.HasOne("ProblemDomain.Entities.LibraryEntities.DisciplineSubGroup", "DisciplineSubGroup")
+                        .WithMany("AgeGroups")
+                        .HasForeignKey("DisciplineSubGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Difficulties_DisciplineSubGroupId");
+
+                    b.Navigation("DisciplineSubGroup");
+                });
+
             modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.DetailedCompetitionStatus", b =>
                 {
                     b.HasOne("ProblemDomain.Entities.LibraryEntities.CompetitionsStatus", "CompetitionsStatus")
                         .WithMany("DetailedCompetitionStatuses")
                         .HasForeignKey("CompetitionsStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_DetailedCompetitionStatuses_CompetitionsStatusId");
 
                     b.Navigation("CompetitionsStatus");
+                });
+
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.Difficulty", b =>
+                {
+                    b.HasOne("ProblemDomain.Entities.LibraryEntities.DisciplineGroup", "DisciplineGroup")
+                        .WithMany("Difficulties")
+                        .HasForeignKey("DisciplineGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Difficulties_DisciplineGroupId");
+
+                    b.Navigation("DisciplineGroup");
                 });
 
             modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.Discipline", b =>
@@ -798,6 +1038,15 @@ namespace DataAccess.DbContexts.Migrations
                     b.Navigation("DisciplineGroup");
                 });
 
+            modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Competition", b =>
+                {
+                    b.Navigation("Delegations");
+
+                    b.Navigation("Referees");
+
+                    b.Navigation("SportEvents");
+                });
+
             modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Delegation", b =>
                 {
                     b.Navigation("Athletes");
@@ -820,6 +1069,11 @@ namespace DataAccess.DbContexts.Migrations
                     b.Navigation("ChildSportUnits");
                 });
 
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.AgeGroup", b =>
+                {
+                    b.Navigation("SportEvents");
+                });
+
             modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.CompetitionsStatus", b =>
                 {
                     b.Navigation("Competitions");
@@ -832,6 +1086,11 @@ namespace DataAccess.DbContexts.Migrations
                     b.Navigation("Competitions");
                 });
 
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.Difficulty", b =>
+                {
+                    b.Navigation("SportEvents");
+                });
+
             modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.Discipline", b =>
                 {
                     b.Navigation("SportEvents");
@@ -839,6 +1098,8 @@ namespace DataAccess.DbContexts.Migrations
 
             modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.DisciplineGroup", b =>
                 {
+                    b.Navigation("Difficulties");
+
                     b.Navigation("DisciplineSubGroups");
 
                     b.Navigation("Disciplines");
@@ -846,10 +1107,17 @@ namespace DataAccess.DbContexts.Migrations
 
             modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.DisciplineSubGroup", b =>
                 {
+                    b.Navigation("AgeGroups");
+
                     b.Navigation("Disciplines");
                 });
 
-            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeLevel", b =>
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeCategory", b =>
+                {
+                    b.Navigation("Referees");
+                });
+
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeRole", b =>
                 {
                     b.Navigation("Referees");
                 });

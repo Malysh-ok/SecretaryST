@@ -40,8 +40,8 @@ public class RepositoryHelper : IRepositoryHelper
                           (await _repository.GetFirstAsync<DisciplineGroup>()).Value != null &&
                           (await _repository.GetFirstAsync<DisciplineSubGroup>()).Value != null &&
                           (await _repository.GetFirstAsync<Discipline>()).Value != null &&
-                          (await _repository.GetFirstAsync<RefereeLevel>()).Value != null &&
-                          (await _repository.GetFirstAsync<RefereeJobTitle>()).Value != null &&
+                          (await _repository.GetFirstAsync<RefereeCategory>()).Value != null &&
+                          (await _repository.GetFirstAsync<RefereeRole>()).Value != null &&
                           (await _repository.GetFirstAsync<Sex>()).Value != null &&
                           (await _repository.GetFirstAsync<SportUnitType>()).Value != null;
 
@@ -118,20 +118,28 @@ public class RepositoryHelper : IRepositoryHelper
         var disciplineLst = resultDisciplineLst.Value;
         
         // Добавляем судейские категории
-        var resultRefereeLevelLst = 
-            await RepositoryPlaceholder.FillRefereeLevels(_repository);
-        if (!resultRefereeLevelLst.HasValue)
-            return Result<bool>.Fail(resultRefereeLevelLst.Excptn!);
+        var resultRefereeCategoryLst = 
+            await RepositoryPlaceholder.FillRefereeCategories(_repository);
+        if (!resultRefereeCategoryLst.HasValue)
+            return Result<bool>.Fail(resultRefereeCategoryLst.Excptn!);
         // ReSharper disable once UnusedVariable
-        var refereeLevels = resultRefereeLevelLst.Value;
+        var refereeCategoryLst = resultRefereeCategoryLst.Value;
         
         // Добавляем судейские должности
-        var resultFillRefereeJobTitleLst = 
-            await RepositoryPlaceholder.FillRefereeJobTitles(_repository);
-        if (!resultFillRefereeJobTitleLst.HasValue)
-            return Result<bool>.Fail(resultFillRefereeJobTitleLst.Excptn!);
+        var resultRefereeRoleLst = 
+            await RepositoryPlaceholder.FillRefereeRoles(_repository, disciplineGroupLst);
+        if (!resultRefereeRoleLst.HasValue)
+            return Result<bool>.Fail(resultRefereeRoleLst.Excptn!);
         // ReSharper disable once UnusedVariable
-        var refereeingPositionLst = resultFillRefereeJobTitleLst.Value;
+        var refereeRoleLst = resultRefereeRoleLst.Value;
+        
+        // Добавляем доступности судейских должностей
+        var resultRefereeRoleAvailabilityLst = 
+            await RepositoryPlaceholder.FillRefereeRoleAvailabilities(_repository);
+        if (!resultRefereeRoleAvailabilityLst.HasValue)
+            return Result<bool>.Fail(resultRefereeRoleAvailabilityLst.Excptn!);
+        // ReSharper disable once UnusedVariable
+        var refereeRoleAvailabilityLst = resultRefereeRoleAvailabilityLst.Value;
 
         // Добавляем варианты пола
         var resultSexLst = 

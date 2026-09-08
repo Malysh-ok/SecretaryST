@@ -36,18 +36,27 @@
     <!--            Соревнования -->
     <v:String x:Key="MainView_Ribbon_Setting_Competitions">Соревнования</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_CurrCompetitions">Соревнование:</v:String>
-    <v:String x:Key="MainView_Ribbon_Setting_UpdateCompetition">Обновить данные о соревновании</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_GetCompetition">Обновить данные о соревновании</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_AddCompetition">Добавить соревнование</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_RemoveCompetition">Удалить соревнование</v:String>
     <!--            Виды программы -->
     <v:String x:Key="MainView_Ribbon_Setting_SportEvents">Виды программы</v:String>
-    <v:String x:Key="MainView_Ribbon_Setting_DisciplineGroupFilter">Ограничение по группе дисциплин:</v:String>
-    <v:String x:Key="MainView_Ribbon_Setting_DisciplineSubGroupFilter">Ограничение по подгруппе дисциплин:</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_DisciplineGroupFilterForSportEvents">Фильтр по группе дисциплин:</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_DisciplineSubGroupFilterForSportEvents">Фильтр по подгруппе дисциплин:</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_UpdateSportEvents">Обновить виды программы</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_AddSportEvent">Добавить вид программы</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_RemoveSportEvent">Удалить вид программы</v:String>
     <!--            Судьи -->
     <v:String x:Key="MainView_Ribbon_Setting_Referees">Судьи</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_IsRefereeDataSelectionRestricted">Ограничить выбор</v:String>
+    <ToolTip x:Key="MainView_Ribbon_Setting_IsRefereeDataSelectionRestricted_Tooltip">
+        <TextBlock>
+            Ограничение судейских категорий, должностей ГСК<LineBreak/>
+            и инспекторского состава в соответствии<LineBreak/>
+            с Квалификационными требованиями к судьям.
+        </TextBlock>
+    </ToolTip>
+    <v:String x:Key="MainView_Ribbon_Setting_DisciplineGroupFilterForReferees">Фильтр по группе дисциплин:</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_UpdateReferees">Обновить список судей</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_AddReferee">Добавить судью</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_RemoveReferee">Удалить судью</v:String>
@@ -92,9 +101,11 @@
     <v:String x:Key="SettingControl_RefereeList_LastName">Фамилия</v:String>
     <v:String x:Key="SettingControl_RefereeList_FirstName">Имя</v:String>
     <v:String x:Key="SettingControl_RefereeList_Patronymic">Отчество</v:String>
-    <v:String x:Key="SettingControl_RefereeList_JobTitle">Должность</v:String>
-    <v:String x:Key="SettingControl_RefereeList_Level">Категория</v:String>
     <v:String x:Key="SettingControl_RefereeList_Domicile">Территория</v:String>
+    <v:String x:Key="SettingControl_RefereeList_Category">Категория</v:String>
+    <v:String x:Key="SettingControl_RefereeList_CategoryGrantedDate">Дата присв./подтв.</v:String>
+    <v:String x:Key="SettingControl_RefereeList_IsCategoryExpired">Просрочена</v:String>
+    <v:String x:Key="SettingControl_RefereeList_Role">Должность</v:String>
     <v:String x:Key="SettingControl_RefereeList_Description">Примечание</v:String>
 
     

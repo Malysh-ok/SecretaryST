@@ -11,14 +11,29 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.DbContexts.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260815193746_AddFullnameToDiscipline")]
-    partial class AddFullnameToDiscipline
+    [Migration("20260827105803_RenameCompetitionEntity")]
+    partial class RenameCompetitionEntity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
+
+            modelBuilder.Entity("DisciplineGroupRefereeRole", b =>
+                {
+                    b.Property<int>("DisciplineGroupsId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RefereeRolesId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("DisciplineGroupsId", "RefereeRolesId");
+
+                    b.HasIndex("RefereeRolesId");
+
+                    b.ToTable("Lib_RefereeRoleDisciplineGroups", (string)null);
+                });
 
             modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Athlete", b =>
                 {
@@ -70,7 +85,7 @@ namespace DataAccess.DbContexts.Migrations
                         });
                 });
 
-            modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.CompetitionData", b =>
+            modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Competition", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -121,7 +136,7 @@ namespace DataAccess.DbContexts.Migrations
 
                     b.HasIndex("DetailedCompetitionStatusId");
 
-                    b.ToTable("Common_CompetitionData", "Common", t =>
+                    b.ToTable("Common_Competitions", "Common", t =>
                         {
                             t.HasComment("Данные о соревновании");
                         });
@@ -133,7 +148,7 @@ namespace DataAccess.DbContexts.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("CompetitionDataId")
+                    b.Property<int>("CompetitionId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
@@ -159,7 +174,7 @@ namespace DataAccess.DbContexts.Migrations
                     b.HasKey("Id")
                         .HasName("PK_Delegations");
 
-                    b.HasIndex("CompetitionDataId");
+                    b.HasIndex("CompetitionId");
 
                     b.HasIndex("RepresentativeId");
 
@@ -175,7 +190,13 @@ namespace DataAccess.DbContexts.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("CompetitionDataId")
+                    b.Property<DateTime?>("CategoryGrantedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CompetitionId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
@@ -203,20 +224,17 @@ namespace DataAccess.DbContexts.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("RefereeJobTitleId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("RefereeLevelId")
+                    b.Property<int>("RoleId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id")
                         .HasName("PK_Referees");
 
-                    b.HasIndex("CompetitionDataId");
+                    b.HasIndex("CategoryId");
 
-                    b.HasIndex("RefereeJobTitleId");
+                    b.HasIndex("CompetitionId");
 
-                    b.HasIndex("RefereeLevelId");
+                    b.HasIndex("RoleId");
 
                     b.ToTable("Common_Referees", "Common", t =>
                         {
@@ -278,7 +296,7 @@ namespace DataAccess.DbContexts.Migrations
                     b.Property<int>("AgeGroupId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("CompetitionDataId")
+                    b.Property<int>("CompetitionId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
@@ -311,7 +329,7 @@ namespace DataAccess.DbContexts.Migrations
                     b.HasKey("Id")
                         .HasName("PK_SportEvents");
 
-                    b.HasIndex("CompetitionDataId");
+                    b.HasIndex("CompetitionId");
 
                     b.HasIndex("DisciplineId");
 
@@ -595,30 +613,7 @@ namespace DataAccess.DbContexts.Migrations
                         });
                 });
 
-            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeJobTitle", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(300)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id")
-                        .HasName("PK_RefereeJobTitles");
-
-                    b.ToTable("Lib_RefereeJobTitles", "Library", t =>
-                        {
-                            t.HasComment("Судейские должности");
-                        });
-                });
-
-            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeLevel", b =>
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeCategory", b =>
                 {
                     b.Property<int>("Id")
                         .HasColumnType("INTEGER");
@@ -638,11 +633,34 @@ namespace DataAccess.DbContexts.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id")
-                        .HasName("PK_RefereeLevels");
+                        .HasName("PK_RefereeCategories");
 
-                    b.ToTable("Lib_RefereeLevels", "Library", t =>
+                    b.ToTable("Lib_RefereeCategories", "Library", t =>
                         {
                             t.HasComment("Судейские категории");
+                        });
+                });
+
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id")
+                        .HasName("PK_RefereeRoles");
+
+                    b.ToTable("Lib_RefereeRoles", "Library", t =>
+                        {
+                            t.HasComment("Судейские должности");
                         });
                 });
 
@@ -714,6 +732,21 @@ namespace DataAccess.DbContexts.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DisciplineGroupRefereeRole", b =>
+                {
+                    b.HasOne("ProblemDomain.Entities.LibraryEntities.DisciplineGroup", null)
+                        .WithMany()
+                        .HasForeignKey("DisciplineGroupsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProblemDomain.Entities.LibraryEntities.RefereeRole", null)
+                        .WithMany()
+                        .HasForeignKey("RefereeRolesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Athlete", b =>
                 {
                     b.HasOne("ProblemDomain.Entities.CommonEntities.Delegation", "Delegation")
@@ -744,7 +777,7 @@ namespace DataAccess.DbContexts.Migrations
                     b.Navigation("SportUnit");
                 });
 
-            modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.CompetitionData", b =>
+            modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Competition", b =>
                 {
                     b.HasOne("ProblemDomain.Entities.LibraryEntities.CompetitionsStatus", "CompetitionsStatus")
                         .WithMany("Competitions")
@@ -767,12 +800,12 @@ namespace DataAccess.DbContexts.Migrations
 
             modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Delegation", b =>
                 {
-                    b.HasOne("ProblemDomain.Entities.CommonEntities.CompetitionData", "CompetitionData")
+                    b.HasOne("ProblemDomain.Entities.CommonEntities.Competition", "Competition")
                         .WithMany("Delegations")
-                        .HasForeignKey("CompetitionDataId")
+                        .HasForeignKey("CompetitionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Delegations_CompetitionDataId");
+                        .HasConstraintName("FK_Delegations_CompetitionId");
 
                     b.HasOne("ProblemDomain.Entities.CommonEntities.Representative", "Representative")
                         .WithMany("Delegations")
@@ -781,39 +814,39 @@ namespace DataAccess.DbContexts.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_Delegations_RepresentativeId");
 
-                    b.Navigation("CompetitionData");
+                    b.Navigation("Competition");
 
                     b.Navigation("Representative");
                 });
 
             modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Referee", b =>
                 {
-                    b.HasOne("ProblemDomain.Entities.CommonEntities.CompetitionData", "CompetitionData")
+                    b.HasOne("ProblemDomain.Entities.LibraryEntities.RefereeCategory", "Category")
                         .WithMany("Referees")
-                        .HasForeignKey("CompetitionDataId")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Referees_CompetitionDataId");
+                        .HasConstraintName("FK_Referees_CategoryId");
 
-                    b.HasOne("ProblemDomain.Entities.LibraryEntities.RefereeJobTitle", "RefereeJobTitle")
+                    b.HasOne("ProblemDomain.Entities.CommonEntities.Competition", "Competition")
                         .WithMany("Referees")
-                        .HasForeignKey("RefereeJobTitleId")
+                        .HasForeignKey("CompetitionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Referees_RefereeJobTitleId");
+                        .HasConstraintName("FK_Referees_CompetitionId");
 
-                    b.HasOne("ProblemDomain.Entities.LibraryEntities.RefereeLevel", "RefereeLevel")
+                    b.HasOne("ProblemDomain.Entities.LibraryEntities.RefereeRole", "Role")
                         .WithMany("Referees")
-                        .HasForeignKey("RefereeLevelId")
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_Referees_RefereeLevelId");
+                        .HasConstraintName("FK_Referees_RoleId");
 
-                    b.Navigation("CompetitionData");
+                    b.Navigation("Category");
 
-                    b.Navigation("RefereeJobTitle");
+                    b.Navigation("Competition");
 
-                    b.Navigation("RefereeLevel");
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Representative", b =>
@@ -829,12 +862,12 @@ namespace DataAccess.DbContexts.Migrations
 
             modelBuilder.Entity("ProblemDomain.Entities.DistanceEntities.SportEvent", b =>
                 {
-                    b.HasOne("ProblemDomain.Entities.CommonEntities.CompetitionData", "CompetitionData")
+                    b.HasOne("ProblemDomain.Entities.CommonEntities.Competition", "Competition")
                         .WithMany("SportEvents")
-                        .HasForeignKey("CompetitionDataId")
+                        .HasForeignKey("CompetitionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_SportEvents_CompetitionDataId");
+                        .HasConstraintName("FK_SportEvents_CompetitionId");
 
                     b.HasOne("ProblemDomain.Entities.LibraryEntities.Discipline", "Discipline")
                         .WithMany("SportEvents")
@@ -859,7 +892,7 @@ namespace DataAccess.DbContexts.Migrations
 
                     b.Navigation("AgeGroup");
 
-                    b.Navigation("CompetitionData");
+                    b.Navigation("Competition");
 
                     b.Navigation("Difficulty");
 
@@ -973,7 +1006,7 @@ namespace DataAccess.DbContexts.Migrations
                     b.Navigation("DisciplineGroup");
                 });
 
-            modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.CompetitionData", b =>
+            modelBuilder.Entity("ProblemDomain.Entities.CommonEntities.Competition", b =>
                 {
                     b.Navigation("Delegations");
 
@@ -1047,12 +1080,12 @@ namespace DataAccess.DbContexts.Migrations
                     b.Navigation("Disciplines");
                 });
 
-            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeJobTitle", b =>
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeCategory", b =>
                 {
                     b.Navigation("Referees");
                 });
 
-            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeLevel", b =>
+            modelBuilder.Entity("ProblemDomain.Entities.LibraryEntities.RefereeRole", b =>
                 {
                     b.Navigation("Referees");
                 });

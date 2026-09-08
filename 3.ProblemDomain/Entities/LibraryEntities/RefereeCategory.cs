@@ -8,22 +8,30 @@ using ProblemDomain.Entities.LibraryEntities.Enums;
 namespace ProblemDomain.Entities.LibraryEntities;
 
 /// <summary>
-/// Судейская должность.
+/// Судейская категория.
 /// </summary>
-public sealed class RefereeJobTitle : AbstractEntity<RefereeJobTitleEnm>, IEntityCopyable
+public sealed class RefereeCategory : AbstractEntity<RefereeCategoryEnm>, IEntityCopyable
 {
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="id">Идентификатор.</param>
     /// <inheritdoc />
-    public RefereeJobTitle(
-        RefereeJobTitleEnm id, 
+    /// <param name="fullName">Полное наименование.</param>
+    public RefereeCategory(
+        RefereeCategoryEnm id, 
         string name, 
+        string fullName, 
         string? description = null) : base(name, description)
     {
         Id = id;
+        FullName = fullName;
     }
+
+    /// <summary>
+    /// Полное наименование.
+    /// </summary>
+    public string FullName { get; set; }
 
     /// <summary>
     /// Коллекция судей.
@@ -33,16 +41,17 @@ public sealed class RefereeJobTitle : AbstractEntity<RefereeJobTitleEnm>, IEntit
 
     /// <inheritdoc cref="IEntityCopyable.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
-    public void Copy(RefereeJobTitle destination)
+    public void Copy(RefereeCategory destination)
     {
         destination.Name = Name;
+        destination.FullName = FullName;
         destination.Description = Description;
     }
 
     /// <inheritdoc />
     void IEntityCopyable.Copy(IAbstractEntity destination)
     {
-        Copy((RefereeJobTitle)destination);
+        Copy((RefereeCategory)destination);
     }
 
     /// <inheritdoc />

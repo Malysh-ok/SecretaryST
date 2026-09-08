@@ -78,7 +78,6 @@ public class BaseComponentsTests
         // var innerEx1 = ProblemException.CreateFromErrorCode(ProblemErrorCodes.SportEventCreateError);
         var innerEx1 = problemErrorMsgProvider.CreateException(ProblemErrorCodes.SportEventCreateError);
         var innerEx2 = ProblemException.CreateFromErrorCode("0", innerEx1, "=== innerEx2 ===");
-        // var innerEx3 = AppException.CreateFromErrorCode(ProblemErrorCodes.CompetitionDataCreateError,  innerEx2);
         var innerEx3 = appErrorMsgProvider.CreateException(AppErrorCodes.LocalizingError, innerEx2, args: "TestView");
         var ex = AppException.CreateFromErrorCode(AppErrorCodes.UnknownError, innerEx3, "Верхнее исключение");
 

@@ -40,7 +40,7 @@ public sealed class SportEvent : AbstractEntity<int>, INumberedEntity, IEntityCl
     {
         DifficultyId = source.DifficultyId;
         DisciplineId = source.DisciplineId;
-        CompetitionDataId = source.CompetitionDataId;
+        CompetitionId = source.CompetitionId;
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ public sealed class SportEvent : AbstractEntity<int>, INumberedEntity, IEntityCl
     /// </summary>
     /// <inheritdoc />
     /// <param name="discipline">Дисциплина.</param>
-    /// <param name="competitionData">Соревнование.</param>
+    /// <param name="competition">Соревнование.</param>
     public SportEvent(
         string name,
         int number,
@@ -56,7 +56,7 @@ public sealed class SportEvent : AbstractEntity<int>, INumberedEntity, IEntityCl
         Difficulty difficulty,
         Discipline discipline,
         AgeGroup ageGroup,
-        CompetitionData competitionData,
+        Competition competition,
         string? description = null) : this(name, number, isShort, description)
     {
         Difficulty = difficulty;
@@ -64,7 +64,7 @@ public sealed class SportEvent : AbstractEntity<int>, INumberedEntity, IEntityCl
         AgeGroup = ageGroup;
         DisciplineGroupId = Discipline.DisciplineGroupId;
         DisciplineSubGroupId = Discipline.DisciplineSubGroupId;
-        CompetitionData = competitionData;
+        Competition = competition;
     }
     
     /// <inheritdoc />
@@ -131,10 +131,10 @@ public sealed class SportEvent : AbstractEntity<int>, INumberedEntity, IEntityCl
     /// <summary>
     /// Связь с соревнованием (объектом-владельцем).
     /// </summary>
-    public int CompetitionDataId { get; set; }
+    public int CompetitionId { get; set; }
 
-    /// <inheritdoc cref="CompetitionDataId"/>
-    public CompetitionData CompetitionData { get; set; } = null!;
+    /// <inheritdoc cref="CompetitionId"/>
+    public Competition Competition { get; set; } = null!;
 
     /// <summary>
     /// Коллекция спортивных юнитов.

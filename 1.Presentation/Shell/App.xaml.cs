@@ -20,6 +20,7 @@ using Presentation.ViewModels.AppSetting;
 using Presentation.ViewModels.Main;
 using Presentation.ViewModels.Shared.Infrastructure;
 using Presentation.ViewModels.Shared.Infrastructure._Contracts;
+using Presentation.ViewModels.Shared.Models._Contracts;
 using ProblemDomain.UseCases._Contracts;
 using ProblemDomain.UseCases.Services;
 using Serilog;
@@ -68,7 +69,7 @@ public partial class App
             })                                                                  // регистрируем сервис настроек приложения
 
             // Регистрируем сервисы предметной области (ProblemDomain)
-            .AddScoped<CompetitionDataService>()
+            .AddScoped<CompetitionService>()
             .AddScoped<RefereeService>()
             .AddScoped<SportEventService>()
             .AddSingleton<IProblemErrorMsgProvider,
@@ -84,8 +85,8 @@ public partial class App
             {
                 var configurator = sp.GetRequiredService<DbConfigurator>();
                 configurator.UseProvider<AppDbContext>(options);
-            })                                                                  // регистрируем контекст БД
-            .AddScoped<IRepository, Repository<AppDbContext>>()                 // регистрируем репозиторий
+            }, ServiceLifetime.Singleton)                                                                  // регистрируем контекст БД
+            .AddSingleton<IRepository, Repository<AppDbContext>>()              // регистрируем репозиторий
             .AddTransient<IRepositoryHelper, RepositoryHelper>()                // регистрируем "помощник" репозитория
             .AddSingleton<DataAccessErrorMsgProvider>()                         // регистрируем провайдер сообщений об ошибках
 
@@ -110,8 +111,8 @@ public partial class App
             .AddSingleton<IExceptionsProvider, ExceptionsProvider>()            // регистрируем поставщика исключений
             .AddSingleton<Func<IViewWithResources, SettingVM>>(sp => view =>
                 ServiceFactory.CreateSettingVM(sp, view))                       // регистрируем фабрику для создания SettingVM
-            .AddSingleton<Func<BackstageVM>>(sp => () =>
-                ServiceFactory.CreateBackstageVM(sp))                           // регистрируем фабрику для создания BackstageVM
+            .AddSingleton<Func<ICompetitionChangeNotifier, BackstageVM>>(sp => notifier =>
+                ServiceFactory.CreateBackstageVM(sp, notifier))                           // регистрируем фабрику для создания BackstageVM
             .AddSingleton<MainVM>()                                             // регистрируем главную ViewModel для главного представления
             .AddTransient<AppSettingVM>()
             
@@ -198,7 +199,7 @@ public partial class App
             
             // Получаем главную ViewModel и инициализируем
             var mainViewModel = _serviceProvider.GetRequiredService<MainVM>();
-            mainViewModel.Initialize(mainView);
+            mainViewModel.Init(mainView);
             
             // Показываем главное представление
             mainView.Show();

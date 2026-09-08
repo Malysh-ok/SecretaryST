@@ -47,10 +47,10 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
 
     #region Fields
 
-    private bool _mouseDown;           // Флаг: зажата ли левая кнопка мыши на элементе DataGrid
-    private bool _isDragging;          // Флаг: выполняется ли в данный момент перетаскивание
-    private Point _startPosition;      // Позиция мыши в момент нажатия (в экранных координатах)
-    private bool _isMovePerformed;     // Флаг: было ли совершено перемещение (используется для вызова команды)
+    private bool _mouseDown;         // Флаг: зажата ли левая кнопка мыши на элементе DataGrid
+    private bool _isDragging;        // Флаг: выполняется перетаскивание (защита от рекурсии)
+    private Point _startPosition;    // Позиция мыши в момент нажатия (в экранных координатах)
+    private bool _isMovePerformed;   // Флаг: было ли совершено перемещение (используется для вызова команды)
 
     #endregion Fields
 
@@ -77,6 +77,7 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
     protected override void OnAttached()
     {
         base.OnAttached();
+        
         // Подписка на события мыши и drag-drop
         AssociatedObject.PreviewMouseDown += OnPreviewMouseDown;
         AssociatedObject.PreviewMouseUp += OnPreviewMouseUp;
@@ -86,6 +87,10 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
         AssociatedObject.DragOver += OnDragOver;
         AssociatedObject.Drop += Drop;
         AssociatedObject.GiveFeedback += OnGiveFeedback;
+        
+        // Подписка на события редактирования
+        AssociatedObject.BeginningEdit += OnBeginningEdit;
+        AssociatedObject.CellEditEnding += OnCellEditEnding;
     }
 
     protected override void OnDetaching()
@@ -100,6 +105,10 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
         AssociatedObject.DragOver -= OnDragOver;
         AssociatedObject.Drop -= Drop;
         AssociatedObject.GiveFeedback -= OnGiveFeedback;
+        
+        // Отписка на события редактирования
+        AssociatedObject.BeginningEdit -= OnBeginningEdit;
+        AssociatedObject.CellEditEnding -= OnCellEditEnding;
     }
     
     /// <summary>
@@ -148,16 +157,65 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
             AfterItemMovedCommand?.Execute(null);
         }
     }
+    
+    /// <summary>
+    /// Проверяет, превысило ли перемещение мыши порог, чтобы начать перетаскивание.
+    /// </summary>
+    private bool IsDragStart(Point position)
+    {
+        if (_mouseDown)
+        {
+            return Math.Abs(position.X - _startPosition.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                   Math.Abs(position.Y - _startPosition.Y) > SystemParameters.MinimumVerticalDragDistance;
+        }
+        return false;
+    }
+    
+    /// <summary>
+    /// Проверяем, является ли элемент DatePicker или его частью
+    /// </summary>
+    private bool IsDatePickerPart(DependencyObject? element)
+    {
+        if (element == null) return false;
 
+        return element is DatePicker ||
+               element is DatePickerTextBox ||
+               element is Calendar ||
+               element is CalendarButton ||
+               element.TryFindParent<DatePicker>() != null;
+    }
+    
     #endregion Methods
 
     #region Handlers
 
     /// <summary>
+    /// Обработчик начала редактирования – отключает drag-and-drop.
+    /// </summary>
+    private void OnBeginningEdit(object? sender, DataGridBeginningEditEventArgs e)
+    {
+        // Сбрасываем все флаги, чтобы предотвратить drag во время редактирования
+        _mouseDown = false;
+        _isDragging = false;
+        if (AssociatedObject.IsMouseCaptured)
+            AssociatedObject.ReleaseMouseCapture();
+    }
+    
+    /// <summary>
+    /// Обработчик окончания редактирования – восстанавливает поведение.
+    /// </summary>
+    private void OnCellEditEnding(object? sender, DataGridCellEditEndingEventArgs e)
+    {
+        // Ничего не делаем, просто даём знать, что редактирование закончено.
+        // Все флаги уже сброшены, поведение автоматически восстанавливается.
+        // Если нужно выполнить какие-то действия после редактирования — можно добавить.
+    }
+    
+    /// <summary>
     /// Обработчик GiveFeedback – определяет вид курсора во время перетаскивания.
     /// Если сброс запрещён, показывает курсор "Нет".
     /// </summary>
-    private void OnGiveFeedback(object sender, GiveFeedbackEventArgs e)
+    private void OnGiveFeedback(object? sender, GiveFeedbackEventArgs e)
     {
         if (!IsAllowDrop)
         {
@@ -174,7 +232,7 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
     /// <summary>
     /// Обработчик DragOver – обеспечивает автопрокрутку при перетаскивании к краям DataGrid.
     /// </summary>
-    private void OnDragOver(object sender, DragEventArgs e)
+    private void OnDragOver(object? sender, DragEventArgs e)
     {
         var control = sender as ItemsControl;
         var scrollViewer = control?.FindVisualChild<ScrollViewer>();
@@ -226,26 +284,25 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
         }
         IsAllowDrop = false;
     }
-    
-    /// <summary>
-    /// Проверяет, превысило ли перемещение мыши порог, чтобы начать перетаскивание.
-    /// </summary>
-    private bool IsDragStart(Point position)
-    {
-        if (_mouseDown)
-        {
-            return Math.Abs(position.X - _startPosition.X) > SystemParameters.MinimumHorizontalDragDistance ||
-                   Math.Abs(position.Y - _startPosition.Y) > SystemParameters.MinimumVerticalDragDistance;
-        }
-        return false;
-    }
 
     /// <summary>
-    /// Обработчик PreviewMouseDown – запоминает начальную позицию мыши.
+    /// Обработчик PreviewMouseDown – запоминает начальную позицию мыши и захватывает мышь.
     /// Игнорирует нажатие на полосе прокрутки.
     /// </summary>
     private void OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
     {
+        // Игнорируем, если DataGrid в режиме редактирования
+        if (AssociatedObject.CurrentCell.Column != null)
+        {
+            var editingElement = AssociatedObject.FindVisualChild<DataGridCell>();
+            if (editingElement?.IsEditing == true)
+            {
+                _mouseDown = false;
+                return;
+            }
+        }
+        
+        // Игнорируем нажатие на полосе прокрутки
         if (e.OriginalSource is DependencyObject original)
         {
             var scroll = original.TryFindParent<ScrollBar>();
@@ -255,40 +312,99 @@ public class DataGridDragAndDropBehavior : Behavior<DataGrid>, IDragAndDropBehav
                 return;
             }
         }
+        
+        // Если клик внутри DatePicker — игнорируем
+        if (IsDatePickerPart(e.OriginalSource as DependencyObject))
+        {
+            _mouseDown = false;
+            return;
+        }
+
+        // Игнорируем нажатие на кнопки и другие интерактивные элементы
+        if (e.OriginalSource is FrameworkElement fe && 
+            (fe is ButtonBase || fe is ComboBox || fe is CheckBox || fe is RadioButton))
+        {
+            _mouseDown = false;
+            return;
+        }
+        
+        // Сохраняем начальную позицию и захватываем мышь для отслеживания перемещения
         _startPosition = e.GetPosition(null);
         _mouseDown = true;
     }
 
+    /// <summary>
+    /// Обработчик PreviewMouseUp – сбрасывает состояние и освобождает захват мыши.
+    /// </summary>
     private void OnPreviewMouseUp(object sender, MouseButtonEventArgs mouseButtonEventArgs)
     {
         _mouseDown = false;
+        _isDragging = false;
+        
+        // Освобождаем захват мыши, если он был
+        if (AssociatedObject.IsMouseCaptured)
+            AssociatedObject.ReleaseMouseCapture();
     }
-
+    
+    /// <summary>
+    /// Обработчик MouseMove – инициирует перетаскивание при достаточном перемещении мыши.
+    /// </summary>
+    /// <remarks>
+    /// При обнаружении начала перетаскивания:
+    /// <list type="bullet">
+    ///   <item>Устанавливает флаг <see cref="_isDragging"/> для блокировки повторных вызовов.</item>
+    ///   <item>Запускает операцию <see cref="DragDrop.DoDragDrop"/>.</item>
+    ///   <item>В finally гарантированно сбрасывает флаг и освобождает захват мыши.</item>
+    /// </list>
+    /// </remarks>
     private void OnMouseMove(object sender, MouseEventArgs e)
     {
-        MouseMove(sender, e);
-    }
-
-    // ReSharper disable once UnusedParameter.Local
-    private void MouseMove(object sender, MouseEventArgs e)
-    {
-        // Если кнопка зажата, перемещение превысило порог и перетаскивание ещё не начато
-        if (e.LeftButton == MouseButtonState.Pressed && !_isDragging && IsDragStart(e.GetPosition(null)))
+        // Защита от рекурсивного вызова DoDragDrop
+        if (_isDragging) 
+            return;
+        
+        // Не начинаем перетаскивание, если DataGrid в режиме редактирования
+        if (AssociatedObject.CurrentCell.Column != null)
         {
+            var editingElement = AssociatedObject.FindVisualChild<DataGridCell>();
+            if (editingElement?.IsEditing == true)
+            {
+                _mouseDown = false;
+                return;
+            }
+        }
+        
+        // Проверка: левая кнопка мыши зажата, флаг _mouseDown установлен,
+        // и перемещение мыши превысило порог (IsDragStart)
+        if (e.LeftButton == MouseButtonState.Pressed && _mouseDown && IsDragStart(e.GetPosition(null)))
+        {
+            // Устанавливаем флаг, чтобы предотвратить повторный вход
             _isDragging = true;
 
-            var result = VisualTreeHelper.HitTest(AssociatedObject, e.GetPosition(AssociatedObject));
-            var element = result?.VisualHit;
-            if (element is FrameworkElement frameworkElement)
+            try
             {
-                if (frameworkElement.DataContext != null)
+                // Находим визуальный элемент под курсором
+                var result = VisualTreeHelper.HitTest(AssociatedObject, e.GetPosition(AssociatedObject));
+                var element = result?.VisualHit;
+            
+                // Если это FrameworkElement с DataContext — начинаем перетаскивание
+                if (element is FrameworkElement frameworkElement && frameworkElement.DataContext != null)
                 {
-                    // Инициируем операцию drag-drop
+                    // Захватываем мышь перед началом перетаскивания
+                    AssociatedObject.CaptureMouse();
+                    
+                    // DoDragDrop запускает собственный цикл обработки сообщений,
+                    // поэтому защита от рекурсии критически важна
                     DragDrop.DoDragDrop(AssociatedObject, frameworkElement.DataContext, DragDropEffects.Move);
                 }
             }
-
-            _isDragging = false;
+            finally
+            {
+                // Гарантированно сбрасываем флаг и освобождаем захват мыши
+                _isDragging = false;
+                if (AssociatedObject.IsMouseCaptured)
+                    AssociatedObject.ReleaseMouseCapture();
+            }
         }
     }
     

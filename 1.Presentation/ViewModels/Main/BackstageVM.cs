@@ -1,9 +1,10 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 using AppDomain.AppUseCases._Contracts;
 using AppDomain.AppUseCases.Services;
 using Common.BaseComponents.Components.Exceptions;
+using Common.BaseExtensions.Collections;
+using Common.WpfModule.Components.Collections;
 using Common.WpfModule.Ui.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,7 +12,8 @@ using CommunityToolkit.Mvvm.Messaging;
 using Presentation.ViewModels.Shared.Infrastructure;
 using Presentation.ViewModels.Shared.Infrastructure._Contracts;
 using Presentation.ViewModels.Shared.Messages;
-using ProblemDomain.Entities.CommonEntities;
+using Presentation.ViewModels.Shared.Models;
+using Presentation.ViewModels.Shared.Models._Contracts;
 using ProblemDomain.UseCases.Services;
 using Serilog;
 
@@ -24,38 +26,33 @@ namespace Presentation.ViewModels.Main;
 public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMessage>, IDisposable
 {
     // ReSharper disable once NotAccessedField.Local
-    private readonly IAppErrorMsgProvider _appErrorMsgProvider = null!;
-    private readonly AppSettingsService _appSettingsService = null!;
-    private readonly StatusBarService _statusBarService = null!;
-    private readonly CompetitionDataService _competitionDataService = null!;
-    private readonly ViewModelHelper _viewModelHelper = null!;
-
-    /// <summary>
-    /// Конструктор, запрещающий создания экземпляра без параметров.
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
-    private BackstageVM()
-    {
-    }
+    private readonly ICompetitionChangeNotifier _competitionChangeNotifier;
+    private readonly IAppErrorMsgProvider _appErrorMsgProvider;
+    private readonly AppSettingsService _appSettingsService;
+    private readonly StatusBarService _statusBarService;
+    private readonly CompetitionService _competitionService;
+    private readonly ViewModelHelper _viewModelHelper;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     public BackstageVM(
+        ICompetitionChangeNotifier competitionChangeNotifier,
         ILogger logger,
         IExceptionsProvider exceptionsProvider,
         IAppErrorMsgProvider appErrorMsgProvider,
         AppSettingsService appSettingsService,
         StatusBarService statusBarService,
-        CompetitionDataService competitionDataService)
+        CompetitionService competitionService)
     {
+        _competitionChangeNotifier = competitionChangeNotifier;
         _appErrorMsgProvider = appErrorMsgProvider;
         _appSettingsService = appSettingsService;
         _statusBarService = statusBarService;
-        _competitionDataService = competitionDataService;
+        _competitionService = competitionService;
         _viewModelHelper = new ViewModelHelper(logger, appErrorMsgProvider, statusBarService);
 
-        GetAllCompetitionsCommand = new AsyncRelayCommand(GetAllCompetitionsAsync);
+        UpdateCompetitionsCommand = new AsyncRelayCommand(UpdateCompetitionsAsync);
         CreateCompetitionCommand = new AsyncRelayCommand(CreateCompetitionAsync);
         RemoveCompetitionCommand =  new AsyncRelayCommand(RemoveCompetitionAsync);
 
@@ -81,7 +78,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     /// </summary>
     private async Task InitAsync()
     {
-        await GetAllCompetitionsAsync();
+        await UpdateCompetitionsAsync();
     }
 
     /// <inheritdoc />
@@ -106,60 +103,61 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     /// <summary>
     /// Коллекция соревнований.
     /// </summary>
-    public ObservableCollection<CompetitionData> Competitions { get; set; } = [];
+    private ObservableCollectionEx<CompetitionObservable> Competitions { get; set; } = [];
 
     /// <summary>
     /// Текущее соревнование.
     /// </summary>
-    public CompetitionData? CurrentCompetition { get; set; }
+    private CompetitionObservable? CurrentCompetition { get; set; }
 
     #region [---------- Команды ----------]
     
     /// <summary>
-    /// Команда загрузки всех соревнований.
+    /// Команда получения (обновления) коллекции соревнований.
     /// </summary>
-    public ICommand GetAllCompetitionsCommand { get; } = null!;
+    public ICommand UpdateCompetitionsCommand { get; }
     
     /// <summary>
     /// Команда создания соревнования.
     /// </summary>
-    public ICommand CreateCompetitionCommand { get; } = null!;
+    public ICommand CreateCompetitionCommand { get; }
 
     /// <summary>
     /// Команда удаления соревнования.
     /// </summary>
-    public ICommand RemoveCompetitionCommand { get; } = null!;
+    public ICommand RemoveCompetitionCommand { get; }
 
     #endregion
 
     /// <summary>
     /// Получение (обновление) коллекции соревнований.
     /// </summary>
-    private async Task GetAllCompetitionsAsync()
+    private async Task UpdateCompetitionsAsync()
     {
         // Получаем список соревнований
         var competitionsResult = 
-            await _competitionDataService.GetAllCompetitionsDataAsync(Competitions);
+            await _competitionService.GetAllCompetitionsAsync();
         if (competitionsResult)
         {
+            // Перезаписываем коллекцию соревнований
+            var newList = new List<CompetitionObservable>();
+            competitionsResult.Value.ForEach(item =>
+            {
+                var co = CompetitionObservable.CreatePartial(item);
+                newList.Add(co);
+            });
+            Competitions.ClearAndAddRange(newList);
+            
+            // Получаем текущее соревнование, если коллекция не пуста
             if (Competitions.Any())
             {
-                // Если коллекция не пуста
-                var newCurrentCompetitionData = Competitions.First();
-                if (CurrentCompetition != null)
-                {
-                    var id = CurrentCompetition.Id;
-                    // Если текущее соревнование создано (не из репозитория) -
-                    // присваиваем последний, иначе - находим по id
-                    newCurrentCompetitionData = id == 0 
-                        ? Competitions.Last()  
-                        : Competitions.First(c => c.Id == id);
-                }
-                CurrentCompetition = newCurrentCompetitionData;
+                var id = CurrentCompetition?.Competition.Id;
+                // Находим соревнование по сохраненному id, если не нашли - выбираем первое
+                CurrentCompetition = Competitions.FirstOrDefault(co => co.Competition.Id == id) ?? Competitions.First();
             }
             else
             {
-                CurrentCompetition = null;
+                CurrentCompetition =  null;
             }
 
             // Посылаем сообщение о загрузке соревнований
@@ -169,7 +167,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
         {
             // Пишем в статус-бар и лог об ошибке
             _viewModelHelper.HandleException(competitionsResult.Excptn, 
-                this.ToString(), nameof(GetAllCompetitionsAsync));
+                this.ToString(), nameof(UpdateCompetitionsAsync));
         }
     }
     
@@ -181,8 +179,8 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
         Exception? exception = null;
         try
         {
-            // Получаем
-            var competitionResult = await _competitionDataService.CreateCompetitionDataAsync(Competitions);
+            // Создаем соревнование в репозитории с сохранением изменений
+            var competitionResult = await _competitionService.CreateCompetitionAsync();
             if (! competitionResult)
             {
                 // Неудачное получение данных из репозитория
@@ -190,9 +188,11 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
                 return;
             }
 
-            CurrentCompetition = competitionResult.Value;
+            // Создаем Observable-соревнование и сохраняем его в коллекции
+            CurrentCompetition = CompetitionObservable.CreatePartial(competitionResult.Value!);
+            Competitions.Add(CurrentCompetition);
             
-            // Посылаем сообщение о загрузке соревнований
+            // Посылаем сообщение о создании соревнования
             Messenger.Send(new AllCompetitionsMessage(Competitions, CurrentCompetition));
             
             // TODO: Временно (без ожидания окончания)
@@ -216,15 +216,14 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
         {
             // TODO: Временно, возможно будет отдельное окно
             var result = MessageBox.Show(
-                $"Вы уверены, что хотите удалить соревнование '{CurrentCompetition!.ShortName}'?",
+                $"Вы уверены, что хотите удалить соревнование '{CurrentCompetition!.Competition.ShortName}'?",
                 _appSettingsService.AppName, 
                 MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
             if (result == MessageBoxResult.No)
                 return;
             
-            // Удаляем
-            var competitionResult = 
-                await _competitionDataService.RemoveCompetitionDataAsync(Competitions, CurrentCompetition);
+            // Удаляем из репозитория с сохранением изменений
+            var competitionResult = await _competitionService.RemoveCompetitionAsync(CurrentCompetition.Competition);
             if (! competitionResult)
             {
                 // Неудачное удаление данных в репозитории
@@ -232,17 +231,15 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
                 return;
             }
             
-            // Сохраняем изменения
-            var intResult = await _competitionDataService.SaveCompetitionDataAsync();
-            if (! intResult)
-            {
-                // Неудачное сохранение в репозитории
-                exception = intResult.Excptn;
-                return;
-            }
+            // Удаляем из коллекции
+            var index = Competitions.IndexOf(CurrentCompetition);
+            Competitions.Remove(CurrentCompetition);
+            if (index == Competitions.Count)
+                index = Competitions.Count - 1;
+            else if (index == 0)
+                index = -1;
+            CurrentCompetition = Competitions.GetOrDefault(index);
 
-            CurrentCompetition = competitionResult.Value;
-            
             // TODO: Временно (без ожидания окончания)
             _ = _statusBarService.SetTextAsync("Удалили соревнование.", ExcptnTypeEnm.Warning);
         }
@@ -265,7 +262,7 @@ public sealed class BackstageVM : ObservableRecipient, IRecipient<CompetitionMes
     /// <summary>
     /// Команда показа окна настроек приложения.
     /// </summary>
-    public ICommand ShowAppSettingCommand { get; } = null!;
+    public ICommand ShowAppSettingCommand { get; }
 
     /// <summary>
     /// Показываем окно настроек приложения (используя сообщение для code-behind представления MainView).

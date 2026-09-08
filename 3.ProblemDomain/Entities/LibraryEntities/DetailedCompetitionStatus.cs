@@ -51,8 +51,8 @@ public sealed class DetailedCompetitionStatus : AbstractEntity<DetailedCompetiti
     /// Список Соревнований.
     /// </summary>
     // ReSharper disable once CollectionNeverUpdated.Global
-    public ICollection<CompetitionData> Competitions { get; set; } = 
-        new HashSet<CompetitionData>();
+    public ICollection<Competition> Competitions { get; set; } = 
+        new HashSet<Competition>();
     
     /// <inheritdoc cref="IEntityCopyable.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global

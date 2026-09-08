@@ -80,8 +80,8 @@ public partial class MainView : IViewWithResources, IRecipient<OpenAppSettingMes
         WindowState = _appSettingsService.GetConfigItem("MainViewState").NullToEmpty().ToEnum<WindowState>();
 
         // TODO: Не срабатывает восстановление значений контролов. Придумать другой способ.
-        if (_appSettingsService.GetConfigItem(nameof(CmboxRestrictedDisciplineGroup)).NullToEmpty().TryParseInt(out var intResult))
-            CmboxRestrictedDisciplineGroup.SelectedIndex = intResult;
+        if (_appSettingsService.GetConfigItem(nameof(CmboxDisciplineGroupFilterForSportEvents)).NullToEmpty().TryParseInt(out var intResult))
+            CmboxDisciplineGroupFilterForSportEvents.SelectedIndex = intResult;
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public partial class MainView : IViewWithResources, IRecipient<OpenAppSettingMes
         _appSettingsService.SetConfigItem("MainViewHeight", Height.ToString(CultureInfo.InvariantCulture));
         _appSettingsService.SetConfigItem("MainViewState", WindowState.ToString());
 
-        _appSettingsService.SetConfigItem(nameof(CmboxRestrictedDisciplineGroup), CmboxRestrictedDisciplineGroup.SelectedIndex.ToString());
+        _appSettingsService.SetConfigItem(nameof(CmboxDisciplineGroupFilterForSportEvents), CmboxDisciplineGroupFilterForSportEvents.SelectedIndex.ToString());
     }
 
     /// <summary>

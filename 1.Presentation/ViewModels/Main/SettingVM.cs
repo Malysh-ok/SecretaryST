@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Specialized;
 using System.Windows.Input;
 using AppDomain.AppEntities;
 using AppDomain.AppExceptions;
@@ -16,7 +16,7 @@ using Presentation.ViewModels.Shared.Infrastructure;
 using Presentation.ViewModels.Shared.Infrastructure._Contracts;
 using Presentation.ViewModels.Shared.Messages;
 using Presentation.ViewModels.Shared.Models;
-using ProblemDomain.Entities.CommonEntities;
+using Presentation.ViewModels.Shared.Models._Contracts;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.UseCases.Services;
 using Serilog;
@@ -27,18 +27,19 @@ namespace Presentation.ViewModels.Main;
 /// ViewModel для меню ленты "Настройки".
 /// </summary>
 // ReSharper disable once InconsistentNaming
-public sealed class SettingVM : ObservableRecipient, 
-    IRecipient<LocalizationMessage>, IRecipient<AllCompetitionsMessage>, IDisposable
+public sealed class SettingVM : ObservableRecipient, IRecipient<LocalizationMessage>, IRecipient<AllCompetitionsMessage>, 
+    ICompetitionChangeNotifier, IRefereeChangeNotifier,
+    IDisposable
 {
-    private readonly IViewWithResources _view = null!;
-    private readonly IAppErrorMsgProvider _appErrorMsgProvider = null!;
-    private readonly AppSettingsService _appSettingsService = null!;
-    private readonly StatusBarService _statusBarService = null!;
-    private readonly CompetitionDataService _competitionDataService = null!;
-    private readonly RefereeService _refereeService = null!;
-    private readonly SportEventService _sportEventService = null!;
-    private readonly ViewLocalizationService _viewLocalizationService = null!;
-    private readonly ViewModelHelper _viewModelHelper = null!;
+    private readonly IViewWithResources _view;
+    private readonly IAppErrorMsgProvider _appErrorMsgProvider;
+    private readonly AppSettingsService _appSettingsService;
+    private readonly StatusBarService _statusBarService;
+    private readonly CompetitionService _competitionService;
+    private readonly RefereeService _refereeService;
+    private readonly SportEventService _sportEventService;
+    private readonly ViewLocalizationService _viewLocalizationService;
+    private readonly ViewModelHelper _viewModelHelper;
 
     /// <summary>
     /// Текущая локализация.
@@ -47,15 +48,6 @@ public sealed class SettingVM : ObservableRecipient,
     {
         get;
         private set => SetProperty(ref field, value);
-    }
-
-
-    /// <summary>
-    /// Конструктор, запрещающий создания экземпляра без параметров.
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
-    private SettingVM()
-    {
     }
 
     /// <summary>
@@ -68,7 +60,7 @@ public sealed class SettingVM : ObservableRecipient,
         IAppErrorMsgProvider appErrorMsgProvider,
         AppSettingsService appSettingsService,
         StatusBarService statusBarService,
-        CompetitionDataService competitionDataService,
+        CompetitionService competitionService,
         RefereeService refereeService,
         SportEventService sportEventService)
     {
@@ -76,7 +68,7 @@ public sealed class SettingVM : ObservableRecipient,
         _appErrorMsgProvider = appErrorMsgProvider;
         _appSettingsService = appSettingsService;
         _statusBarService = statusBarService;
-        _competitionDataService = competitionDataService;
+        _competitionService = competitionService;
         _refereeService = refereeService;
         _sportEventService =  sportEventService;
         _viewLocalizationService = new ViewLocalizationService(appSettingsService);
@@ -93,16 +85,18 @@ public sealed class SettingVM : ObservableRecipient,
         SaveCompetitionCommand = new AsyncRelayCommand(SaveCompetitionAsync);
 
         // Виды программы
-        GetSportEventsCommand = new AsyncRelayCommand(GetSportEventObservablesAsync);
+        UpdateSportEventsCommand = new AsyncRelayCommand(UpdateSportEventAsync);
         CreateSportEventCommand = new AsyncRelayCommand(CreateSportEventAsync);
         RemoveSportEventCommand =  new RelayCommand(RemoveSportEvent);
         RenumberSportEventsCommand = new RelayCommand(RenumberSportEvents);
+        SportEventObservables.CollectionChanged += OnSportEventCollectionChanged;   //!!!!!!!!!!!!!!!
 
         // Судьи
-        GetRefereesCommand = new AsyncRelayCommand(GetRefereesAsync);
+        UpdateRefereesCommand = new AsyncRelayCommand(UpdateRefereesAsync);
         CreateRefereeCommand = new AsyncRelayCommand(CreateRefereeAsync);
         RemoveRefereeCommand = new RelayCommand(RemoveReferee);
         RenumberRefereesCommand = new RelayCommand(RenumberReferees);
+        IsRefereeDataSelectionRestricted = true;        // TODO: Временная установка IsRefereeDataSelectionRestricted
 
         // Подписываемся на получение сообщений
         Messenger.Register<LocalizationMessage>(this);
@@ -145,6 +139,7 @@ public sealed class SettingVM : ObservableRecipient,
             // Дополнительные обновления данных (т.к. необходим перевод невыбранного значения)
             await GetDisciplineGroupsAsync();
             await GetDisciplineSubGroupsAsync();
+            await GetDisciplineGroupsForRefereesAsync();
         }
         catch (Exception ex)
         {
@@ -159,7 +154,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     public void Receive(AllCompetitionsMessage message)
     {
-        Competitions = message.Competitions;
+        Competitions.ClearAndAddRange(message.Competitions);
         CurrentCompetition = message.CurrentCompetition;
     }
 
@@ -170,13 +165,15 @@ public sealed class SettingVM : ObservableRecipient,
     {
         // TODO: Возможно нужно сделать проверку результатов вызовов, и если false - как-то реагировать
         await GetDetailedCompetitionStatusesAsync();
-        await GetRefereeLevelsAsync();
-        await GetRefereeJobTitlesAsync();
         await GetDisciplineGroupsAsync();
         await GetDisciplineSubGroupsAsync();
         await GetDisciplinesAsync();
         await GetDifficultiesAsync();
         await GetAgeGroupsAsync();
+        await GetDisciplineGroupsForRefereesAsync();
+        await GetRefereeCategoriesAsync();
+        await GetRefereeRolesAsync();
+
     }
 
     /// <inheritdoc />
@@ -191,6 +188,7 @@ public sealed class SettingVM : ObservableRecipient,
     {
         if (disposing)
         {
+            SportEventObservables.CollectionChanged -= OnSportEventCollectionChanged;
             _appSettingsService.SaveConfig();
         }
     }
@@ -198,50 +196,26 @@ public sealed class SettingVM : ObservableRecipient,
     /// <inheritdoc />
     ~SettingVM() => Dispose(false);
 
-
     #region [---------- Данные о соревнованиях ----------]
 
     /// <summary>
     /// Коллекция соревнований.
     /// </summary>
-    public ObservableCollection<CompetitionData> Competitions { get; private set; } = [];
+    public ObservableCollectionEx<CompetitionObservable> Competitions { get; private set; } = [];
 
-    private CompetitionData? _currentCompetition;
+    private CompetitionObservable? _currentCompetition;
     /// <summary>
     /// Данные о текущем соревновании.
     /// </summary>
-    public CompetitionData? CurrentCompetition
+    public CompetitionObservable? CurrentCompetition
     {
         get => _currentCompetition;
         set
         {
-            if (SetProperty(ref _currentCompetition, value) && value != null)
+            if (SetProperty(ref _currentCompetition, value))
             {
-                // При смене выбранного соревнования подгружаем навигационные свойства
-                _ = GetCompetitionAsync(value.Id);
-
-                IsStudentCompetition = value.IsStudentCompetition;
-                    
-                // Посылаем сообщение об изменении текущего соревнования
-                Messenger.Send(new CompetitionMessage(CurrentCompetition));
-            }
-        }
-    }
-
-    /// <summary>
-    /// Признак того, что соревнования студенческие.
-    /// </summary>
-    public bool IsStudentCompetition
-    {
-        get;
-        set
-        {
-            if (SetProperty(ref field, value))
-            {
-                CurrentCompetition?.IsStudentCompetition = value;
-                
-                // Обновляем список доступных возрастных групп во всей коллекции
-                SportEventObservables.ForEach(seo => seo.UpdateAvailableAgeGroups());
+                // При смене выбранного соревнования перезагружаем его с навигационными свойствами (асинхронно "запустил и забыл")
+                _ = GetCompetitionAsync(value?.Competition.Id ?? 0);
             }
         }
     }
@@ -261,27 +235,27 @@ public sealed class SettingVM : ObservableRecipient,
     /// <summary>
     /// Команда сохранения соревнования (включая зависимые сущности).
     /// </summary>
-    public ICommand SaveCompetitionCommand { get; } = null!;
+    public ICommand SaveCompetitionCommand { get; }
 
     /// <summary>
     /// Команда получения соревнования.
     /// </summary>
-    public IAsyncRelayCommand<int> GetCompetitionCommand { get; } = null!;
+    public IAsyncRelayCommand<int> GetCompetitionCommand { get; }
 
     /// <summary>
     /// Команда создания проводящей организации.
     /// </summary>
-    public ICommand CreateConductingOrganizationCommand { get; } = null!;
+    public ICommand CreateConductingOrganizationCommand { get; }
 
     /// <summary>
     /// Команда удаления проводящей организации.
     /// </summary>
-    public ICommand RemoveConductingOrganizationCommand { get; } = null!;
+    public ICommand RemoveConductingOrganizationCommand { get; }
 
     /// <summary>
     /// Команда перенумеровывания проводящих организаций.
     /// </summary>
-    public ICommand RenumberConductingOrganizationsCommand { get; } = null!;
+    public ICommand RenumberConductingOrganizationsCommand { get; }
     
     #endregion
     
@@ -293,41 +267,48 @@ public sealed class SettingVM : ObservableRecipient,
         Exception? exception = null;
         try
         {
-            // Получаем
-            var competitionDataResult = await _competitionDataService.GetCompetitionDataAsync(id, true);
-            if (! competitionDataResult)
+            if (id > 0)
             {
-                // Неудачное получение данных из репозитория
-                exception = competitionDataResult.Excptn;
-                return;
-            }
+                // Получаем
+                var competitionResult = await _competitionService.GetCompetitionAsync(id, true);
+                if (! competitionResult)
+                {
+                    // Неудачное получение данных из репозитория
+                    exception = competitionResult.Excptn;
+                    return;
+                }
 
-            // Заменяем объект в коллекции
-            var existing = Competitions.FirstOrDefault(c => c.Id == id);
-            if (existing != null)
-            {
-                var index = Competitions.IndexOf(existing);
-                Competitions[index] = competitionDataResult.Value!;    // замена
-            }
-            else
-            {
-                Competitions.Add(competitionDataResult.Value!);        // добавление
-            }
+                // Заменяем объект в коллекции соревнований
+                var competitionObservable = Competitions.FirstOrDefault(c => c.Competition.Id == id);
+                if (competitionObservable != null)
+                {
+                    // Обновление
+                    competitionObservable.UpdateFrom(_competitionService, competitionResult.Value!, this);
+                }
+                else
+                {
+                    // Добавление
+                    competitionObservable = CompetitionObservable.CreateComplete(_competitionService,
+                        competitionResult.Value!,
+                        this);
+                    Competitions.Add(competitionObservable);
+                }
 
-            // Заменяем текущие соревнования (меняем через поле, чтобы не вызвать данный метод повторно)
-            SetProperty(ref _currentCompetition, competitionDataResult.Value, nameof(CurrentCompetition));
-
-            // Посылаем сообщение об изменении текущего соревнования
-            Messenger.Send(new CompetitionMessage(CurrentCompetition));
+                // Заменяем текущие соревнования (меняем через поле, чтобы не вызвать данный метод повторно)
+                SetProperty(ref _currentCompetition, competitionObservable, nameof(CurrentCompetition));
+            }
 
             // Заполняем проводящие организации
             GetConductingOrganizations();
 
             // Обновляем список видов программы
-            _ = GetSportEventObservablesAsync();
+            await UpdateSportEventAsync();
 
             // Обновляем список судей
-            _ = GetRefereesAsync();
+            await UpdateRefereesAsync();
+                            
+            // Посылаем сообщение об изменении текущего соревнования
+            Messenger.Send(new CompetitionMessage(CurrentCompetition));
         }
         finally
         {
@@ -348,17 +329,11 @@ public sealed class SettingVM : ObservableRecipient,
             SaveConductingOrganizations();
 
             // Сохраняем изменения
-            var intResult = await _competitionDataService.SaveCompetitionDataAsync();
+            var intResult = await _competitionService.SaveCompetitionAsync();
             if (! intResult)
             {
                 exception = intResult.Excptn;
-                return;
             }
-
-            // TODO: возможно изменим - Обновляем соревнование, хотя бы потому, чтобы обновилась коллекция соревнований, при изменении ShortName одного из них
-            if (CurrentCompetition != null)
-                // await GetCompetitionDataAsync(CurrentCompetition.Id);
-                CurrentCompetition = CurrentCompetition;
         }
         finally
         {
@@ -372,7 +347,7 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private async Task GetDetailedCompetitionStatusesAsync()
     {
-        var detailedCompetitionsStatusesResult = await _competitionDataService.GetDetailedCompetitionsStatusesAsync();
+        var detailedCompetitionsStatusesResult = await _competitionService.GetDetailedCompetitionsStatusesAsync();
 
         if (detailedCompetitionsStatusesResult)
         {
@@ -393,8 +368,12 @@ public sealed class SettingVM : ObservableRecipient,
     private void GetConductingOrganizations()
     {
         // Получаем проводящие организации
-        var getOrganizationsResult = _competitionDataService.GetConductingOrganizations(CurrentCompetition);
-        if (getOrganizationsResult)
+        var getOrganizationsResult = _competitionService.GetConductingOrganizations(CurrentCompetition?.Competition);
+        if (CurrentCompetition == null)
+        {
+            ConductingOrganizations.ClearAndAddRange([]);
+        }
+        else if (getOrganizationsResult)
         {
             var i = 1;
             var newList = new List<ConductingOrganizationObservable>();
@@ -425,7 +404,7 @@ public sealed class SettingVM : ObservableRecipient,
 
         // Добавляем в коллекцию организацию и перенумеровываем коллекцию
         ConductingOrganizations.Insert(index, 
-            new ConductingOrganizationObservable(0, _competitionDataService.CreateConductingOrganization()));
+            new ConductingOrganizationObservable(0, _competitionService.CreateConductingOrganization()));
         RenumberConductingOrganizations();
         
         // Присваиваем новый индекс
@@ -462,7 +441,7 @@ public sealed class SettingVM : ObservableRecipient,
         
         // Сохраняем
         var saveOrganisationsResult = 
-            _competitionDataService.SetConductingOrganizations(CurrentCompetition, conductingOrganizationList);
+            _competitionService.SetConductingOrganizations(CurrentCompetition?.Competition, conductingOrganizationList);
         if (! saveOrganisationsResult)
         {
             // Пишем в статус-бар и лог об ошибке
@@ -479,6 +458,26 @@ public sealed class SettingVM : ObservableRecipient,
         for (var i = 0; i < ConductingOrganizations.Count; i++)
         {
             ConductingOrganizations[i].Number = i + 1;
+        }
+    }
+    
+    /// <inheritdoc/>
+    public void OnCompetitionChanged(CompetitionObservable competitionObservable, string propertyName)
+    {
+        switch (propertyName)
+        {
+            case nameof(CompetitionObservable.IsStudentCompetition):
+                // Обновляем список доступных возрастных групп во всей коллекции видов программы
+                SportEventObservables.ForEach(seo => seo.UpdateAvailableAgeGroups());
+                break;
+            case nameof(CompetitionObservable.InitialDate):
+                // Обновляем признаки просроченности категорий во всей коллекции судей
+                RefereeObservables.ForEach(ro => ro.UpdateCategoryExpiration());
+                break;
+            case nameof(CompetitionObservable.DetailedCompetitionStatus):
+                // Обновляем зависимые коллекции во всей коллекции судей (асинхронно "запустил и забыл")
+                _ = RefereeObservables.ForEachAsync(async ro => await ro.UpdateDependentCollectionsAsync());
+                break;
         }
     }
 
@@ -502,29 +501,29 @@ public sealed class SettingVM : ObservableRecipient,
     public ObservableCollectionEx<SportEventObservable> SportEventObservables { get; set; } = [];
 
     /// <summary>
-    /// Коллекция групп дисциплин (включая null).
+    /// Коллекция групп дисциплин для видов программы (включая null).
     /// </summary>
-    public ObservableCollectionEx<KeyValuePair<DisciplineGroup?, string>> DisciplineGroupsWithNull { get; } = [];
+    public ObservableCollectionEx<KeyValuePair<DisciplineGroup?, string>> DisciplineGroupsForSportEvents { get; } = [];
 
     /// <summary>
-    /// Коллекция подгрупп дисциплин (включая null).
+    /// Коллекция подгрупп дисциплин для видов программы (включая null).
     /// </summary>
-    public ObservableCollectionEx<KeyValuePair<DisciplineSubGroup?, string>> DisciplineSubGroupsWithNull { get; } = [];
+    public ObservableCollectionEx<KeyValuePair<DisciplineSubGroup?, string>> DisciplineSubGroupsForSportEvents { get; } = [];
 
     /// <summary>
-    /// Группа спортивных дисциплин, ограничивающая выбор возможных дисциплин.
+    /// Группа спортивных дисциплин, ограничивающая выбор возможных дисциплин для видов программы.
     /// </summary>
-    private DisciplineGroup? FilteringDisciplineGroup =>
-        DisciplineGroupsWithNull.SelectedIndex >= 0
-            ? DisciplineGroupsWithNull[DisciplineGroupsWithNull.SelectedIndex].Key
+    private DisciplineGroup? DisciplineGroupFilterForSportEvents =>
+        DisciplineGroupsForSportEvents.SelectedIndex >= 0
+            ? DisciplineGroupsForSportEvents[DisciplineGroupsForSportEvents.SelectedIndex].Key
             : null;
 
     /// <summary>
-    /// Подгруппа спортивных дисциплин, ограничивающая выбор возможных дисциплин.
+    /// Подгруппа спортивных дисциплин, ограничивающая выбор возможных дисциплин для видов программы.
     /// </summary>
-    private DisciplineSubGroup? FilteringDisciplineSubGroup =>
-        DisciplineSubGroupsWithNull.SelectedIndex >= 0
-            ? DisciplineSubGroupsWithNull[DisciplineSubGroupsWithNull.SelectedIndex].Key
+    private DisciplineSubGroup? DisciplineSubGroupFilterForSportEvents =>
+        DisciplineSubGroupsForSportEvents.SelectedIndex >= 0
+            ? DisciplineSubGroupsForSportEvents[DisciplineSubGroupsForSportEvents.SelectedIndex].Key
             : null;
 
     /// <summary>
@@ -541,35 +540,39 @@ public sealed class SettingVM : ObservableRecipient,
     #region [---------- Команды ----------]
 
     /// <summary>
-    /// Команда загрузки списка видов программы.
+    /// Команда получения (обновления) коллекции видов программы.
     /// </summary>
-    public ICommand GetSportEventsCommand { get; } = null!;
+    public ICommand UpdateSportEventsCommand { get; }
 
     /// <summary>
     /// Команда создания вида программы.
     /// </summary>
-    public ICommand CreateSportEventCommand { get; } = null!;
+    public ICommand CreateSportEventCommand { get; }
 
     /// <summary>
     /// Команда удаления вида программы.
     /// </summary>
-    public ICommand RemoveSportEventCommand { get; } = null!;
+    public ICommand RemoveSportEventCommand { get; }
     
     /// <summary>
     /// Команда перенумеровывания видов программы.
     /// </summary>
-    public ICommand RenumberSportEventsCommand { get; } = null!;
+    public ICommand RenumberSportEventsCommand { get; }
 
     #endregion
 
     /// <summary>
     /// Получение (обновление) коллекции Observable-видов программы.
     /// </summary>
-    private async Task GetSportEventObservablesAsync()
+    private async Task UpdateSportEventAsync()
     {
         // Получаем виды программы
-        var sportEventsResult = await _sportEventService.GetSportEventsAsync(CurrentCompetition!);
-        if (sportEventsResult)
+        var sportEventsResult = await _sportEventService.GetAllSportEventsAsync(CurrentCompetition?.Competition);
+        if (CurrentCompetition == null)
+        {
+            SportEventObservables.ClearAndAddRange([]);
+        }
+        else if (sportEventsResult)
         {
             // Перезаписываем коллекцию
             var newList = new List<SportEventObservable>();
@@ -584,7 +587,7 @@ public sealed class SettingVM : ObservableRecipient,
         {
             // Пишем в статус-бар и лог об ошибке
             _viewModelHelper.HandleException(sportEventsResult.Excptn, 
-                this.ToString(), nameof(GetSportEventObservablesAsync));
+                this.ToString(), nameof(UpdateSportEventAsync));
         }
     }
 
@@ -600,7 +603,7 @@ public sealed class SettingVM : ObservableRecipient,
         else
             index++;
 
-        var sportEventResult = await _sportEventService.CreateSportEventAsync(index, CurrentCompetition, AvailableDisciplines);
+        var sportEventResult = await _sportEventService.CreateSportEventAsync(index, CurrentCompetition?.Competition, AvailableDisciplines);
         if (sportEventResult)
         {
             // Добавляем в коллекцию Observable-вид программы и перенумеровываем коллекцию
@@ -651,21 +654,32 @@ public sealed class SettingVM : ObservableRecipient,
             _viewModelHelper.HandleException(intResult.Excptn, this.ToString(), nameof(RemoveSportEvent));
         }
     }
+    
+    /// <summary>
+    /// Перенумерация коллекции Observable-видов программы.
+    /// </summary>
+    private void RenumberSportEvents()
+    {
+        for (var i = 0; i < SportEventObservables.Count; i++)
+        {
+            SportEventObservables[i].Number = i + 1;
+        }
+    }
 
     /// <summary>
-    /// Получение (обновление) коллекции групп дисциплин.
+    /// Получение (обновление) коллекции групп дисциплин (для видов программы).
     /// </summary>
     private async Task GetDisciplineGroupsAsync()
     {
-        var disciplineGroupsResult = await _sportEventService.GetDisciplineGroupsAsync();
+        var disciplineGroupsResult = await _sportEventService.GetAllDisciplineGroupsAsync();
         if (disciplineGroupsResult)
         {
             // Отписываемся от события изменения индекса коллекции
-            DisciplineGroupsWithNull.SelectedIndexChanged -= OnSelectedDisciplineGroupChanged;
+            DisciplineGroupsForSportEvents.SelectedIndexChanged -= OnSelectedDisciplineGroupChanged;
             
             // Сохраняем индекс
-            var index = DisciplineGroupsWithNull.SelectedIndex;
-            if (index < 0 || index > DisciplineGroupsWithNull.Count)
+            var index = DisciplineGroupsForSportEvents.SelectedIndex;
+            if (index < 0 || index > DisciplineGroupsForSportEvents.Count)
                 index = 0;
 
             // Перезаписываем коллекцию групп дисциплин с null
@@ -674,14 +688,15 @@ public sealed class SettingVM : ObservableRecipient,
                 new(null, _viewLocalizationService.GetLocalizedString(_view, "NullDisplayText"))
             };
             disciplineGroupsResult.Value.ForEach(item => newList.Add(
-                new KeyValuePair<DisciplineGroup?, string>(item, item.ToString())));
-            DisciplineGroupsWithNull.ClearAndAddRange(newList);
+                new KeyValuePair<DisciplineGroup?, string>(item, item.ToString()))
+            );
+            DisciplineGroupsForSportEvents.ClearAndAddRange(newList);
 
             // Устанавливаем индекс
-            DisciplineGroupsWithNull.SelectedIndex = index;
+            DisciplineGroupsForSportEvents.SelectedIndex = index;
             
             // Подписываемся на событие изменения индекса коллекции
-            DisciplineGroupsWithNull.SelectedIndexChanged += OnSelectedDisciplineGroupChanged;
+            DisciplineGroupsForSportEvents.SelectedIndexChanged += OnSelectedDisciplineGroupChanged;
         }
         else
         {
@@ -696,15 +711,15 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private async Task GetDisciplineSubGroupsAsync()
     {
-        var disciplineSubGroupsResult = await _sportEventService.GetDisciplineSubGroupsAsync();
+        var disciplineSubGroupsResult = await _sportEventService.GetAllDisciplineSubGroupsAsync();
         if (disciplineSubGroupsResult)
         {
             // Отписываемся от события изменения индекса коллекции
-            DisciplineSubGroupsWithNull.SelectedIndexChanged -= OnSelectedDisciplineSubGroupChanged;
+            DisciplineSubGroupsForSportEvents.SelectedIndexChanged -= OnSelectedDisciplineSubGroupChanged;
 
             // Сохраняем индекс
-            var index = DisciplineSubGroupsWithNull.SelectedIndex;
-            if (index < 0 || index > DisciplineSubGroupsWithNull.Count)
+            var index = DisciplineSubGroupsForSportEvents.SelectedIndex;
+            if (index < 0 || index > DisciplineSubGroupsForSportEvents.Count)
                 index = 0;
 
             // Перезаписываем коллекцию групп дисциплин с null
@@ -713,14 +728,15 @@ public sealed class SettingVM : ObservableRecipient,
                 new(null, _viewLocalizationService.GetLocalizedString(_view, "NullDisplayText"))
             };
             disciplineSubGroupsResult.Value.ForEach(item => newList.Add(
-                new KeyValuePair<DisciplineSubGroup?, string>(item, item.ToString())));
-            DisciplineSubGroupsWithNull.ClearAndAddRange(newList);
+                new KeyValuePair<DisciplineSubGroup?, string>(item, item.ToString()))
+            );
+            DisciplineSubGroupsForSportEvents.ClearAndAddRange(newList);
 
             // Устанавливаем индекс
-            DisciplineSubGroupsWithNull.SelectedIndex = index;
+            DisciplineSubGroupsForSportEvents.SelectedIndex = index;
             
             // Подписываемся на событие изменения индекса коллекции
-            DisciplineSubGroupsWithNull.SelectedIndexChanged += OnSelectedDisciplineSubGroupChanged;
+            DisciplineSubGroupsForSportEvents.SelectedIndexChanged += OnSelectedDisciplineSubGroupChanged;
         }
         else
         {
@@ -731,46 +747,11 @@ public sealed class SettingVM : ObservableRecipient,
     }
 
     /// <summary>
-    /// Обновление коллекции доступных дисциплин.
-    /// </summary>
-    private void UpdateAvailableDisciplines()
-    {
-        // Фильтруем дисциплины по ограничивающим подгруппе и группе дисциплин
-        AvailableDisciplines.ClearAndAddRange(_sportEventService.GetAvailableDisciplines(
-            Disciplines, FilteringDisciplineSubGroup, FilteringDisciplineGroup));
-    }
-
-    /// <summary>
-    /// Обработчик изменения выбранной группы дисциплин.
-    /// </summary>
-    private void OnSelectedDisciplineGroupChanged(int selectedIndex)
-    {
-        if (selectedIndex > 0)
-            // Сбрасываем выбранную подгруппу дисциплин
-            DisciplineSubGroupsWithNull.SelectedIndex = 0;
-
-        // Обновляем коллекцию доступных дисциплин
-        UpdateAvailableDisciplines();
-    }
-    /// <summary>
-    /// Обработчик изменения выбранной подгруппы дисциплин.
-    /// </summary>
-    private void OnSelectedDisciplineSubGroupChanged(int selectedIndex)
-    {
-        if (selectedIndex > 0)
-            // Сбрасываем выбранную группу дисциплин
-            DisciplineGroupsWithNull.SelectedIndex = 0;
-        
-        // Обновляем коллекцию доступных дисциплин
-        UpdateAvailableDisciplines();
-    }
-
-    /// <summary>
     /// Получение (обновление) коллекции дисциплин.
     /// </summary>
     private async Task GetDisciplinesAsync()
     {
-        var disciplinesResult = await _sportEventService.GetDisciplinesAsync();
+        var disciplinesResult = await _sportEventService.GetAllDisciplinesAsync();
         if (disciplinesResult)
         {
             // Перезаписываем коллекцию дисциплин
@@ -823,16 +804,47 @@ public sealed class SettingVM : ObservableRecipient,
                 this.ToString(), nameof(GetAgeGroupsAsync));        
         }
     }
+
+    /// <summary>
+    /// Обновление коллекции доступных дисциплин.
+    /// </summary>
+    private void UpdateAvailableDisciplines()
+    {
+        // Фильтруем дисциплины по ограничивающим подгруппе и группе дисциплин
+        AvailableDisciplines.ClearAndAddRange(_sportEventService.GetAvailableDisciplines(
+            Disciplines, DisciplineSubGroupFilterForSportEvents, DisciplineGroupFilterForSportEvents));
+    }
+
+    /// <summary>
+    /// Обработчик изменения выбранной группы дисциплин.
+    /// </summary>
+    private void OnSelectedDisciplineGroupChanged(int selectedIndex)
+    {
+        if (selectedIndex > 0)
+            // Сбрасываем выбранную подгруппу дисциплин
+            DisciplineSubGroupsForSportEvents.SelectedIndex = 0;
+
+        // Обновляем коллекцию доступных дисциплин
+        UpdateAvailableDisciplines();
+    }
     
     /// <summary>
-    /// Перенумерация коллекции Observable-видов программы.
+    /// Обработчик изменения выбранной подгруппы дисциплин.
     /// </summary>
-    private void RenumberSportEvents()
+    private void OnSelectedDisciplineSubGroupChanged(int selectedIndex)
     {
-        for (var i = 0; i < SportEventObservables.Count; i++)
-        {
-            SportEventObservables[i].Number = i + 1;
-        }
+        if (selectedIndex > 0)
+            // Сбрасываем выбранную группу дисциплин
+            DisciplineGroupsForSportEvents.SelectedIndex = 0;
+        
+        // Обновляем коллекцию доступных дисциплин
+        UpdateAvailableDisciplines();
+    }
+    
+    // !!!!!!!!!!!!!!!!!!!!!!!!
+    private void OnSportEventCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        Console.WriteLine(@$"====================== Изменение коллекции {nameof(SportEventObservables)}!");
     }
 
     #endregion
@@ -842,90 +854,125 @@ public sealed class SettingVM : ObservableRecipient,
     /// <summary>
     /// Коллекция судейских категорий.
     /// </summary>
-    public ObservableCollectionEx<RefereeLevel> RefereeLevels { get; } = [];
+    private IList<RefereeCategory> _refereeCategories = [];
 
     /// <summary>
     /// Коллекция должностей.
     /// </summary>
-    public ObservableCollectionEx<RefereeJobTitle> RefereeJobTitles { get; } = [];
+    private IList<RefereeRole> _refereeRoles = [];
 
     /// <summary>
-    /// Коллекция судей.
+    /// Коллекция Observable-судей.
     /// </summary>
-    public ObservableCollectionEx<Referee> Referees { get; set; } = [];
+    public ObservableCollectionEx<RefereeObservable> RefereeObservables { get; set; } = [];
+
+    /// <summary>
+    /// Признак ограничения выбора данных у судей, в соответствии с бизнес-логикой.
+    /// </summary>
+    public bool IsRefereeDataSelectionRestricted
+    {
+        get; 
+        set
+        {
+            if (SetProperty(ref field, value))
+            {
+                // Оповещаем ViewModel об изменении всех зависимых свойств
+                OnRefereeChanged();
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Коллекция групп дисциплин для судей (включая null).
+    /// </summary>
+    public ObservableCollectionEx<KeyValuePair<DisciplineGroup?, string>> DisciplineGroupsForReferees { get; } = [];
+    
+    /// <summary>
+    /// Группа спортивных дисциплин, ограничивающая выбор возможных дисциплин для судей.
+    /// </summary>
+    /*
+    public DisciplineGroup? DisciplineGroupFilterForReferees =>
+        DisciplineGroupsForReferees.SelectedIndex >= 0
+            ? DisciplineGroupsForReferees[DisciplineGroupsForReferees.SelectedIndex].Key
+            : null;
+    */
+    public KeyValuePair<DisciplineGroup?, string> DisciplineGroupFilterForReferees
+    {
+        get; 
+        set
+        {
+            if (SetProperty(ref field, value))
+            {
+                // Оповещаем ViewModel об изменении всех зависимых свойств
+                OnRefereeChanged();
+            }
+        }
+    }
 
     #region [---------- Команды ----------]
 
     /// <summary>
-    /// Команда загрузки списка судей.
+    /// Команда получения (обновления) списка судей.
     /// </summary>
-    public ICommand GetRefereesCommand { get; } = null!;
+    public ICommand UpdateRefereesCommand { get; }
 
     /// <summary>
     /// Команда создания судьи.
     /// </summary>
-    public ICommand CreateRefereeCommand { get; } = null!;
+    public ICommand CreateRefereeCommand { get; }
 
     /// <summary>
     /// Команда удаления судьи.
     /// </summary>
-    public ICommand RemoveRefereeCommand { get; } = null!;
+    public ICommand RemoveRefereeCommand { get; }
 
     /// <summary>
     /// Команда перенумеровывания судей.
     /// </summary>
-    public ICommand RenumberRefereesCommand { get; } = null!;
+    public ICommand RenumberRefereesCommand { get; }
 
     #endregion
 
     /// <summary>
-    /// Получение судейских категорий.
-    /// </summary>
-    private async Task GetRefereeLevelsAsync()
-    {
-        var refereeLevelsResult = await _refereeService.GetRefereeLevelsAsync();
-        if (refereeLevelsResult)
-        {
-            // Перезаписываем коллекцию судейских категорий
-            RefereeLevels.ClearAndAddRange(refereeLevelsResult.Value);
-        }
-        else
-        {
-            // Пишем в статус-бар и лог об ошибке
-            _viewModelHelper.HandleException(refereeLevelsResult.Excptn, 
-                this.ToString(), nameof(GetRefereeLevelsAsync));        
-        }
-    }
-
-    /// <summary>
-    /// Получение судейских должностей.
-    /// </summary>
-    private async Task GetRefereeJobTitlesAsync()
-    {
-        var refereeJobTitlesResult = await _refereeService.GetRefereeJobTitlesAsync();
-        if (refereeJobTitlesResult)
-        {
-            // Перезаписываем коллекцию судейских должностей
-            RefereeJobTitles.ClearAndAddRange(refereeJobTitlesResult.Value);
-        }
-        else
-        {
-            // Пишем в статус-бар и лог об ошибке
-            _viewModelHelper.HandleException(refereeJobTitlesResult.Excptn, 
-                this.ToString(), nameof(GetRefereeJobTitlesAsync));        
-        }
-    }
-
-    /// <summary>
     /// Получение (обновление) коллекции судей.
     /// </summary>
-    private async Task GetRefereesAsync()
+    private async Task UpdateRefereesAsync()
     {
-        var refereesResult = await _refereeService.GetRefereesAsync(Referees, CurrentCompetition);
-        if (! refereesResult)
+        // Получаем судей
+        var refereesResult = await _refereeService.GetAllRefereesAsync(CurrentCompetition?.Competition);
+        if (CurrentCompetition == null)
+        {
+            RefereeObservables.ClearAndAddRange([]);
+        }
+        else if (refereesResult)
+        {
+            // Перезаписываем коллекцию
+            var newList = new List<RefereeObservable>();
+            await refereesResult.Value.ForEachAsync(async item =>
+            {
+                var ro = await RefereeObservable.CreateAsync(
+                    _viewModelHelper,
+                    _refereeService, 
+                    item, 
+                    _refereeCategories, 
+                    _refereeRoles,
+                    this,
+                    () => IsRefereeDataSelectionRestricted,
+                    () => DisciplineGroupFilterForReferees.Key,
+                    () => CurrentCompetition?.InitialDate,
+                    () => SportEventObservables.Count,
+                    GetOccupiedRefereeRoles);
+                newList.Add(ro);
+            });
+            RefereeObservables.ClearAndAddRange(newList);
+            
+            // Оповещаем ViewModel об изменении всех зависимых свойств
+            OnRefereeChanged();
+        }
+        else
         {
             // Пишем в статус-бар и лог об ошибке
-            _viewModelHelper.HandleException(refereesResult.Excptn, this.ToString(), nameof(GetRefereesAsync));        
+            _viewModelHelper.HandleException(refereesResult.Excptn, this.ToString(), nameof(UpdateRefereesAsync));
         }
     }
 
@@ -934,12 +981,37 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private async Task CreateRefereeAsync()
     {
-        var refereeResult = await _refereeService.CreateRefereeAsync(
-            Referees, Referees.SelectedIndex, CurrentCompetition);
+        // Индекс
+        var index = RefereeObservables.SelectedIndex;
+        if (index < 0)
+            index = RefereeObservables.Count;
+        else
+            index++;
+
+        var refereeResult = await _refereeService.CreateRefereeAsync(index, CurrentCompetition?.Competition);
         if (refereeResult)
         {
+            // Добавляем в коллекцию Observable-судью и перенумеровываем коллекцию
+            var ro = await RefereeObservable.CreateAsync(
+                _viewModelHelper,
+                _refereeService, 
+                refereeResult.Value!, 
+                _refereeCategories, 
+                _refereeRoles,
+                this,
+                () => IsRefereeDataSelectionRestricted,
+                () => DisciplineGroupFilterForReferees.Key,
+                () => CurrentCompetition?.InitialDate,
+                () => SportEventObservables.Count,
+                GetOccupiedRefereeRoles);
+            RefereeObservables.Insert(index, ro);
+            RenumberReferees();
+
             // Перезаписываем индекс
-            Referees.SelectedIndex = refereeResult.Value;
+            RefereeObservables.SelectedIndex = index;
+            
+            // Оповещаем ViewModel об изменении всех зависимых свойств
+            OnRefereeChanged();
             
             // TODO: Временно (без ожидания окончания)
             _ = _statusBarService.SetTextAsync("Добавили судью.", ExcptnTypeEnm.Info);
@@ -956,11 +1028,21 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private void RemoveReferee()
     {
-        var refereeResult = _refereeService.RemoveReferee(Referees, Referees.SelectedIndex);
+        // Индекс
+        var index = RefereeObservables.SelectedIndex;
+        if (index < 0)
+            return;
+
+        // Удаляем из репозитория
+        var refereeResult = _refereeService.RemoveReferee(RefereeObservables[index].Referee);
         if (refereeResult)
         {
-            // Перезаписываем индекс
-            Referees.SelectedIndex = refereeResult.Value;
+            // Удаляем из коллекции Observable-судью и перенумеровываем коллекцию
+            RefereeObservables.RemoveAt(index);
+            RenumberReferees();
+
+            // Обновляем индекс
+            RefereeObservables.SelectedIndex = index == RefereeObservables.Count ? index - 1 : index;
             
             // TODO: Временно (без ожидания окончания)
             if (refereeResult.Value >= 0)
@@ -978,9 +1060,141 @@ public sealed class SettingVM : ObservableRecipient,
     /// </summary>
     private void RenumberReferees()
     {
-        var index = Referees.SelectedIndex;
-        _refereeService.RenumberReferees(Referees);
-        Referees.SelectedIndex = index;
+        for (var i = 0; i < RefereeObservables.Count; i++)
+        {
+            RefereeObservables[i].Number = i + 1;
+        }
+    }
+
+    /// <summary>
+    /// Получение (обновление) коллекции групп дисциплин (для судей).
+    /// </summary>
+    private async Task GetDisciplineGroupsForRefereesAsync()
+    {
+        // Получаем через сервис видов программы
+        var disciplineGroupsResult = await _sportEventService.GetAllDisciplineGroupsAsync();
+        if (disciplineGroupsResult)
+        {
+            // Сохраняем индекс
+            var index = DisciplineGroupsForReferees.SelectedIndex;
+            if (index < 0 || index > DisciplineGroupsForReferees.Count)
+                index = 0;
+
+            // Перезаписываем коллекцию групп дисциплин с null
+            var newList = new List<KeyValuePair<DisciplineGroup?, string>>
+            {
+                new(null, _viewLocalizationService.GetLocalizedString(_view, "NullDisplayText"))
+            };
+            disciplineGroupsResult.Value.ForEach(item => newList.Add(
+                new KeyValuePair<DisciplineGroup?, string>(item, item.ToString()))
+            );
+            DisciplineGroupsForReferees.ClearAndAddRange(newList);
+
+            // Устанавливаем индекс
+            DisciplineGroupsForReferees.SelectedIndex = index;
+        }
+        else
+        {
+            // Пишем в статус-бар и лог об ошибке
+            _viewModelHelper.HandleException(disciplineGroupsResult.Excptn, 
+                this.ToString(), nameof(GetDisciplineGroupsForRefereesAsync));        
+        }
+    }
+    
+    /// <summary>
+    /// Получение судейских категорий.
+    /// </summary>
+    private async Task GetRefereeCategoriesAsync()
+    {
+        var refereeCategoriesResult = await _refereeService.GetAllRefereeCategoriesAsync();
+        if (refereeCategoriesResult)
+        {
+            // Перезаписываем коллекцию судейских категорий
+            _refereeCategories = refereeCategoriesResult.Value!;
+        }
+        else
+        {
+            // Пишем в статус-бар и лог об ошибке
+            _viewModelHelper.HandleException(refereeCategoriesResult.Excptn, 
+                this.ToString(), nameof(GetRefereeCategoriesAsync));        
+        }
+    }
+
+    /// <summary>
+    /// Получение судейских должностей.
+    /// </summary>
+    private async Task GetRefereeRolesAsync()
+    {
+        var refereeRolesResult = await _refereeService.GetAllRefereeRolesAsync();
+        if (refereeRolesResult)
+        {
+            // Перезаписываем коллекцию судейских должностей
+            _refereeRoles = refereeRolesResult.Value!;
+        }
+        else
+        {
+            // Пишем в статус-бар и лог об ошибке
+            _viewModelHelper.HandleException(refereeRolesResult.Excptn, 
+                this.ToString(), nameof(GetRefereeRolesAsync));        
+        }
+    }
+    
+    /// <summary>
+    /// Получение коллекции уже используемых судейских должностей.
+    /// </summary>
+    private IList<RefereeRole> GetOccupiedRefereeRoles() =>
+        RefereeObservables.Select(ro => ro.RoleObservable.Role).ToList();
+    
+    /// <inheritdoc/>
+    public void OnRefereeChanged(RefereeObservable? refereeObservable = null, string? propertyName = null)
+    {
+        switch (propertyName)
+        {
+            case nameof(RefereeObservable.RoleObservable):
+                // Обновляем доступные судейские должности во всей коллекции судей
+                _ = RefereeObservables.ForEachAsync(async ro => await ro.UpdateAvailableRolesAsync());
+                break;
+            
+            default:
+                // Обновляем все зависимые коллекции во всей коллекции судей
+                _ = RefereeObservables.ForEachAsync(async ro => await ro.UpdateDependentCollectionsAsync());
+                break;
+        }
+    }
+    
+    // !!!!!!!!!!!!!!!!!!!!!!!!
+    private void OnRefereeCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        Console.WriteLine(@$"====================== Изменение коллекции {nameof(RefereeObservables)}!");    //!!!!!!!!!!!!!!
+        
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Add:
+                // Добавленный объект (один или несколько)
+                if (e.NewItems?[0] is RefereeObservable addedReferee)
+                {
+                }
+                break;
+            case NotifyCollectionChangedAction.Remove:
+                // Удалённый объект (один или несколько)
+                if (e.OldItems?[0] is RefereeObservable removedReferee)
+                {
+                }
+                break;
+            case NotifyCollectionChangedAction.Replace:
+                // Старый объект (который заменяют)
+                if (e.OldItems?[0] is RefereeObservable oldReferee)
+                {
+                }
+                // Новый объект (на который заменяют)
+                if (e.NewItems?[0] is RefereeObservable newReferee)
+                {
+                }
+                break;
+            case NotifyCollectionChangedAction.Reset:
+                // Вся коллекция очищена
+                break;
+        }
     }
 
     #endregion

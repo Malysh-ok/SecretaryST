@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Common.BaseExtensions.Collections;
 
@@ -109,22 +110,28 @@ public static class EnumerableExtensions
     /// <typeparam name="T">Тип элемента последовательности.</typeparam>
     /// <param name="source">Исходная последовательность.</param>
     /// <param name="action">Выполняемое действие.</param>
-    /// <remarks>Если действие не указано, метод просто итерирует по всем элементам последовательности.</remarks>
     public static void ForEach<T>(this IEnumerable<T> source, Action<T> action = null)
     {
         if (action == null)
-        {
-            // Ничего не делаем, только пробегаемся по списку
-            using var enumerator = source.GetEnumerator();
-            while (enumerator.MoveNext())
-            {
-            }
-        }
-        else
-        {
-            foreach (var element in source)
-                action(element);
-        }
+            return;
+        
+        foreach (var element in source)
+            action(element);
+    }
+    
+    /// <summary>
+    /// Выполнение асинхронного действия с элементами последовательности.
+    /// </summary>
+    ///     /// <typeparam name="T">Тип элемента последовательности.</typeparam>
+    /// <param name="source">Исходная последовательность.</param>
+    /// <param name="action">Выполняемое действие.</param>
+    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> action)
+    {
+        if (action == null)
+            return;
+    
+        foreach (var element in source)
+            await action(element);
     }
 
     /// <summary>

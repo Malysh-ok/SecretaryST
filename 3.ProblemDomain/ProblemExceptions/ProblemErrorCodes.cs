@@ -9,13 +9,13 @@
 /// </remarks>
 public static class ProblemErrorCodes
 {
-    public const string CompetitionDataCreateError = nameof(CompetitionDataCreateError);
-    public const string CompetitionDataIsNull = nameof(CompetitionDataIsNull);
-    public const string CompetitionDataListLoadError = nameof(CompetitionDataListLoadError);
-    public const string CompetitionDataLoadError = nameof(CompetitionDataLoadError);
-    public const string CompetitionDataNotFound = nameof(CompetitionDataNotFound);
-    public const string CompetitionDataRemoveError = nameof(CompetitionDataRemoveError);
-    public const string CompetitionDataSaveError = nameof(CompetitionDataSaveError);
+    public const string CompetitionCreateError = nameof(CompetitionCreateError);
+    public const string CompetitionIsNull = nameof(CompetitionIsNull);
+    public const string CompetitionListLoadError = nameof(CompetitionListLoadError);
+    public const string CompetitionLoadError = nameof(CompetitionLoadError);
+    public const string CompetitionNotFound = nameof(CompetitionNotFound);
+    public const string CompetitionRemoveError = nameof(CompetitionRemoveError);
+    public const string CompetitionSaveError = nameof(CompetitionSaveError);
     public const string CompetitionStatusesLoadError = nameof(CompetitionStatusesLoadError);
     public const string CompetitionStatusFindError = nameof(CompetitionStatusFindError);
     
@@ -36,12 +36,13 @@ public static class ProblemErrorCodes
     public const string DisciplineSubGroupsLoadError = nameof(DisciplineSubGroupsLoadError);
     
     public const string RefereeCreateError = nameof(RefereeCreateError);
-    public const string RefereeJobTitleFindError = nameof(RefereeJobTitleFindError);
-    public const string RefereeJobTitlesLoadError = nameof(RefereeJobTitlesLoadError);
-    public const string RefereeLevelFindError = nameof(RefereeLevelFindError);
-    public const string RefereeLevelsLoadError = nameof(RefereeLevelsLoadError);
+    public const string RefereeRoleFindError = nameof(RefereeRoleFindError);
+    public const string RefereeRolesLoadError = nameof(RefereeRolesLoadError);
+    public const string RefereeCategoryFindError = nameof(RefereeCategoryFindError);
+    public const string RefereeCategoriesLoadError = nameof(RefereeCategoriesLoadError);
     public const string RefereeRemoveError = nameof(RefereeRemoveError);
     public const string RefereesLoadError = nameof(RefereesLoadError);
+    public const string RefereeAvailableRolesCalculateError = nameof(RefereeAvailableRolesCalculateError);
     
     public const string SportEventCreateError = nameof(SportEventCreateError);
     public const string SportEventRemoveError = nameof(SportEventRemoveError);

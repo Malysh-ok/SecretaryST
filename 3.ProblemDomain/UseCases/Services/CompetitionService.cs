@@ -1,5 +1,4 @@
 ﻿using Common.BaseComponents.Components;
-using Common.BaseExtensions.Collections;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
@@ -13,20 +12,20 @@ namespace ProblemDomain.UseCases.Services;
 /// </summary>
 /// <param name="repository">Репозиторий.</param>
 /// <param name="problemErrorMsgProvider">Провайдер сообщений об ошибках слоя предметной области.</param>
-public class CompetitionDataService(IRepository repository, IProblemErrorMsgProvider problemErrorMsgProvider)
+public class CompetitionService(IRepository repository, IProblemErrorMsgProvider problemErrorMsgProvider)
 {
     /// <summary>
     /// Получение проводящих организаций, связанных с соревнованием.
     /// </summary>
     /// <param name="competition">Текущее соревнование.</param>
-    public Result<IList<string>> GetConductingOrganizations(CompetitionData? competition)
+    public Result<IList<string>> GetConductingOrganizations(Competition? competition)
     {
         // Проверяем наличие соревнования
         if (competition == null)
         {
             return Result<IList<string>>.Fail(
                 problemErrorMsgProvider.CreateException(ProblemErrorCodes.ConductingOrganizationsLoadError,
-                    problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionDataIsNull))
+                    problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionIsNull))
             );
         }
 
@@ -46,14 +45,14 @@ public class CompetitionDataService(IRepository repository, IProblemErrorMsgProv
     /// </summary>
     /// <param name="competition">Текущее соревнование.</param>
     /// <param name="conductingOrganizations">Коллекция проводящих организаций (источник данных).</param>
-    public Result<bool> SetConductingOrganizations(CompetitionData? competition, IList<string> conductingOrganizations)
+    public Result<bool> SetConductingOrganizations(Competition? competition, IList<string> conductingOrganizations)
     {
         // Проверяем наличие соревнования
         if (competition == null)
         {
             return Result<bool>.Fail(
                 problemErrorMsgProvider.CreateException(ProblemErrorCodes.ConductingOrganizationsSetError,
-                    problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionDataIsNull))
+                    problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionIsNull))
             );
         }
 
@@ -97,35 +96,30 @@ public class CompetitionDataService(IRepository repository, IProblemErrorMsgProv
     }
     
     /// <summary>
-    /// Получение всех соревнований и обновление ими коллекции.
+    /// Получение коллекции всех соревнований.
     /// </summary>
-    /// <param name="competitionCollection">Обновляемая коллекция соревнований.</param>
     /// <remarks>
     /// Без навигационных свойств ("легкий" список).
     /// </remarks>
-    public async Task<Result<int>> GetAllCompetitionsDataAsync(IList<CompetitionData> competitionCollection)
+    public async Task<Result<IList<Competition>>> GetAllCompetitionsAsync()
     {
         // Сбрасываем отслеживание сущностей
-        var result = repository.DetachAll<CompetitionData>();
+        var result = repository.DetachAll<Competition>();
         if (! result)
-            return Result<int>.Fail(
+            return Result<IList<Competition>>.Fail(
                 problemErrorMsgProvider.CreateException(
-                ProblemErrorCodes.CompetitionDataListLoadError, result.Excptn)
+                ProblemErrorCodes.CompetitionListLoadError, result.Excptn)
             );
         
         // Загружаем данные из репозитория
-        var competitionsDataResult = await repository.GetAllAsync<CompetitionData>();
-        if (! competitionsDataResult)
-            return Result<int>.Fail(
+        var competitionsResult = await repository.GetAllAsync<Competition>();
+        if (! competitionsResult)
+            return Result<IList<Competition>>.Fail(
                 problemErrorMsgProvider.CreateException(
-                ProblemErrorCodes.CompetitionDataListLoadError, competitionsDataResult.Excptn)
+                ProblemErrorCodes.CompetitionListLoadError, competitionsResult.Excptn)
             );
 
-        // Перезаписываем коллекцию соревнований новыми данными
-        competitionCollection.Clear();
-        competitionsDataResult.Value.ForEach(competitionCollection.Add);
-
-        return Result<int>.Done(competitionsDataResult.Value!.Count);
+        return Result<IList<Competition>>.Done(competitionsResult.Value!);
     }
 
     /// <summary>
@@ -137,37 +131,37 @@ public class CompetitionDataService(IRepository repository, IProblemErrorMsgProv
     /// <remarks>
     /// С навигационными свойствами ("тяжелый" объект).
     /// </remarks>
-    public async Task<Result<CompetitionData?>> GetCompetitionDataAsync(int competitionId, bool isCheckForNull = false)
+    public async Task<Result<Competition?>> GetCompetitionAsync(int competitionId, bool isCheckForNull = false)
     {
-        // Сбрасываем отслеживание сущностей
-        var result = repository.DetachAll<CompetitionData>();
+        // Сбрасываем отслеживание сущности
+        var result = repository.Detach<Competition>(competitionId);
         if (! result)
-            return Result<CompetitionData?>.Fail(
+            return Result<Competition?>.Fail(
                 problemErrorMsgProvider.CreateException(
-                ProblemErrorCodes.CompetitionDataLoadError, result.Excptn)
-                );
-
+                    ProblemErrorCodes.CompetitionLoadError, result.Excptn)
+            );
+        
         // Загружаем данные из репозитория
-        var competitionResult = await repository.GetByIdAsync<CompetitionData>(competitionId,
+        var competitionResult = await repository.GetByIdAsync<Competition>(competitionId,
             nameof(CompetitionsStatus),
             nameof(DetailedCompetitionStatus));
         if (! competitionResult)
-            return Result<CompetitionData?>.Fail(
+            return Result<Competition?>.Fail(
                 problemErrorMsgProvider.CreateException(
-                ProblemErrorCodes.CompetitionDataLoadError, competitionResult.Excptn)
+                ProblemErrorCodes.CompetitionLoadError, competitionResult.Excptn)
             );
         
         if (isCheckForNull && competitionResult.Value == null)
-            return Result<CompetitionData?>.Fail(
-                problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionDataLoadError,
-                    problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionDataNotFound))
+            return Result<Competition?>.Fail(
+                problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionLoadError,
+                    problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionNotFound))
             );
 
-        return Result<CompetitionData?>.Done(competitionResult.Value);
+        return Result<Competition?>.Done(competitionResult.Value);
     }
 
     /// <summary>
-    /// Создание соревнования - экземпляра <see cref="CompetitionData"/> (фабричный метод).
+    /// Создание соревнования - экземпляра <see cref="Competition"/> (фабричный метод).
     /// </summary>
     /// <remarks>
     /// Создаем с сохранением изменений в репозитории.
@@ -182,7 +176,7 @@ public class CompetitionDataService(IRepository repository, IProblemErrorMsgProv
     /// <param name="detailedCompetitionStatus">Статус и обобщенное наименование соревнования.</param>
     /// <param name="isStudentCompetition">Признак того, что соревнования студенческие.</param>
     /// <param name="description">Описание.</param>
-    public async Task<Result<CompetitionData>> CreateCompetitionDataAsync(string name, 
+    public async Task<Result<Competition>> CreateCompetitionAsync(string name, 
         IList<string> conductingOrganizations, DateTime initialDate, DateTime endDate, string venue, string shortName,
         CompetitionsStatus competitionsStatus, DetailedCompetitionStatus detailedCompetitionStatus,
         bool isStudentCompetition = false,
@@ -190,15 +184,15 @@ public class CompetitionDataService(IRepository repository, IProblemErrorMsgProv
     {
         // Создаем данные о соревновании и добавляем в репозиторий
         var competition =
-            new CompetitionData(name, conductingOrganizations, initialDate, endDate, venue, shortName,
+            new Competition(name, conductingOrganizations, initialDate, endDate, venue, shortName,
                 competitionsStatus, detailedCompetitionStatus,
                 isStudentCompetition, description);
         var intResult = repository.Add(competition);
         if (! intResult)
         {
-            return Result<CompetitionData>.Fail(
+            return Result<Competition>.Fail(
                 problemErrorMsgProvider.CreateException(
-                    ProblemErrorCodes.CompetitionDataCreateError, intResult.Excptn)
+                    ProblemErrorCodes.CompetitionCreateError, intResult.Excptn)
             );
         }
         
@@ -206,24 +200,22 @@ public class CompetitionDataService(IRepository repository, IProblemErrorMsgProv
         intResult = await repository.SaveChangesAsync();
         if (! intResult)
         {
-            return Result<CompetitionData>.Fail(
+            return Result<Competition>.Fail(
                 problemErrorMsgProvider.CreateException(
-                    ProblemErrorCodes.CompetitionDataCreateError, intResult.Excptn)
+                    ProblemErrorCodes.CompetitionCreateError, intResult.Excptn)
             );
         }
 
-        return Result<CompetitionData>.Done(competition);
+        return Result<Competition>.Done(competition);
     }
 
     /// <summary>
-    /// Создание нового нового соревнования и добавление в коллекцию после текущего.
+    /// Создание нового нового соревнования.
     /// </summary>
     /// <remarks>
     /// Создаем с сохранением изменений в репозитории.
     /// </remarks>
-    /// <param name="competitionCollection">Обновляемая коллекция соревнований.</param>
-    /// <returns>Индекс нового соревнования.</returns>
-    public async Task<Result<CompetitionData>> CreateCompetitionDataAsync(IList<CompetitionData> competitionCollection)
+    public async Task<Result<Competition>> CreateCompetitionAsync()
     {
         ProblemException innerException;
         
@@ -235,9 +227,9 @@ public class CompetitionDataService(IRepository repository, IProblemErrorMsgProv
             innerException = problemErrorMsgProvider.CreateException(
                 ProblemErrorCodes.CompetitionStatusFindError, competitionStatusResult.Excptn);
 
-            return Result<CompetitionData>.Fail(
+            return Result<Competition>.Fail(
                 problemErrorMsgProvider.CreateException(
-                    ProblemErrorCodes.CompetitionDataCreateError, innerException)
+                    ProblemErrorCodes.CompetitionCreateError, innerException)
             );
         }
         
@@ -249,14 +241,14 @@ public class CompetitionDataService(IRepository repository, IProblemErrorMsgProv
             innerException = problemErrorMsgProvider.CreateException(
                 ProblemErrorCodes.DetailedCompetitionStatusFindError, detailedCompetitionStatusResult.Excptn);
             
-            return Result<CompetitionData>.Fail(
+            return Result<Competition>.Fail(
                 problemErrorMsgProvider.CreateException(
-                    ProblemErrorCodes.CompetitionDataCreateError, innerException)
+                    ProblemErrorCodes.CompetitionCreateError, innerException)
             );
         }
         
-        // Создаем данные о соревновании
-        var newCompetitionResult = await CreateCompetitionDataAsync(
+        // Создаем соревнование
+        var newCompetitionResult = await CreateCompetitionAsync(
             "НАЗВАНИЕ СОРЕВНОВАНИЙ",
             ["ПРОВОДЯЩАЯ ОРГАНИЗАЦИЯ"],
             DateTime.Now, DateTime.Now,
@@ -266,60 +258,57 @@ public class CompetitionDataService(IRepository repository, IProblemErrorMsgProv
         );
 
         return newCompetitionResult
-            ? Result<CompetitionData>.Done(newCompetitionResult.Value!)
-            : Result<CompetitionData>.Fail(
+            ? Result<Competition>.Done(newCompetitionResult.Value!)
+            : Result<Competition>.Fail(
                 problemErrorMsgProvider.CreateException(
-                    ProblemErrorCodes.CompetitionDataCreateError, newCompetitionResult.Excptn)
+                    ProblemErrorCodes.CompetitionCreateError, newCompetitionResult.Excptn)
             );
     }
 
     /// <summary>
-    /// Удаление соревнования из коллекции.
+    /// Удаление соревнования.
     /// </summary>
-    /// <param name="competitionCollection">Обновляемая коллекция соревнований.</param>
     /// <param name="competition">Удаляемое соревнование.</param>
-    /// <returns>Новое текущее соревнование.</returns>
-    public Task<Result<CompetitionData>> RemoveCompetitionDataAsync(
-        IList<CompetitionData> competitionCollection, CompetitionData? competition)
+    /// <remarks>
+    /// Удаляем с сохранением изменений в репозитории.
+    /// </remarks>
+    public async Task<Result<int>> RemoveCompetitionAsync(Competition competition)
     {
-        if (competition == null)
-            return Task.FromResult(Result<CompetitionData>.Fail(
-                problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionDataRemoveError,
-                problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionDataIsNull))
-            ));
-        
-        // Удаляем из коллекции соревнование
-        var index = competitionCollection.IndexOf(competition);
-        competitionCollection.Remove(competition);
-        if (index >= competitionCollection.Count)
-            index = competitionCollection.Count - 1;
-        else if (index < 0)
-            index = 0;
-        
         // Удаляем из репозитория
         var intResult = repository.Remove(competition);
         if (! intResult)
         {
-            return Task.FromResult(Result<CompetitionData>.Fail(
+            return Result<int>.Fail(
                 problemErrorMsgProvider.CreateException(
-                    ProblemErrorCodes.CompetitionDataRemoveError, intResult.Excptn)
-            ));
+                    ProblemErrorCodes.CompetitionRemoveError, intResult.Excptn)
+            );
+        }
+        
+        // Сохраняем изменения в репозитории
+        intResult = await repository.SaveChangesAsync();
+        if (! intResult)
+        {
+            return Result<int>.Fail(
+                problemErrorMsgProvider.CreateException(
+                    ProblemErrorCodes.CompetitionRemoveError, intResult.Excptn)
+            );
         }
 
-        return Task.FromResult(Result<CompetitionData>.Done(competitionCollection[index]));
+        return Result<int>.Done(1);
     }
+
 
     /// <summary>
     /// Сохранение соревнования (включая зависимые сущности).
     /// </summary>
-    public async Task<Result<int>> SaveCompetitionDataAsync()
+    public async Task<Result<int>> SaveCompetitionAsync()
     {
         var intResult = await repository.SaveChangesAsync();
         return intResult
             ? intResult
             : Result<int>.Fail(
                 problemErrorMsgProvider.CreateException(
-                    ProblemErrorCodes.CompetitionDataSaveError, intResult.Excptn)
+                    ProblemErrorCodes.CompetitionSaveError, intResult.Excptn)
             );
     }
 }

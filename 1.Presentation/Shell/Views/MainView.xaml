@@ -15,7 +15,7 @@
                      DataContext="{Binding Source={StaticResource Locator}, Path=Main}"
                      Title="{DynamicResource MainView}"
                      Height="800"
-                     Width="1650"   
+                     Width="1250"   
                      MinHeight="610"
                      MinWidth="800" >
     <!-- TODO: откорректировать MinHeight -->
@@ -62,14 +62,20 @@
                     Header="{DynamicResource MainView_Ribbon_File}"
                     DataContext="{Binding BackstageVM}">
                     <fluent:BackstageTabControl>
+                        
+                        <!-- Обновить все соревнования -->
                         <fluent:Button x:Name="BtnBstgUpdate"
                                        Icon="{DynamicResource RotateDrawingImage}"
                                        Header="{DynamicResource MainView_Ribbon_File_Update}"
-                                       Command="{Binding GetAllCompetitionsCommand}" />
+                                       Command="{Binding UpdateCompetitionsCommand}" />
+                        
+                        <!-- Создать соревнования -->
                         <fluent:Button x:Name="BtnBstgCreate"
                                        Icon="{DynamicResource CirclePlusDrawingImage}"
                                        Header="{DynamicResource MainView_Ribbon_File_Create}"
                                        Command="{Binding CreateCompetitionCommand}" />
+                        
+                        <!-- Удалить соревнование -->
                         <fluent:Button x:Name="BtnBstgRemove"
                                        Icon="{DynamicResource CircleXmarkSolidDrawingImage}"
                                        Header="{DynamicResource MainView_Ribbon_File_Remove}" 
@@ -139,14 +145,18 @@
                                 ItemsSource="{Binding Competitions,
                                     Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                 SelectedItem="{Binding  CurrentCompetition,
-                                    Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                DisplayMemberPath = "ShortName"
+                                Text="{Binding CurrentCompetition.ShortName, 
+                                    Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <!-- Сочетаем DisplayMemberPath и Text, чтобы динамически менять отображение при изменении ShortName -->
                         </StackPanel>
                         <fluent:Button
                             x:Name="BtnUpdateCompetition"
                             Icon="{DynamicResource RotateDrawingImage_Highlight}"
-                            Header="{DynamicResource MainView_Ribbon_Setting_UpdateCompetition}"
+                            Header="{DynamicResource MainView_Ribbon_Setting_GetCompetition}"
                             Command="{Binding GetCompetitionCommand}"
-                            CommandParameter="{Binding CurrentCompetition.Id,
+                            CommandParameter="{Binding CurrentCompetition.Competition.Id,
                                 UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                 </fluent:RibbonGroupBox>
@@ -156,37 +166,37 @@
                                        Header="{DynamicResource MainView_Ribbon_Setting_SportEvents}" >
                     <StackPanel Orientation="Horizontal" >
                         <Label 
-                            x:Name="LblRestrictedDisciplineGroup"
-                            Content="{DynamicResource MainView_Ribbon_Setting_DisciplineGroupFilter}" />
+                            x:Name="LblDisciplineGroupFilterForSportEvents"
+                            Content="{DynamicResource MainView_Ribbon_Setting_DisciplineGroupFilterForSportEvents}" />
                         <fluent:ComboBox
-                            x:Name="CmboxRestrictedDisciplineGroup"
+                            x:Name="CmboxDisciplineGroupFilterForSportEvents"
                             Style="{StaticResource FluentKeyValuePairComboBoxStyle}"
                             MinWidth="120"
                             HorizontalAlignment="Left"
-                            ItemsSource="{Binding DisciplineGroupsWithNull}"
-                            SelectedIndex="{Binding  DisciplineGroupsWithNull.SelectedIndex,
+                            ItemsSource="{Binding DisciplineGroupsForSportEvents}"
+                            SelectedIndex="{Binding  DisciplineGroupsForSportEvents.SelectedIndex,
                                             Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" >
                         <Label 
-                            x:Name="LblRestrictedDisciplineSubGroup"
-                            Content="{DynamicResource MainView_Ribbon_Setting_DisciplineSubGroupFilter}" />
+                            x:Name="LblDisciplineSubGroupFilterForSportEvents"
+                            Content="{DynamicResource MainView_Ribbon_Setting_DisciplineSubGroupFilterForSportEvents}" />
                         <fluent:ComboBox
-                            x:Name="CmboxRestrictedDisciplineSubGroup"
+                            x:Name="CmboxDisciplineSubGroupFilterForSportEvents"
                             Style="{StaticResource FluentKeyValuePairComboBoxStyle}"
                             MinWidth="260"
                             HorizontalAlignment="Left"
-                            ItemsSource="{Binding DisciplineSubGroupsWithNull}"
-                            SelectedIndex="{Binding  DisciplineSubGroupsWithNull.SelectedIndex,
+                            ItemsSource="{Binding DisciplineSubGroupsForSportEvents}"
+                            SelectedIndex="{Binding  DisciplineSubGroupsForSportEvents.SelectedIndex,
                                             Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" >
-                    <fluent:Button
-                        x:Name="BtnUpdateSportEvents"
-                        Icon="{DynamicResource RotateDrawingImage_DarkGreen}"
-                        Header="{DynamicResource MainView_Ribbon_Setting_UpdateSportEvents}"
-                        Command="{Binding GetSportEventsCommand}" />
-                    <Separator Style="{StaticResource Fluent.Ribbon.Styles.VerticalGroupBoxSeparator}" />
+                    <StackPanel Orientation="Horizontal">
+                        <fluent:Button
+                            x:Name="BtnUpdateSportEvents"
+                            Icon="{DynamicResource RotateDrawingImage_DarkGreen}"
+                            Header="{DynamicResource MainView_Ribbon_Setting_UpdateSportEvents}"
+                            Command="{Binding UpdateSportEventsCommand}" />
+                        <Separator Style="{StaticResource Fluent.Ribbon.Styles.VerticalGroupBoxSeparator}" />
                         <fluent:Button
                             x:Name="BtnAddSportEvents"
                             Icon="{DynamicResource CirclePlusDrawingImage_DarkGreen}"
@@ -197,21 +207,40 @@
                             Icon="{DynamicResource CircleXmarkSolidDrawingImage_DarkGreen}"
                             Header="{DynamicResource MainView_Ribbon_Setting_RemoveSportEvent}"
                             Command="{Binding RemoveSportEventCommand}" />
-                        </StackPanel >
+                    </StackPanel>
 
                 </fluent:RibbonGroupBox>
 
                 <!-- Судьи -->
                 <fluent:RibbonGroupBox x:Name="SettingReferees" 
                                        Header="{DynamicResource MainView_Ribbon_Setting_Referees}" >
-                    <fluent:Button
-                        x:Name="BtnUpdateReferees"
-                        Icon="{DynamicResource RotateDrawingImage_Olive}"
-                        Header="{DynamicResource MainView_Ribbon_Setting_UpdateReferees}"
-                        Command="{Binding GetRefereesCommand}" />
-                    <Separator Style="{StaticResource Fluent.Ribbon.Styles.HorizontalGroupBoxSeparator}" />
-                    <fluent:RibbonToolBar>
-                        <StackPanel Orientation="Horizontal" >
+                    <fluent:CheckBox
+                        x:Name="ChboxIsFilteringByRefereeCategory"
+                        Style="{StaticResource BaseFluentCheckBox}"
+                        IsChecked="{Binding IsRefereeDataSelectionRestricted, 
+                            Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Header="{DynamicResource MainView_Ribbon_Setting_IsRefereeDataSelectionRestricted}"
+                        ToolTip="{DynamicResource MainView_Ribbon_Setting_IsRefereeDataSelectionRestricted_Tooltip}"/>
+                    <StackPanel Orientation="Horizontal" >
+                        <Label 
+                            x:Name="LblDisciplineGroupFilterForReferees"
+                            Content="{DynamicResource MainView_Ribbon_Setting_DisciplineGroupFilterForReferees}" />
+                        <fluent:ComboBox
+                            x:Name="CmboxDisciplineGroupFilterForReferees"
+                            Style="{StaticResource FluentKeyValuePairComboBoxStyle}"
+                            MinWidth="120"
+                            HorizontalAlignment="Left"
+                            ItemsSource="{Binding DisciplineGroupsForReferees}"
+                            SelectedItem="{Binding  DisciplineGroupFilterForReferees,
+                                            Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <fluent:Button
+                            x:Name="BtnUpdateReferees"
+                            Icon="{DynamicResource RotateDrawingImage_Olive}"
+                            Header="{DynamicResource MainView_Ribbon_Setting_UpdateReferees}"
+                            Command="{Binding UpdateRefereesCommand}" />
+                        <Separator Style="{StaticResource Fluent.Ribbon.Styles.VerticalGroupBoxSeparator}" />
                         <fluent:Button
                             x:Name="BtnAddReferee"
                             Icon="{DynamicResource CirclePlusDrawingImage_Olive}"
@@ -222,8 +251,7 @@
                             Icon="{DynamicResource CircleXmarkSolidDrawingImage_Olive}"
                             Header="{DynamicResource MainView_Ribbon_Setting_RemoveReferee}"
                             Command="{Binding RemoveRefereeCommand}" />
-                        </StackPanel >
-                    </fluent:RibbonToolBar>
+                    </StackPanel>
                 </fluent:RibbonGroupBox>
                 
                 <!-- TODO: Пример группа -->

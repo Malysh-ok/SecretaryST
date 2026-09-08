@@ -6,8 +6,9 @@
 
     <!-- Стиль, используемый в DatePicker по умолчанию -->
     <Style TargetType="{x:Type DatePickerTextBox}">
+        <Setter Property="VerticalContentAlignment" Value="Center" />
         <!-- <Setter Property="Padding" Value="0 1 0 0"/> -->
-        <Setter Property="Margin" Value="0 1 0 0"/>
+        <Setter Property="Margin" Value="0 0 0 0"/>
     </Style>
 
     <!-- _______________ БАЗОВЫЙ DatePicker _______________ -->

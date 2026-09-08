@@ -36,12 +36,12 @@ public interface IConfigurationDbContext
     /// <summary>
     /// Судейские категории.
     /// </summary>
-    public DbSet<RefereeLevel>? RefereeLevels { get; set; }
+    public DbSet<RefereeCategory>? RefereeCategories { get; set; }
         
     /// <summary>
     /// Судейские должности.
     /// </summary>
-    public DbSet<RefereeJobTitle>? RefereeingPositions { get; set; }
+    public DbSet<RefereeRole>? RefereeRoles { get; set; }
         
     /// <summary>
     /// Варианты пола.

@@ -49,12 +49,12 @@ public sealed partial class AppDbContext : IConfigurationDbContext
     /// <summary>
     /// Судейские категории.
     /// </summary>
-    public DbSet<RefereeLevel>? RefereeLevels { get; set; }
+    public DbSet<RefereeCategory>? RefereeCategories { get; set; }
         
     /// <summary>
     /// Судейские должности.
     /// </summary>
-    public DbSet<RefereeJobTitle>? RefereeingPositions { get; set; }
+    public DbSet<RefereeRole>? RefereeRoles { get; set; }
         
     /// <summary>
     /// Варианты пола.
@@ -255,62 +255,107 @@ public sealed partial class AppDbContext : IConfigurationDbContext
     /// <summary>
     /// Создание судейских категорий.
     /// </summary>
-    private void CreateModel_RefereeLevels(ModelBuilder modelBuilder)
+    private void CreateModel_RefereeCategories(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<RefereeLevel>(entity =>
+        modelBuilder.Entity<RefereeCategory>(entity =>
         {
-            entity.ToTable($"{CONFIGURATION_TABLE_PRE}RefereeLevels", CONFIGURATION_SCHEMA_NAME,
+            entity.ToTable($"{CONFIGURATION_TABLE_PRE}RefereeCategories", CONFIGURATION_SCHEMA_NAME,
                 t => t.HasComment("Судейские категории"));
 
-            entity.Property(dg => dg.Id)
+            entity.Property(rc => rc.Id)
                   .ValueGeneratedNever()
                   .HasConversion(
                       enm => enm.ToInt(),
-                      i => i.ToEnumWithException<RefereeLevelEnm>()
+                      i => i.ToEnumWithException<RefereeCategoryEnm>()
                   );
 
-            entity.Property(dg => dg.Name)
+            entity.Property(rc => rc.Name)
                   .IsRequired()
                   .HasMaxLength(100);
                 
-            entity.Property(dg => dg.FullName)
+            entity.Property(rc => rc.FullName)
                   .IsRequired()
                   .HasMaxLength(100);
 
-            entity.Property(dg => dg.Description)
+            entity.Property(rc => rc.Description)
                   .HasMaxLength(300);
 
-            entity.HasKey(dg => dg.Id)
-                  .HasName("PK_RefereeLevels");
+            entity.HasKey(rc => rc.Id)
+                  .HasName("PK_RefereeCategories");
         });
     }
         
     /// <summary>
     /// Создание судейских должностей.
     /// </summary>
-    private void CreateModel_RefereeingPositions(ModelBuilder modelBuilder)
+    private void CreateModel_RefereeRoles(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<RefereeJobTitle>(entity =>
+        modelBuilder.Entity<RefereeRole>(entity =>
         {
-            entity.ToTable($"{CONFIGURATION_TABLE_PRE}RefereeJobTitles", CONFIGURATION_SCHEMA_NAME,
+            entity.ToTable($"{CONFIGURATION_TABLE_PRE}RefereeRoles", CONFIGURATION_SCHEMA_NAME,
                 t => t.HasComment("Судейские должности"));
 
-            entity.Property(jt => jt.Id)
+            entity.Property(rr => rr.Id)
                   .ValueGeneratedNever()
                   .HasConversion(
                       enm => enm.ToInt(),
-                      i => i.ToEnumWithException<RefereeJobTitleEnm>()
+                      i => i.ToEnumWithException<RefereeRoleEnm>()
                   );
 
-            entity.Property(dg => dg.Name)
+            entity.Property(rr => rr.Name)
                   .IsRequired()
                   .HasMaxLength(100);
 
-            entity.Property(dg => dg.Description)
+            entity.Property(rr => rr.Description)
                   .HasMaxLength(300);
 
-            entity.HasKey(dg => dg.Id)
-                  .HasName("PK_RefereeJobTitles");
+            // Первичный ключ
+            entity.HasKey(rr => rr.Id)
+                  .HasName("PK_RefereeRoles");
+            
+            // Связь "многие ко многим" с Группой дисциплин
+            modelBuilder.Entity<RefereeRole>()
+                        .HasMany(rr => rr.DisciplineGroups)
+                        .WithMany(dg => dg.RefereeRoles)
+                        // Явно задаём имя таблицы
+                        .UsingEntity(builder =>  builder.ToTable($"{CONFIGURATION_TABLE_PRE}RefereeRoleDisciplineGroups"));
+        });
+    }
+
+    /// <summary>
+    /// Создание доступностей судейских должностей.
+    /// </summary>
+    private void CreateModel_RefereeRoleAvailabilities(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<RefereeRoleAvailability>(entity =>
+        {
+
+            entity.ToTable($"{CONFIGURATION_TABLE_PRE}RefereeRoleAvailabilities", CONFIGURATION_SCHEMA_NAME,
+                t => t.HasComment("Доступности судейских должностей"));
+
+            entity.Property(rra => rra.Id)
+                  .ValueGeneratedNever()
+                  .HasConversion(
+                      enm => enm.ToInt(),
+                      i => i.ToEnumWithException<RefereeRoleEnm>()
+                  );
+
+            entity.Property(rra => rra.Name)
+                  .IsRequired()
+                  .HasMaxLength(100);
+
+            entity.Property(rra => rra.RefereeCategoryId)
+                  .IsRequired();
+
+            entity.Property(rra => rra.MaxRefereesPerRole)
+                  .IsRequired();
+
+            entity.Property(rra => rra.Description)
+                  .HasMaxLength(300);
+
+            // Первичный ключ - составной
+            entity.HasKey(rra => new { rra.Id, rra.DetailedCompetitionStatusId })
+                  .HasName("PK_RefereeRoles");
         });
     }
 
@@ -324,35 +369,35 @@ public sealed partial class AppDbContext : IConfigurationDbContext
             entity.ToTable($"{CONFIGURATION_TABLE_PRE}Sexes", CONFIGURATION_SCHEMA_NAME, 
                 t => t.HasComment("Варианты пола"));
 
-            entity.Property(dg => dg.Id)
+            entity.Property(s => s.Id)
                   .ValueGeneratedNever()
                   .HasConversion(
                       enm => enm.ToInt(),
                       i => i.ToEnumWithException<SexEnm>()
                   );
                 
-            entity.Property(dg => dg.Name)
+            entity.Property(s => s.Name)
                   .IsRequired()
                   .HasMaxLength(100);
                 
-            entity.Property(dg => dg.PersonalityName)
+            entity.Property(s => s.PersonalityName)
                   .HasMaxLength(100);
 
-            entity.Property(dg => dg.PersonalityNamePlural)
+            entity.Property(s => s.PersonalityNamePlural)
                   .HasMaxLength(100);
 
-            entity.Property(dg => dg.TeamName)
+            entity.Property(s => s.TeamName)
                   .IsRequired()
                   .HasMaxLength(100);
 
-            entity.Property(dg => dg.TeamNamePlural)
+            entity.Property(s => s.TeamNamePlural)
                   .IsRequired()
                   .HasMaxLength(100);
 
-            entity.Property(dg => dg.Description)
+            entity.Property(s => s.Description)
                   .HasMaxLength(300);
 
-            entity.HasKey(dg => dg.Id)
+            entity.HasKey(s => s.Id)
                   .HasName("PK_Sexes");
         });
     }
@@ -374,17 +419,17 @@ public sealed partial class AppDbContext : IConfigurationDbContext
                       i => i.ToEnumWithException<SportUnitTypeEnm>()
                   );
                 
-            entity.Property(dg => dg.Name)
+            entity.Property(sut => sut.Name)
                   .IsRequired()
                   .HasMaxLength(100);
                 
-            entity.Property(dg => dg.AuxName)
+            entity.Property(sut => sut.AuxName)
                   .HasMaxLength(100);
 
-            entity.Property(dg => dg.Description)
+            entity.Property(sut => sut.Description)
                   .HasMaxLength(300);
 
-            entity.HasKey(dg => dg.Id)
+            entity.HasKey(sut => sut.Id)
                   .HasName("PK_SportUnitTypes");
         });
     }

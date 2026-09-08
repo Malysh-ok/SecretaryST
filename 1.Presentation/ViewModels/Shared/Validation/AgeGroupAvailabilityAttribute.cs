@@ -11,8 +11,8 @@ public class AgeGroupAvailabilityAttribute : ValidationAttribute
 {
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
-        var vm = (SportEventObservable)validationContext.ObjectInstance;
-        if (value == null || ! vm.AvailableAgeGroups.Contains((AgeGroup)value))
+        var seo = (SportEventObservable)validationContext.ObjectInstance;
+        if (value == null || ! seo.AvailableAgeGroups.Contains((AgeGroup)value))
         {
             return new ValidationResult("Ошибка: недопустимое значение возрастной группы.");
         }

@@ -7,6 +7,7 @@ using Common.WpfModule.Ui.Services;
 using Common.WpfModule.Ui.Views._Contracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Presentation.ViewModels.Shared.Models._Contracts;
 
 // ReSharper disable InconsistentNaming
 
@@ -20,17 +21,17 @@ public sealed class MainVM : ObservableRecipient, IDisposable
     /// <summary>
     /// Провайдер сообщений об ошибках предметной области приложения.
     /// </summary>
-    private readonly IAppErrorMsgProvider _appErrorMsgProvider = null!;
+    private readonly IAppErrorMsgProvider _appErrorMsgProvider;
 
     /// <summary>
     /// Фабрика создания представления <see cref="SettingVM"/>.
     /// </summary>
-    private readonly Func<IViewWithResources, SettingVM> _settingVmFactory = null!;
+    private readonly Func<IViewWithResources, SettingVM> _settingVmFactory;
     
     /// <summary>
     /// Фабрика создания представления <see cref="BackstageVM"/>.
     /// </summary>
-    private readonly Func<BackstageVM> _backstageVmFactory = null!;
+    private readonly Func<ICompetitionChangeNotifier, BackstageVM> _backstageVmFactory;
 
     /// <summary>
     /// Модель представления настроек.
@@ -38,7 +39,7 @@ public sealed class MainVM : ObservableRecipient, IDisposable
     public SettingVM SettingVM
     {
         get;
-        set => SetProperty(ref field, value);
+        private set => SetProperty(ref field, value);
     } = null!;
 
     /// <summary>
@@ -47,31 +48,23 @@ public sealed class MainVM : ObservableRecipient, IDisposable
     public BackstageVM BackstageVM
     {
         get;
-        set => SetProperty(ref field, value);
+        private set => SetProperty(ref field, value);
     } = null!;
 
     /// <summary>
     /// Сервис статус-бара.
     /// </summary>
-    public StatusBarService _statusBarService { get; } = null!;
+    public StatusBarService _statusBarService { get; }
 
     // TODO: Временная команда PinkCommand (кнопка панели быстрого доступа)
-    public ICommand PinkCommand { get; } = null!;
-
-    /// <summary>
-    /// Конструктор, запрещающий создания экземпляра без параметров.
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
-    private MainVM()
-    {
-    }
+    public ICommand PinkCommand { get; }
     
     /// <summary>
     /// Конструктор.
     /// </summary>
     public MainVM(
         Func<IViewWithResources, SettingVM> settingVmFactory,
-        Func<BackstageVM> backstageVmFactory, 
+        Func<ICompetitionChangeNotifier, BackstageVM> backstageVmFactory, 
         IAppErrorMsgProvider appErrorMsgProvider,
         StatusBarService statusBarService)
     {
@@ -97,11 +90,11 @@ public sealed class MainVM : ObservableRecipient, IDisposable
     /// </remarks>
     /// <param name="view">Главное представление, реализующее <see cref="IViewWithResources"/>,
     /// которое передаётся дочерним ViewModel для локализации.</param>
-    public void Initialize(IViewWithResources view)
+    public void Init(IViewWithResources view)
     {
         // Последовательность создания важна!
         SettingVM = _settingVmFactory(view);
-        BackstageVM = _backstageVmFactory();
+        BackstageVM = _backstageVmFactory(SettingVM);
     }
     
     /// <summary>

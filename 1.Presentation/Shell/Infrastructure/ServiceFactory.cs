@@ -6,6 +6,7 @@ using Common.WpfModule.Ui.Views._Contracts;
 using DataAccess.DbContexts.DbConfigure;
 using Microsoft.Extensions.DependencyInjection;
 using Presentation.ViewModels.Main;
+using Presentation.ViewModels.Shared.Models._Contracts;
 
 // ReSharper disable InconsistentNaming
 
@@ -86,11 +87,12 @@ public static class ServiceFactory
     /// Создаёт экземпляр <see cref="BackstageVM"/> с использованием DI-контейнера.
     /// </summary>
     /// <param name="sp">Провайдер сервисов для разрешения зависимостей.</param>
+    /// <param name="competitionChangeNotifier">VewModel, реализующая <see cref="ICompetitionChangeNotifier"/></param>
     /// <returns>Сконфигурированный экземпляр <see cref="BackstageVM"/>.</returns>
     /// <remarks>
     /// Аналогично <see cref="CreateSettingVM"/>, но без дополнительных параметров.
     /// Все зависимости разрешаются автоматически из <paramref name="sp"/>.
     /// </remarks>
-    public static BackstageVM CreateBackstageVM(IServiceProvider sp)
-        => ActivatorUtilities.CreateInstance<BackstageVM>(sp);
+    public static BackstageVM CreateBackstageVM(IServiceProvider sp, ICompetitionChangeNotifier competitionChangeNotifier)
+        => ActivatorUtilities.CreateInstance<BackstageVM>(sp,  competitionChangeNotifier);
 }

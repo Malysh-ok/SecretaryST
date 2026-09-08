@@ -6,7 +6,7 @@ namespace ProblemDomain.Entities.LibraryEntities.Enums;
 /// Судейские категории.
 /// </summary>
 [SuppressMessage("ReSharper", "CommentTypo")]
-public enum RefereeLevelEnm
+public enum RefereeCategoryEnm
 {
     /// <summary>
     /// ЮСС.

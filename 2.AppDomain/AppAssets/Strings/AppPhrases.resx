@@ -21,14 +21,14 @@
     <data name="RefereesLoadError" xml:space="preserve">
         <value>Failed to retrieve the list of referees from the repository.</value>
     </data>
-    <data name="CompetitionDataLoadError" xml:space="preserve">
+    <data name="CompetitionLoadError" xml:space="preserve">
         <value>Failed to retrieve the competition from the repository.</value>
     </data>
-    <data name="RefereeLevelsLoadError" xml:space="preserve">
-        <value>Failed to retrieve the list of referee levels from the repository.</value>
+    <data name="RefereeCategoriesLoadError" xml:space="preserve">
+        <value>Failed to retrieve the list of referee categories from the repository.</value>
     </data>
-    <data name="RefereeJobTitlesLoadError" xml:space="preserve">
-        <value>Failed to get a list of referee job titles from the repository.</value>
+    <data name="RefereeRolesLoadError" xml:space="preserve">
+        <value>Failed to get a list of referee roles from the repository.</value>
     </data>
     <data name="CompetitionStatusesLoadError" xml:space="preserve">
         <value>Failed to retrieve the list of competition statuses in the repository.</value>
@@ -36,23 +36,23 @@
     <data name="DetailedCompetitionStatusesLoadError" xml:space="preserve">
         <value>Failed to retrieve the list of competition statuses and names from the repository.</value>
     </data>
-    <data name="CompetitionDataSaveError" xml:space="preserve">
+    <data name="CompetitionSaveError" xml:space="preserve">
         <value>Failed to save the competition to the repository.</value>
     </data>
-    <data name="CompetitionDataCreateError" xml:space="preserve">
+    <data name="CompetitionCreateError" xml:space="preserve">
         <value>Failed to create the new competition in the repository.</value>
     </data>
-    <data name="CompetitionDataRemoveError" xml:space="preserve">
+    <data name="CompetitionRemoveError" xml:space="preserve">
         <value>Failed to remove the competition from the repository.</value>
     </data>
-    <data name="RefereeLevelFindError" xml:space="preserve">
-        <value>Failed to find the referee level in the repository.</value>
+    <data name="RefereeCategoryFindError" xml:space="preserve">
+        <value>Failed to find the referee category in the repository.</value>
     </data>
     <data name="RefereeCreateError" xml:space="preserve">
         <value>Failed to create the new referee in the repository.</value>
     </data>
-    <data name="RefereeJobTitleFindError" xml:space="preserve">
-        <value>Failed to find the referee job titles in the repository.</value>
+    <data name="RefereeRoleFindError" xml:space="preserve">
+        <value>Failed to find the referee roles in the repository.</value>
     </data>
     <data name="RefereeRemoveError" xml:space="preserve">
         <value>Failed to remove the referee from the repository.</value>
@@ -66,10 +66,10 @@
     <data name="DetailedCompetitionStatusFindError" xml:space="preserve">
         <value>Failed to find the detailed competitions status in the repository.</value>
     </data>
-    <data name="CompetitionDataIsNull" xml:space="preserve">
+    <data name="CompetitionIsNull" xml:space="preserve">
         <value>The competition is missing.</value>
     </data>
-    <data name="CompetitionDataNotFound" xml:space="preserve">
+    <data name="CompetitionNotFound" xml:space="preserve">
         <value>The competition was not found  in the repository.</value>
     </data>
     <data name="ConductingOrganizationsLoadError" xml:space="preserve">
@@ -102,7 +102,7 @@
     <data name="SportEventRemoveError" xml:space="preserve">
         <value>Failed to remove the sport event from the repository.</value>
     </data>
-    <data name="CompetitionDataListLoadError" xml:space="preserve">
+    <data name="CompetitionListLoadError" xml:space="preserve">
         <value>Failed to retrieve the list of competition from the repository.</value>
     </data>
     <data name="DisciplinesLoadError" xml:space="preserve">
@@ -134,5 +134,8 @@
     </data>
     <data name="AgeGroupsLoadError" xml:space="preserve">
         <value>Failed to retrieve the list of age groups from the repository.</value>
+    </data>
+    <data name="RefereeAvailableRolesCalculateError" xml:space="preserve">
+        <value>Failed to calculate referee roles.</value>
     </data>
 </root>

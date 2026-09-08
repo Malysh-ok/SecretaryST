@@ -512,7 +512,7 @@ public class Repository<TDbContext> : IRepository
                 return Result<int>.Done(0);
         
             var entry = DbContext.Entry(entity);
-
+            
             // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
             switch (entry.State)
             {
@@ -681,6 +681,27 @@ public class Repository<TDbContext> : IRepository
     }
     
     /// <inheritdoc />
+    public Result<int> Detach<TEntity>(int id) where TEntity : class, IAbstractEntity
+    {
+        try
+        {
+            var entity = DbContext.Set<TEntity>().Find(id);
+            if (entity == null)
+                return Result<int>.Done(0);
+
+            var entry = DbContext.Entry(entity);
+            entry.State = EntityState.Detached;
+        
+            return Result<int>.Done(1);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(_dataAccessErrorMsgProvider.CreateException(
+                DataAccessErrorCodes.UnknownError, ex));
+        }
+    }
+    
+    /// <inheritdoc />
     public Result<int> DetachAll<TEntity>() where TEntity : class
     {
         try
@@ -727,6 +748,10 @@ public class Repository<TDbContext> : IRepository
         {
             // Включаем AutoDetectChanges ТОЛЬКО на время сохранения
             DbContext.ChangeTracker.AutoDetectChangesEnabled = true;
+            
+            // Для отладки
+            // var entries = DbContext.ChangeTracker.Entries();
+            
             var result = await DbContext.SaveChangesAsync();
 
             return Result<int>.Done(result);

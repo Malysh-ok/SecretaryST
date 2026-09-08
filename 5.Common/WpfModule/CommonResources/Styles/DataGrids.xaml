@@ -34,7 +34,7 @@
         <Setter Property="CanUserAddRows" Value="False" />
         <Setter Property="CanUserDeleteRows" Value="False" />
     </Style>
-    
+
     <!-- БАЗОВЫЙ ЗАГОЛОВОК СТОЛБЦА -->
     <!-- Стиль -->
     <Style x:Key="ColumnHeaderDefault" TargetType="DataGridColumnHeader" >

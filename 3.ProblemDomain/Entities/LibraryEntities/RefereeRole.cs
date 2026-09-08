@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.CommonEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
@@ -8,30 +9,38 @@ using ProblemDomain.Entities.LibraryEntities.Enums;
 namespace ProblemDomain.Entities.LibraryEntities;
 
 /// <summary>
-/// Судейская категория.
+/// Судейская должность.
 /// </summary>
-public sealed class RefereeLevel : AbstractEntity<RefereeLevelEnm>, IEntityCopyable
+public sealed class RefereeRole : AbstractEntity<RefereeRoleEnm>, IEntityCopyable
 {
+    /// <summary>
+    /// Конструктор для EF.
+    /// </summary>
+    /// <param name="id">Идентификатор.</param>
+    /// <inheritdoc />
+    private RefereeRole(
+        RefereeRoleEnm id, 
+        string name, 
+        string? description = null) : base(name, description)
+    {
+        Id = id;
+    }
+
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="id">Идентификатор.</param>
     /// <inheritdoc />
-    /// <param name="fullName">Полное наименование.</param>
-    public RefereeLevel(
-        RefereeLevelEnm id, 
+    public RefereeRole(
+        RefereeRoleEnm id, 
         string name, 
-        string fullName, 
-        string? description = null) : base(name, description)
+        ICollection<DisciplineGroup> disciplineGroups,
+        bool isAvailable = true,
+        string? description = null) : this(id, name, description)
     {
+        DisciplineGroups = disciplineGroups;
         Id = id;
-        FullName = fullName;
     }
-
-    /// <summary>
-    /// Полное наименование.
-    /// </summary>
-    public string FullName { get; set; }
 
     /// <summary>
     /// Коллекция судей.
@@ -39,19 +48,23 @@ public sealed class RefereeLevel : AbstractEntity<RefereeLevelEnm>, IEntityCopya
     // ReSharper disable once CollectionNeverUpdated.Global
     public ICollection<Referee> Referees { get; set; } = new HashSet<Referee>();
 
+    /// <summary>
+    /// Коллекция групп дисциплин.
+    /// </summary>
+    public ICollection<DisciplineGroup> DisciplineGroups { get; set; } = new HashSet<DisciplineGroup>();
+    
     /// <inheritdoc cref="IEntityCopyable.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
-    public void Copy(RefereeLevel destination)
+    public void Copy(RefereeRole destination)
     {
         destination.Name = Name;
-        destination.FullName = FullName;
         destination.Description = Description;
     }
 
     /// <inheritdoc />
     void IEntityCopyable.Copy(IAbstractEntity destination)
     {
-        Copy((RefereeLevel)destination);
+        Copy((RefereeRole)destination);
     }
 
     /// <inheritdoc />

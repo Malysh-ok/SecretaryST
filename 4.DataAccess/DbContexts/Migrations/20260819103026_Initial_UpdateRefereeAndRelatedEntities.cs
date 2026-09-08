@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccess.DbContexts.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class Initial_UpdateRefereeAndRelatedEntities : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -52,35 +52,35 @@ namespace DataAccess.DbContexts.Migrations
                 comment: "Группы дисциплин");
 
             migrationBuilder.CreateTable(
-                name: "Lib_RefereeJobTitles",
+                name: "Lib_RefereeCategories",
                 schema: "Library",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    FullName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "TEXT", maxLength: 300, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RefereeJobTitles", x => x.Id);
-                },
-                comment: "Судейские должности");
-
-            migrationBuilder.CreateTable(
-                name: "Lib_RefereeLevels",
-                schema: "Library",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
-                    LongName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 300, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RefereeLevels", x => x.Id);
+                    table.PrimaryKey("PK_RefereeCategories", x => x.Id);
                 },
                 comment: "Судейские категории");
+
+            migrationBuilder.CreateTable(
+                name: "Lib_RefereeRoles",
+                schema: "Library",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 300, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefereeRoles", x => x.Id);
+                },
+                comment: "Судейские должности");
 
             migrationBuilder.CreateTable(
                 name: "Lib_Sexes",
@@ -131,7 +131,7 @@ namespace DataAccess.DbContexts.Migrations
                 {
                     table.PrimaryKey("PK_DetailedCompetitionStatuses", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Lib_DetailedCompetitionStatuses_Lib_CompetitionsStatuses_CompetitionsStatusId",
+                        name: "FK_DetailedCompetitionStatuses_CompetitionsStatusId",
                         column: x => x.CompetitionsStatusId,
                         principalSchema: "Library",
                         principalTable: "Lib_CompetitionsStatuses",
@@ -139,6 +139,31 @@ namespace DataAccess.DbContexts.Migrations
                         onDelete: ReferentialAction.Cascade);
                 },
                 comment: "Статусы и наименования соревнований");
+
+            migrationBuilder.CreateTable(
+                name: "Lib_Difficulties",
+                schema: "Library",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    DisciplineGroupId = table.Column<int>(type: "INTEGER", nullable: false),
+                    FullName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    FullNameGenitive = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 300, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Difficulties", x => new { x.Id, x.DisciplineGroupId });
+                    table.ForeignKey(
+                        name: "FK_Difficulties_DisciplineGroupId",
+                        column: x => x.DisciplineGroupId,
+                        principalSchema: "Library",
+                        principalTable: "Lib_DisciplineGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                },
+                comment: "Трудности");
 
             migrationBuilder.CreateTable(
                 name: "Lib_DisciplineSubGroups",
@@ -164,41 +189,30 @@ namespace DataAccess.DbContexts.Migrations
                 comment: "Подгруппы дисциплин");
 
             migrationBuilder.CreateTable(
-                name: "Common_Referees",
-                schema: "Common",
+                name: "Lib_RefereeRoleDisciplineGroups",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Number = table.Column<int>(type: "INTEGER", nullable: false),
-                    Domicile = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    RefereeLevelId = table.Column<int>(type: "INTEGER", nullable: false),
-                    RefereeJobTitleId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: true),
-                    FirstName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    LastName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Patronymic = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false, computedColumnSql: "LastName || ' ' || FirstName || IIF(Patronymic IS NULL, '', ' ' || Patronymic)", stored: true)
+                    DisciplineGroupsId = table.Column<int>(type: "INTEGER", nullable: false),
+                    RefereeRolesId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Referees", x => x.Id);
+                    table.PrimaryKey("PK_Lib_RefereeRoleDisciplineGroups", x => new { x.DisciplineGroupsId, x.RefereeRolesId });
                     table.ForeignKey(
-                        name: "FK_Referees_RefereeLevelId",
-                        column: x => x.RefereeLevelId,
+                        name: "FK_Lib_RefereeRoleDisciplineGroups_Lib_DisciplineGroups_DisciplineGroupsId",
+                        column: x => x.DisciplineGroupsId,
                         principalSchema: "Library",
-                        principalTable: "Lib_RefereeLevels",
+                        principalTable: "Lib_DisciplineGroups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Referees_RefereeingPositionId",
-                        column: x => x.RefereeJobTitleId,
+                        name: "FK_Lib_RefereeRoleDisciplineGroups_Lib_RefereeRoles_RefereeRolesId",
+                        column: x => x.RefereeRolesId,
                         principalSchema: "Library",
-                        principalTable: "Lib_RefereeJobTitles",
+                        principalTable: "Lib_RefereeRoles",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                },
-                comment: "Судьи");
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateTable(
                 name: "Common_Representatives",
@@ -213,8 +227,7 @@ namespace DataAccess.DbContexts.Migrations
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     FirstName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Patronymic = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false, computedColumnSql: "LastName || ' ' || FirstName || IIF(Patronymic IS NULL, '', ' ' || Patronymic)", stored: true)
+                    Patronymic = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -236,10 +249,12 @@ namespace DataAccess.DbContexts.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    ConductingOrganizations = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
+                    ConductingOrganizations = table.Column<string>(type: "json", nullable: false),
                     InitialDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     EndDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Venue = table.Column<string>(type: "TEXT", maxLength: 300, nullable: false),
+                    ShortName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    IsStudentCompetition = table.Column<bool>(type: "INTEGER", nullable: false),
                     CompetitionsStatusId = table.Column<int>(type: "INTEGER", nullable: false),
                     DetailedCompetitionStatusId = table.Column<int>(type: "INTEGER", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
@@ -266,11 +281,40 @@ namespace DataAccess.DbContexts.Migrations
                 comment: "Данные о соревновании");
 
             migrationBuilder.CreateTable(
+                name: "Lib_AgeGroups",
+                schema: "Library",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    DisciplineSubGroupId = table.Column<int>(type: "INTEGER", nullable: false),
+                    MinAge = table.Column<int>(type: "INTEGER", nullable: false),
+                    MaxAge = table.Column<int>(type: "INTEGER", nullable: true),
+                    MinStudentAge = table.Column<int>(type: "INTEGER", nullable: true),
+                    MaxStudentAge = table.Column<int>(type: "INTEGER", nullable: true),
+                    IsStudentCompetition = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 300, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Difficulties", x => new { x.Id, x.DisciplineSubGroupId });
+                    table.ForeignKey(
+                        name: "FK_Difficulties_DisciplineSubGroupId",
+                        column: x => x.DisciplineSubGroupId,
+                        principalSchema: "Library",
+                        principalTable: "Lib_DisciplineSubGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                },
+                comment: "Возрастные группы");
+
+            migrationBuilder.CreateTable(
                 name: "Lib_Disciplines",
                 schema: "Library",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    FullName = table.Column<string>(type: "TEXT", maxLength: 150, nullable: false),
                     DisciplineSubGroupId = table.Column<int>(type: "INTEGER", nullable: false),
                     DisciplineGroupId = table.Column<int>(type: "INTEGER", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
@@ -306,12 +350,20 @@ namespace DataAccess.DbContexts.Migrations
                     Number = table.Column<int>(type: "INTEGER", nullable: false),
                     Region = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     RepresentativeId = table.Column<int>(type: "INTEGER", nullable: false),
+                    CompetitionDataId = table.Column<int>(type: "INTEGER", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "TEXT", maxLength: 300, nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Delegations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Delegations_CompetitionDataId",
+                        column: x => x.CompetitionDataId,
+                        principalSchema: "Common",
+                        principalTable: "Common_CompetitionData",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Delegations_RepresentativeId",
                         column: x => x.RepresentativeId,
@@ -323,21 +375,92 @@ namespace DataAccess.DbContexts.Migrations
                 comment: "Делегации");
 
             migrationBuilder.CreateTable(
+                name: "Common_Referees",
+                schema: "Common",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Number = table.Column<int>(type: "INTEGER", nullable: false),
+                    Domicile = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    CategoryId = table.Column<int>(type: "INTEGER", nullable: false),
+                    CategoryGrantedDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    RoleId = table.Column<int>(type: "INTEGER", nullable: false),
+                    CompetitionDataId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
+                    FirstName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    LastName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Patronymic = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Referees", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Referees_CategoryId",
+                        column: x => x.CategoryId,
+                        principalSchema: "Library",
+                        principalTable: "Lib_RefereeCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Referees_CompetitionDataId",
+                        column: x => x.CompetitionDataId,
+                        principalSchema: "Common",
+                        principalTable: "Common_CompetitionData",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Referees_RoleId",
+                        column: x => x.RoleId,
+                        principalSchema: "Library",
+                        principalTable: "Lib_RefereeRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                },
+                comment: "Судьи");
+
+            migrationBuilder.CreateTable(
                 name: "Distance_SportEvents",
                 schema: "Distance",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    Number = table.Column<int>(type: "INTEGER", nullable: false),
                     IsShort = table.Column<bool>(type: "INTEGER", nullable: true),
-                    Difficulty = table.Column<int>(type: "INTEGER", nullable: false),
+                    DifficultyId = table.Column<int>(type: "INTEGER", nullable: false),
                     DisciplineId = table.Column<int>(type: "INTEGER", nullable: false),
+                    DisciplineGroupId = table.Column<int>(type: "INTEGER", nullable: false),
+                    DisciplineSubGroupId = table.Column<int>(type: "INTEGER", nullable: false),
+                    AgeGroupId = table.Column<int>(type: "INTEGER", nullable: false),
+                    CompetitionDataId = table.Column<int>(type: "INTEGER", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "TEXT", maxLength: 300, nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SportEvents", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SportEvents_AgeGroupId_DisciplineSubGroupId",
+                        columns: x => new { x.AgeGroupId, x.DisciplineSubGroupId },
+                        principalSchema: "Library",
+                        principalTable: "Lib_AgeGroups",
+                        principalColumns: new[] { "Id", "DisciplineSubGroupId" },
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SportEvents_CompetitionDataId",
+                        column: x => x.CompetitionDataId,
+                        principalSchema: "Common",
+                        principalTable: "Common_CompetitionData",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SportEvents_DifficultyId_DisciplineGroupId",
+                        columns: x => new { x.DifficultyId, x.DisciplineGroupId },
+                        principalSchema: "Library",
+                        principalTable: "Lib_Difficulties",
+                        principalColumns: new[] { "Id", "DisciplineGroupId" },
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_SportEvents_DisciplineId",
                         column: x => x.DisciplineId,
@@ -410,8 +533,7 @@ namespace DataAccess.DbContexts.Migrations
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     FirstName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Patronymic = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false, computedColumnSql: "LastName || ' ' || FirstName || IIF(Patronymic IS NULL, '', ' ' || Patronymic)", stored: true)
+                    Patronymic = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -471,29 +593,58 @@ namespace DataAccess.DbContexts.Migrations
                 column: "DetailedCompetitionStatusId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Common_Delegations_CompetitionDataId",
+                schema: "Common",
+                table: "Common_Delegations",
+                column: "CompetitionDataId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Common_Delegations_RepresentativeId",
                 schema: "Common",
                 table: "Common_Delegations",
                 column: "RepresentativeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Common_Referees_RefereeJobTitleId",
+                name: "IX_Common_Referees_CategoryId",
                 schema: "Common",
                 table: "Common_Referees",
-                column: "RefereeJobTitleId",
-                unique: true);
+                column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Common_Referees_RefereeLevelId",
+                name: "IX_Common_Referees_CompetitionDataId",
                 schema: "Common",
                 table: "Common_Referees",
-                column: "RefereeLevelId");
+                column: "CompetitionDataId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Common_Referees_RoleId",
+                schema: "Common",
+                table: "Common_Referees",
+                column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Common_Representatives_SexId",
                 schema: "Common",
                 table: "Common_Representatives",
                 column: "SexId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Distance_SportEvents_AgeGroupId_DisciplineSubGroupId",
+                schema: "Distance",
+                table: "Distance_SportEvents",
+                columns: new[] { "AgeGroupId", "DisciplineSubGroupId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Distance_SportEvents_CompetitionDataId",
+                schema: "Distance",
+                table: "Distance_SportEvents",
+                column: "CompetitionDataId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Distance_SportEvents_DifficultyId_DisciplineGroupId",
+                schema: "Distance",
+                table: "Distance_SportEvents",
+                columns: new[] { "DifficultyId", "DisciplineGroupId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Distance_SportEvents_DisciplineId",
@@ -526,10 +677,22 @@ namespace DataAccess.DbContexts.Migrations
                 column: "SportUnitTypeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Lib_AgeGroups_DisciplineSubGroupId",
+                schema: "Library",
+                table: "Lib_AgeGroups",
+                column: "DisciplineSubGroupId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Lib_DetailedCompetitionStatuses_CompetitionsStatusId",
                 schema: "Library",
                 table: "Lib_DetailedCompetitionStatuses",
                 column: "CompetitionsStatusId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Lib_Difficulties_DisciplineGroupId",
+                schema: "Library",
+                table: "Lib_Difficulties",
+                column: "DisciplineGroupId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Lib_Disciplines_DisciplineGroupId",
@@ -548,6 +711,11 @@ namespace DataAccess.DbContexts.Migrations
                 schema: "Library",
                 table: "Lib_DisciplineSubGroups",
                 column: "DisciplineGroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Lib_RefereeRoleDisciplineGroups_RefereeRolesId",
+                table: "Lib_RefereeRoleDisciplineGroups",
+                column: "RefereeRolesId");
         }
 
         /// <inheritdoc />
@@ -558,12 +726,11 @@ namespace DataAccess.DbContexts.Migrations
                 schema: "Common");
 
             migrationBuilder.DropTable(
-                name: "Common_CompetitionData",
+                name: "Common_Referees",
                 schema: "Common");
 
             migrationBuilder.DropTable(
-                name: "Common_Referees",
-                schema: "Common");
+                name: "Lib_RefereeRoleDisciplineGroups");
 
             migrationBuilder.DropTable(
                 name: "Common_Delegations",
@@ -574,15 +741,11 @@ namespace DataAccess.DbContexts.Migrations
                 schema: "Distance");
 
             migrationBuilder.DropTable(
-                name: "Lib_DetailedCompetitionStatuses",
+                name: "Lib_RefereeCategories",
                 schema: "Library");
 
             migrationBuilder.DropTable(
-                name: "Lib_RefereeLevels",
-                schema: "Library");
-
-            migrationBuilder.DropTable(
-                name: "Lib_RefereeJobTitles",
+                name: "Lib_RefereeRoles",
                 schema: "Library");
 
             migrationBuilder.DropTable(
@@ -598,11 +761,19 @@ namespace DataAccess.DbContexts.Migrations
                 schema: "Library");
 
             migrationBuilder.DropTable(
-                name: "Lib_CompetitionsStatuses",
+                name: "Lib_Sexes",
                 schema: "Library");
 
             migrationBuilder.DropTable(
-                name: "Lib_Sexes",
+                name: "Lib_AgeGroups",
+                schema: "Library");
+
+            migrationBuilder.DropTable(
+                name: "Common_CompetitionData",
+                schema: "Common");
+
+            migrationBuilder.DropTable(
+                name: "Lib_Difficulties",
                 schema: "Library");
 
             migrationBuilder.DropTable(
@@ -610,7 +781,15 @@ namespace DataAccess.DbContexts.Migrations
                 schema: "Library");
 
             migrationBuilder.DropTable(
+                name: "Lib_DetailedCompetitionStatuses",
+                schema: "Library");
+
+            migrationBuilder.DropTable(
                 name: "Lib_DisciplineSubGroups",
+                schema: "Library");
+
+            migrationBuilder.DropTable(
+                name: "Lib_CompetitionsStatuses",
                 schema: "Library");
 
             migrationBuilder.DropTable(

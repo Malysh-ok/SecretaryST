@@ -222,6 +222,20 @@ public static class ListExtensions
         }
         return -1;
     }
+    
+    /// <summary>
+    /// Возвращает элемент по индексу или null, если индекс вне диапазона.
+    /// </summary>
+    /// <typeparam name="T">Тип элемента.</typeparam>
+    /// <param name="list">Список.</param>
+    /// <param name="index">Индекс элемента.</param>
+    public static T GetOrDefault<T>(this IList<T> list, int index)
+    {
+        if (index < 0 || index >= list.Count)
+            return default;
+        
+        return list[index];
+    }
 
     /// <summary>
     /// Получение ключа SortedList по значению.

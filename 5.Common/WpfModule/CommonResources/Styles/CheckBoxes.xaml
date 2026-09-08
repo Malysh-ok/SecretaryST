@@ -5,7 +5,7 @@
     <!-- Стиль -->
     <Style x:Key="BaseCheckBox" 
            TargetType="{x:Type CheckBox}">
-        <Setter Property="Margin" Value="0 10 0 0" />
+        <Setter Property="Margin" Value="0 5 0 0" />
 
         <!-- Для четкой границы -->
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -30,6 +30,5 @@
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
     </Style>
-
-
+    
 </ResourceDictionary>

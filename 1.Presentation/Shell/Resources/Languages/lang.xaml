@@ -36,18 +36,27 @@
     <!--            Соревнования -->
     <v:String x:Key="MainView_Ribbon_Setting_Competitions">Competitions</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_CurrCompetitions">Competitions:</v:String>
-    <v:String x:Key="MainView_Ribbon_Setting_UpdateCompetition">Update data of competition</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_GetCompetition">Update data of competition</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_AddCompetition">Add competition</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_RemoveCompetition">Remove competition</v:String>
     <!--            Виды программы -->
     <v:String x:Key="MainView_Ribbon_Setting_SportEvents">Sport events</v:String>
-    <v:String x:Key="MainView_Ribbon_Setting_DisciplineGroupFilter">Discipline group restriction:</v:String>
-    <v:String x:Key="MainView_Ribbon_Setting_DisciplineSubGroupFilter">Discipline subgroup restriction:</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_DisciplineGroupFilterForSportEvents">Filter by discipline group:</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_DisciplineSubGroupFilterForSportEvents">Filter by discipline subgroup:</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_UpdateSportEvents">Update sport events</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_AddSportEvent">Add sport event</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_RemoveSportEvent">Remove sport event</v:String>
     <!--            Судьи -->
     <v:String x:Key="MainView_Ribbon_Setting_Referees">Referees</v:String>
+    <v:String x:Key="MainView_Ribbon_Setting_IsRefereeDataSelectionRestricted">Restrict selection</v:String>
+    <ToolTip x:Key="MainView_Ribbon_Setting_IsRefereeDataSelectionRestricted_Tooltip">
+        <TextBlock>
+            Restricts referee categories, roles in the MRP<LineBreak/>
+            and for referee inspectors in accordance<LineBreak/>
+            with the Qualification Requirements for Referees.
+        </TextBlock>
+    </ToolTip>
+    <v:String x:Key="MainView_Ribbon_Setting_DisciplineGroupFilterForReferees">Filter by discipline group:</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_UpdateReferees">Update list of referees</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_AddReferee">Add referee</v:String>
     <v:String x:Key="MainView_Ribbon_Setting_RemoveReferee">Remove referee</v:String>
@@ -92,9 +101,11 @@
     <v:String x:Key="SettingControl_RefereeList_LastName">Last Name</v:String>
     <v:String x:Key="SettingControl_RefereeList_FirstName">First Name</v:String>
     <v:String x:Key="SettingControl_RefereeList_Patronymic">Patronymic</v:String>
-    <v:String x:Key="SettingControl_RefereeList_JobTitle">Job Title</v:String>
-    <v:String x:Key="SettingControl_RefereeList_Level">Level</v:String>
     <v:String x:Key="SettingControl_RefereeList_Domicile">Domicile</v:String>
+    <v:String x:Key="SettingControl_RefereeList_Category">Category</v:String>
+    <v:String x:Key="SettingControl_RefereeList_CategoryGrantedDate">Granted date</v:String>
+    <v:String x:Key="SettingControl_RefereeList_IsCategoryExpired">Category expired</v:String>
+    <v:String x:Key="SettingControl_RefereeList_Role">Role</v:String>
     <v:String x:Key="SettingControl_RefereeList_Description">Description</v:String>
 
     

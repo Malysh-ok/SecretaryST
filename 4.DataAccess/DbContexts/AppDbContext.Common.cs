@@ -42,7 +42,7 @@ public sealed partial class AppDbContext : ICommonDbContext
     /// <summary>
     /// Данные о соревновании.
     /// </summary>
-    public DbSet<CompetitionData> CompetitionData { get; set; }
+    public DbSet<Competition> Competition { get; set; }
 
     /// <summary>
     /// Создание спортсменов.
@@ -135,10 +135,10 @@ public sealed partial class AppDbContext : ICommonDbContext
                   .HasConstraintName("FK_Delegations_RepresentativeId");
 
             // Вторичный ключ - Соревнования
-            entity.HasOne(d => d.CompetitionData)
+            entity.HasOne(d => d.Competition)
                   .WithMany(cd => cd.Delegations)
-                  .HasForeignKey(d => d.CompetitionDataId)
-                  .HasConstraintName("FK_Delegations_CompetitionDataId");
+                  .HasForeignKey(d => d.CompetitionId)
+                  .HasConstraintName("FK_Delegations_CompetitionId");
         });
     }
 
@@ -170,31 +170,35 @@ public sealed partial class AppDbContext : ICommonDbContext
                   .HasMaxLength(100);
                 
             // Вычисляемое поле Name - игнорируем
-            entity.Ignore(a => a.Name);
+            entity.Ignore(r => r.Name);
                 
             entity.Property(r => r.Domicile)
                   .HasMaxLength(100);
 
+            entity.Property(r => r.CategoryGrantedDate)
+                  .HasColumnType(_dbConfigurator.ProviderOptions.DateTimeColumnType);
+            
+            // Первичный ключ
             entity.HasKey(r => r.Id)
                   .HasName("PK_Referees");
 
             // Вторичный ключ - Судейская категория
-            entity.HasOne(r => r.RefereeLevel)
+            entity.HasOne(r => r.Category)
                   .WithMany(rl => rl.Referees)
-                  .HasForeignKey(r => r.RefereeLevelId)
-                  .HasConstraintName("FK_Referees_RefereeLevelId");
+                  .HasForeignKey(r => r.CategoryId)
+                  .HasConstraintName("FK_Referees_CategoryId");
 
             // Вторичный ключ - Соревнования
-            entity.HasOne(r => r.CompetitionData)
+            entity.HasOne(r => r.Competition)
                   .WithMany(cd => cd.Referees)
-                  .HasForeignKey(r => r.CompetitionDataId)
-                  .HasConstraintName("FK_Referees_CompetitionDataId");
+                  .HasForeignKey(r => r.CompetitionId)
+                  .HasConstraintName("FK_Referees_CompetitionId");
 
             // Вторичный ключ - Судейская должность
-            entity.HasOne(r => r.RefereeJobTitle)
-                  .WithMany(rjt => rjt.Referees)
-                  .HasForeignKey(r => r.RefereeJobTitleId)
-                  .HasConstraintName("FK_Referees_RefereeJobTitleId");
+            entity.HasOne(r => r.Role)
+                  .WithMany(rr => rr.Referees)
+                  .HasForeignKey(r => r.RoleId)
+                  .HasConstraintName("FK_Referees_RoleId");
         });
     }
         
@@ -247,11 +251,11 @@ public sealed partial class AppDbContext : ICommonDbContext
     /// <summary>
     /// Создание Соревнования (главной сущности).
     /// </summary>
-    private void CreateModel_CompetitionData(ModelBuilder modelBuilder)
+    private void CreateModel_Competition(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<CompetitionData>(entity =>
+        modelBuilder.Entity<Competition>(entity =>
         {
-            entity.ToTable($"{COMMON_TABLE_PRE}CompetitionData", COMMON_SCHEMA_NAME,
+            entity.ToTable($"{COMMON_TABLE_PRE}Competitions", COMMON_SCHEMA_NAME,
                 t => t.HasComment("Данные о соревновании"));
 
             entity.Property(с => с.Id)

@@ -33,4 +33,4 @@ public interface ICommonDbContext
     /// <summary>
     /// Данные о соревновании.
     /// </summary>
-    public DbSet<CompetitionData> CompetitionData { get; set; }    }
+    public DbSet<Competition> Competition { get; set; }    }

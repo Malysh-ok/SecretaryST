@@ -49,7 +49,7 @@ public sealed partial class AppDbContext : AbstractDbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
 #if DEBUG
-        // TODO: Использование логирования в AppDbContext
+        // REMARK: Использование логирования в AppDbContext
         // optionsBuilder.UseLoggerFactory(ConsoleLoggerFactory);
 #endif
 
@@ -82,11 +82,14 @@ public sealed partial class AppDbContext : AbstractDbContext
         CreateModel_Disciplines(modelBuilder);
 
         // Создание судейских категорий
-        CreateModel_RefereeLevels(modelBuilder);
+        CreateModel_RefereeCategories(modelBuilder);
                 
         // Создание судейских должностей. 
-        CreateModel_RefereeingPositions(modelBuilder);
+        CreateModel_RefereeRoles(modelBuilder);
                 
+        // Создание доступностей судейских должностей.
+        CreateModel_RefereeRoleAvailabilities(modelBuilder);
+        
         // Создание вариантов пола.
         CreateModel_Sexes(modelBuilder);
                 
@@ -115,7 +118,7 @@ public sealed partial class AppDbContext : AbstractDbContext
         CreateModel_Representatives(modelBuilder);
                     
         // Создание данных о соревновании.
-        CreateModel_CompetitionData(modelBuilder);
+        CreateModel_Competition(modelBuilder);
 
         #endregion
 

@@ -8,8 +8,8 @@ public class DifficultyAvailabilityAttribute : ValidationAttribute
 {
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
-        var vm = (SportEventObservable)validationContext.ObjectInstance;
-        if (value == null || ! vm.AvailableDifficulties.Contains((Difficulty)value))
+        var seo = (SportEventObservable)validationContext.ObjectInstance;
+        if (value == null || ! seo.AvailableDifficulties.Contains((Difficulty)value))
         {
             return new ValidationResult("Ошибка: недопустимое значение трудности.");
         }

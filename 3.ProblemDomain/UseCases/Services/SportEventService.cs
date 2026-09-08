@@ -15,19 +15,20 @@ namespace ProblemDomain.UseCases.Services;
 /// <param name="problemErrorMsgProvider">Провайдер сообщений об ошибках слоя предметной области.</param>
 public class SportEventService(IRepository repository, IProblemErrorMsgProvider problemErrorMsgProvider)
 {
+    #region [---------- Виды программы ----------]
+
     /// <summary>
-    /// Получение видов программы, связанных с соревнованием.
+    /// Получение коллекции всех видов программы, связанных с соревнованием.
     /// </summary>
     /// <param name="competition">Текущее соревнование.</param>
-    /// <returns>Список видов программы.</returns>
-    public async Task<Result<IList<SportEvent>>> GetSportEventsAsync(CompetitionData competition)
+    public async Task<Result<IList<SportEvent>>> GetAllSportEventsAsync(Competition? competition)
     {
         // Проверяем наличие соревнования
-        if (competition == null!)
+        if (competition == null)
         {
             return Result<IList<SportEvent>>.Fail(
                 problemErrorMsgProvider.CreateException(ProblemErrorCodes.SportEventsLoadError,
-                    problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionDataIsNull))
+                    problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionIsNull))
             );
         }
 
@@ -42,8 +43,10 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
         // Загружаем данные из репозитория
         var sportEventsResult = await repository.GetNumberedAllAsync<SportEvent>(
             true,
-            se => se.CompetitionDataId == competition.Id,
-            nameof(Discipline));
+            se => se.CompetitionId == competition.Id,
+            nameof(SportEvent.Discipline),
+            nameof(SportEvent.Difficulty),
+            nameof(SportEvent.AgeGroup));
         if (! sportEventsResult)
             return Result<IList<SportEvent>>.Fail(
                 problemErrorMsgProvider.CreateException(
@@ -61,7 +64,7 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
     /// <param name="availableDisciplines">Коллекция доступных дисциплин.</param>
     public async Task<Result<SportEvent>> CreateSportEventAsync(
         int number,
-        CompetitionData? competition, 
+        Competition? competition, 
         IList<Discipline> availableDisciplines)
     {
         // Проверяем наличие соревнования
@@ -69,7 +72,7 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
         {
             return Result<SportEvent>.Fail(
                 problemErrorMsgProvider.CreateException(ProblemErrorCodes.SportEventCreateError,
-                    problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionDataIsNull))
+                    problemErrorMsgProvider.CreateException(ProblemErrorCodes.CompetitionIsNull))
             );
         }
         
@@ -182,10 +185,14 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
         return Result<int>.Done(1);
     }
     
+    #endregion
+    
+    #region [---------- Дисциплины ----------]
+
     /// <summary>
-    /// Получение списка групп дисциплин.
+    /// Получение коллекции всех групп дисциплин.
     /// </summary>
-    public async Task<Result<IList<DisciplineGroup>>> GetDisciplineGroupsAsync()
+    public async Task<Result<IList<DisciplineGroup>>> GetAllDisciplineGroupsAsync()
     {
         var disciplineGroupsResult = await repository.GetAllAsync<DisciplineGroup>();
 
@@ -198,9 +205,9 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
     }
 
     /// <summary>
-    /// Получение списка подгрупп дисциплин.
+    /// Получение коллекции всех подгрупп дисциплин.
     /// </summary>
-    public async Task<Result<IList<DisciplineSubGroup>>> GetDisciplineSubGroupsAsync()
+    public async Task<Result<IList<DisciplineSubGroup>>> GetAllDisciplineSubGroupsAsync()
     {
         var disciplineSubGroupsResult = await repository.GetAllAsync<DisciplineSubGroup>();
 
@@ -213,9 +220,9 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
     }
         
     /// <summary>
-    /// Получение списка дисциплин.
+    /// Получение коллекции всех дисциплин.
     /// </summary>
-    public async Task<Result<IList<Discipline>>> GetDisciplinesAsync()
+    public async Task<Result<IList<Discipline>>> GetAllDisciplinesAsync()
     {
         var disciplinesResult = await repository.GetAllAsync<Discipline>();
 
@@ -235,8 +242,8 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
     /// <param name="filteringDisciplineGroup">Группа дисциплин, которой ограничиваем значения дисциплин.</param>
     public IList<Discipline> GetAvailableDisciplines(
         ICollection<Discipline> disciplines,
-        DisciplineSubGroup? filteringDisciplineSubGroup,
-        DisciplineGroup? filteringDisciplineGroup)
+        DisciplineSubGroup? filteringDisciplineSubGroup = null,
+        DisciplineGroup? filteringDisciplineGroup = null)
     {
         if (filteringDisciplineSubGroup != null)
             return new List<Discipline>(
@@ -253,8 +260,12 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
         );
     }
     
+    #endregion
+    
+    #region [---------- Трудности ----------]
+    
     /// <summary>
-    /// Получение коллекции трудностей видов программы.
+    /// Получение коллекции всех трудностей видов программы.
     /// </summary>
     public async Task<Result<IList<Difficulty>>> GetAllDifficultiesAsync()
     {
@@ -304,9 +315,13 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
                .Where(d => d.DisciplineGroupId == discipline.DisciplineGroupId)
                .ToList();
     }
+    
+    #endregion
+    
+    #region [---------- Возрастные группы ----------]
             
     /// <summary>
-    /// Получение коллекции возрастных групп.
+    /// Получение коллекции всех возрастных групп.
     /// </summary>
     public async Task<Result<IList<AgeGroup>>> GetAllAgeGroupsAsync()
     {
@@ -366,6 +381,10 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
         return availableAgeGroups;
     }
     
+    #endregion
+    
+    #region [---------- Признак короткой дистанции ----------]
+    
     /// <summary>
     /// Получение доступности признака короткой дистанции.
     /// </summary>
@@ -373,7 +392,7 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
     /// Если группа дисциплин текущей дисциплины не является дистанцией, то признак короткой дистанции недоступен.
     /// </remarks>
     /// <param name="discipline">Текущая дисциплина.</param>
-    public bool IsShortAvailable(Discipline? discipline)
+    public bool GetIsShortAvailable(Discipline? discipline)
     {
         return discipline?.DisciplineGroupId == DisciplineGroupEnm.Distance;
     }
@@ -387,7 +406,7 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
     /// <param name="discipline">Текущая дисциплина.</param>
     /// <param name="sportEvent">Текущий вид программы.</param>
     /// <returns>True - если обновление признака произошло.</returns>
-    public bool IsShortUpdate(Discipline? discipline, SportEvent? sportEvent)
+    public bool UpdateIsShort(Discipline? discipline, SportEvent? sportEvent)
     {
         if (discipline != null! && discipline.DisciplineGroupId != DisciplineGroupEnm.Distance)
         {
@@ -397,4 +416,6 @@ public class SportEventService(IRepository repository, IProblemErrorMsgProvider 
         
         return false;
     }
+    
+    #endregion
 }

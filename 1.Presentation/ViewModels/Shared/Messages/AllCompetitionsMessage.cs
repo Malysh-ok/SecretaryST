@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using Common.WpfModule.Components.Collections;
+using Presentation.ViewModels.Shared.Models;
 using ProblemDomain.Entities.CommonEntities;
 
 namespace Presentation.ViewModels.Shared.Messages;
@@ -12,20 +14,12 @@ public class AllCompetitionsMessage
     /// Коллекция данных о соревнованиях.
     /// </summary>
     // ReSharper disable once MemberInitializerValueIgnored
-    public ObservableCollection<CompetitionData> Competitions { get; set; } = [];
+    public ObservableCollectionEx<CompetitionObservable> Competitions { get; set; } = [];
 
     /// <summary>
     /// Данные о текущем соревновании.
     /// </summary>
-    public CompetitionData? CurrentCompetition { get; set; }
-
-    /// <summary>
-    /// Конструктор, запрещающий создания экземпляра без параметров.
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
-    private AllCompetitionsMessage()
-    {
-    }
+    public CompetitionObservable? CurrentCompetition { get; set; }
 
     /// <summary>
     /// Конструктор.
@@ -33,8 +27,8 @@ public class AllCompetitionsMessage
     /// <param name="competitions">Коллекция данных о соревнованиях.</param>
     /// <param name="currentCompetition">Данные о текущем соревновании.</param>
     public AllCompetitionsMessage(
-        ObservableCollection<CompetitionData> competitions, 
-        CompetitionData? currentCompetition)
+        ObservableCollectionEx<CompetitionObservable> competitions, 
+        CompetitionObservable? currentCompetition)
     {
         Competitions = competitions;
         CurrentCompetition = currentCompetition;

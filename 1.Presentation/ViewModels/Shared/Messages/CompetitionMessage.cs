@@ -1,4 +1,5 @@
-﻿using ProblemDomain.Entities.CommonEntities;
+﻿using Presentation.ViewModels.Shared.Models;
+using ProblemDomain.Entities.CommonEntities;
 
 namespace Presentation.ViewModels.Shared.Messages;
 
@@ -10,21 +11,13 @@ public class CompetitionMessage
     /// <summary>
     /// Данные о текущем соревновании.
     /// </summary>
-    public CompetitionData? CurrentCompetition { get; set; }
-
-    /// <summary>
-    /// Конструктор, запрещающий создания экземпляра без параметров.
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
-    private CompetitionMessage()
-    {
-    }
+    public CompetitionObservable? CurrentCompetition { get; set; }
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="currentCompetition">Данные о текущем соревновании.</param>
-    public CompetitionMessage(CompetitionData? currentCompetition)
+    public CompetitionMessage(CompetitionObservable? currentCompetition)
     {
         CurrentCompetition = currentCompetition;
     }

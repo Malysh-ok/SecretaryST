@@ -12,7 +12,7 @@ namespace ProblemDomain.Entities.CommonEntities;
 /// <summary>
 /// Соревнование (данные о соревновании).
 /// </summary>
-public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEntityCopyable
+public sealed class Competition : AbstractEntity<int>, IEntityCloneable, IEntityCopyable
 {
     /// <summary>
     /// Конструктор для EF.
@@ -24,7 +24,7 @@ public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEn
     /// <param name="venue">Место проведения.</param>
     /// <param name="shortName">Краткое название.</param>
     /// <param name="isStudentCompetition">Признак того, что соревнования студенческие.</param>
-    private CompetitionData(string name, 
+    private Competition(string name, 
         IList<string> conductingOrganizations, DateTime initialDate, DateTime endDate, string venue, string shortName,
         bool isStudentCompetition = false, string? description = null) 
         : base(name, description)
@@ -40,7 +40,7 @@ public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEn
     /// <summary>
     /// Конструктор на основе готового экземпляра.
     /// </summary>
-    private CompetitionData(CompetitionData source)
+    private Competition(Competition source)
         : this(
             source.Name,
             source.ConductingOrganizations,
@@ -62,7 +62,7 @@ public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEn
     /// <inheritdoc />
     /// <param name="competitionsStatus">Статус соревнований.</param>
     /// <param name="detailedCompetitionStatus">Статус и наименования соревнования.</param>
-    public CompetitionData(
+    public Competition(
         string name,
         IList<string> conductingOrganizations, 
         DateTime initialDate, 
@@ -161,7 +161,7 @@ public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEn
     /// Клонирование.
     /// </summary>
     // ReSharper disable once MemberCanBePrivate.Global
-    public CompetitionData Clone()
+    public Competition Clone()
         => new(this);
     
     /// <inheritdoc />
@@ -171,7 +171,7 @@ public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEn
     
     /// <inheritdoc cref="IEntityCopyable.Copy"/>
     // ReSharper disable once MemberCanBePrivate.Global
-    public void Copy(CompetitionData destination)
+    public void Copy(Competition destination)
     {
         destination.Name = Name;
         destination.ConductingOrganizations = ConductingOrganizations;
@@ -185,7 +185,7 @@ public sealed class CompetitionData : AbstractEntity<int>, IEntityCloneable, IEn
     /// <inheritdoc />
     void IEntityCopyable.Copy(IAbstractEntity destination)
     {
-        Copy((CompetitionData)destination);
+        Copy((Competition)destination);
     }
     
     /// <inheritdoc />

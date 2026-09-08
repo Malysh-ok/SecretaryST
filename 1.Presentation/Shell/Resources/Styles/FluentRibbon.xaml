@@ -100,8 +100,13 @@
                      Color="{markups:Color BaseColor={StaticResource HighlightColor}, 
                         DeltaBrightness=-0.1, DeltaSaturation=-0.2, DeltaAlpha=-100}" options:Freeze="True" />
 
+    <!-- БАЗОВЫЙ СТИЛЬ ДЛЯ fluent:CheckBox -->
+    <Style x:Key="BaseFluentCheckBox" TargetType="fluent:CheckBox">
+        <Setter Property="Margin" Value="2, 4, 2, 4" />
+    </Style>
+    
     <!-- БАЗОВЫЙ СТИЛЬ ДЛЯ fluent:ComboBox -->
-    <Style x:Key="BaseFluentComboBoxStyle" TargetType="fluent:ComboBox">
+    <Style x:Key="BaseFluentComboBox" TargetType="fluent:ComboBox">
         <Setter Property="Width" Value="150" />
         <Setter Property="Focusable" Value="False" />
         <Setter Property="Margin" Value="-4, 1, 0, 1" />
@@ -110,7 +115,7 @@
     <!-- СТИЛЬ-ПОТОМОК fluent:ComboBox, с логикой KeyValuePair, содержащей null -->
     <Style x:Key="FluentKeyValuePairComboBoxStyle" 
            TargetType="fluent:ComboBox"
-           BasedOn="{StaticResource BaseFluentComboBoxStyle}">
+           BasedOn="{StaticResource BaseFluentComboBox}">
         <Setter Property="DisplayMemberPath" Value="Value"/>
         <Setter Property="SelectedValuePath" Value="Key"/>
         <Setter Property="ItemContainerStyle" Value="{StaticResource KeyValuePairItemStyle}"/>
@@ -145,7 +150,7 @@
     
             <!-- Комбобоксы (наследуют базовый стиль) -->
             <Style TargetType="fluent:ComboBox" 
-                   BasedOn="{StaticResource BaseFluentComboBoxStyle}"/>
+                   BasedOn="{StaticResource BaseFluentComboBox}"/>
             
         </Style.Resources>
     </Style>

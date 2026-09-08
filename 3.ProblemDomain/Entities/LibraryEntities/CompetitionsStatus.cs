@@ -34,8 +34,8 @@ public sealed class CompetitionsStatus : AbstractEntity<CompetitionsStatusEnm>, 
     /// Список Соревнований.
     /// </summary>
     // ReSharper disable once CollectionNeverUpdated.Global
-    public ICollection<CompetitionData> Competitions { get; set; } = 
-        new HashSet<CompetitionData>();
+    public ICollection<Competition> Competitions { get; set; } = 
+        new HashSet<Competition>();
     
     /// <summary>
     /// Список Статусов и наименований соревнования.

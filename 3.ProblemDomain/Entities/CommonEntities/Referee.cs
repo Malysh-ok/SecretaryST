@@ -1,3 +1,4 @@
+using System;
 using ProblemDomain.Entities._Contracts;
 using ProblemDomain.Entities.LibraryEntities;
 using ProblemDomain.Entities.LibraryEntities.Enums;
@@ -39,32 +40,32 @@ public sealed class Referee : AbstractPersonalityEntity, INumberedEntity, IEntit
             referee.Description
         )
     {
-        RefereeLevelId = referee.RefereeLevelId;
-        RefereeJobTitleId = referee.RefereeJobTitleId;
-        CompetitionDataId = referee.CompetitionDataId;
+        CategoryId = referee.CategoryId;
+        RoleId = referee.RoleId;
+        CompetitionId = referee.CompetitionId;
     }
     
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <inheritdoc />
-    /// <param name="refereeLevel">Судейская категория.</param>
-    /// <param name="refereeJobTitle">Судейская должность.</param>
-    /// <param name="competitionData">Соревнование.</param>
+    /// <param name="category">Судейская категория.</param>
+    /// <param name="role">Судейская должность.</param>
+    /// <param name="competition">Соревнование.</param>
     public Referee(
         int number, 
         string lastName, 
         string firstName, 
         string domicile, 
-        RefereeLevel refereeLevel, 
-        RefereeJobTitle refereeJobTitle, 
-        CompetitionData competitionData,
+        RefereeCategory category, 
+        RefereeRole role, 
+        Competition competition,
         string? patronymic = null, 
         string? description = null) : this(number, lastName, firstName, domicile, patronymic, description)
     {
-        RefereeLevel = refereeLevel;
-        RefereeJobTitle = refereeJobTitle;
-        CompetitionData = competitionData;
+        Category = category;
+        Role = role;
+        Competition = competition;
     }
     
     /// <inheritdoc />
@@ -78,27 +79,32 @@ public sealed class Referee : AbstractPersonalityEntity, INumberedEntity, IEntit
     /// <summary>
     /// Связь с судейской категорией (объектом-владельцем).
     /// </summary>
-    public RefereeLevelEnm RefereeLevelId { get; set; }
+    public RefereeCategoryEnm CategoryId { get; set; }
 
-    /// <inheritdoc cref="RefereeLevelId"/>
-    public RefereeLevel RefereeLevel { get; set; } = null!;
+    /// <inheritdoc cref="CategoryId"/>
+    public RefereeCategory Category { get; set; } = null!;
+    
+    /// <summary>
+    /// Дата присвоения/подтверждения категории.
+    /// </summary>
+    public DateTime? CategoryGrantedDate { get; set; }
     
     /// <summary>
     /// Связь с судейской должностью (объектом-владельцем).
     /// </summary>
-    public RefereeJobTitleEnm RefereeJobTitleId { get; set; }
+    public RefereeRoleEnm RoleId { get; set; }
 
-    /// <inheritdoc cref="RefereeJobTitleId"/>
-    public RefereeJobTitle RefereeJobTitle { get; set; } = null!;
-        
+    /// <inheritdoc cref="RoleId"/>
+    public RefereeRole Role { get; set; } = null!;
+
     /// <summary>
     /// Связь с соревнованием (объектом-владельцем).
     /// </summary>
-    public int CompetitionDataId { get; set; }
+    public int CompetitionId { get; set; }
 
-    /// <inheritdoc cref="CompetitionDataId"/>
-    public CompetitionData CompetitionData { get; set; } = null!;
-
+    /// <inheritdoc cref="CompetitionId"/>
+    public Competition Competition { get; set; } = null!;
+    
     /// <summary>
     /// Клонирование.
     /// </summary>

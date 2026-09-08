@@ -14,13 +14,13 @@
     <data name="RefereesLoadError" xml:space="preserve">
         <value>Не удалось получить список судей из репозитория.</value>
     </data>
-    <data name="CompetitionDataLoadError" xml:space="preserve">
+    <data name="CompetitionLoadError" xml:space="preserve">
         <value>Не удалось получить соревнование из репозитория.</value>
     </data>
-    <data name="RefereeJobTitlesLoadError" xml:space="preserve">
+    <data name="RefereeRolesLoadError" xml:space="preserve">
         <value>Не удалось получить список судейских должностей из репозитория.</value>
     </data>
-    <data name="RefereeLevelsLoadError" xml:space="preserve">
+    <data name="RefereeCategoriesLoadError" xml:space="preserve">
         <value>Не удалось получить список судейских категорий из репозитория.</value>
     </data>
     <data name="CompetitionStatusesLoadError" xml:space="preserve">
@@ -29,22 +29,22 @@
     <data name="DetailedCompetitionStatusesLoadError" xml:space="preserve">
         <value>Не удалось получить статусы и названия соревнований из репозитория.</value>
     </data>
-    <data name="CompetitionDataSaveError" xml:space="preserve">
+    <data name="CompetitionSaveError" xml:space="preserve">
         <value>Не удалось сохранить соревнование в репозитории.</value>
     </data>
-    <data name="CompetitionDataCreateError" xml:space="preserve">
+    <data name="CompetitionCreateError" xml:space="preserve">
         <value>Не удалось создать новое соревнование в репозитории.</value>
     </data>
-    <data name="CompetitionDataRemoveError" xml:space="preserve">
+    <data name="CompetitionRemoveError" xml:space="preserve">
         <value>Не удалось удалить данные о соревновании из репозитория.</value>
     </data>
-    <data name="RefereeLevelFindError" xml:space="preserve">
+    <data name="RefereeCategoryFindError" xml:space="preserve">
         <value>Не удалось найти судейскую категорию в репозитории.</value>
     </data>
     <data name="RefereeCreateError" xml:space="preserve">
         <value>Не удалось создать нового судью в репозитории.</value>
     </data>
-    <data name="RefereeJobTitleFindError" xml:space="preserve">
+    <data name="RefereeRoleFindError" xml:space="preserve">
         <value>Не удалось найти судейскую должность в репозитории.</value>
     </data>
     <data name="RefereeRemoveError" xml:space="preserve">
@@ -59,10 +59,10 @@
     <data name="DetailedCompetitionStatusFindError" xml:space="preserve">
         <value>Не удалось найти статус и название соревнования в репозитории.</value>
     </data>
-    <data name="CompetitionDataIsNull" xml:space="preserve">
+    <data name="CompetitionIsNull" xml:space="preserve">
         <value>Отсутствует соревнование.</value>
     </data>
-    <data name="CompetitionDataNotFound" xml:space="preserve">
+    <data name="CompetitionNotFound" xml:space="preserve">
         <value>Соревнование в репозитории не найдено.</value>
     </data>
     <data name="ConductingOrganizationsLoadError" xml:space="preserve">
@@ -95,7 +95,7 @@
     <data name="SportEventRemoveError" xml:space="preserve">
         <value>Не удалось удалить вид программы из репозитория.</value>
     </data>
-    <data name="CompetitionDataListLoadError" xml:space="preserve">
+    <data name="CompetitionListLoadError" xml:space="preserve">
         <value>Не удалось получить список соревнований из репозитория.</value>
     </data>
     <data name="DisciplinesLoadError" xml:space="preserve">
@@ -127,5 +127,8 @@
     </data>
     <data name="AgeGroupsLoadError" xml:space="preserve">
         <value>Не удалось получить список возрастных групп из репозитория.</value>
+    </data>
+    <data name="RefereeAvailableRolesCalculateError" xml:space="preserve">
+        <value>Не удалось рассчитать судейские должности.</value>
     </data>
 </root>

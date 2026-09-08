@@ -87,7 +87,6 @@ public class SportEventObservable : ObservableValidator, IEquatable<SportEventOb
         get => SportEvent.Discipline;
         set
         {
-            // Обновляем SportEvent
             SportEvent.Discipline = value;
 
             // Обновляем зависимые коллекции
@@ -95,11 +94,11 @@ public class SportEventObservable : ObservableValidator, IEquatable<SportEventOb
             UpdateAvailableAgeGroups();
 
             // Обновляем флаг короткой дистанции
-            if (_sportEventService.IsShortUpdate(value, SportEvent))
+            if (_sportEventService.UpdateIsShort(value, SportEvent))
                 OnPropertyChanged(nameof(SportEvent));
 
             // Уведомляем UI об изменении
-            OnPropertyChanged(nameof(Difficulty));
+            OnPropertyChanged(nameof(Difficulty));  // !!!!!!!!!!!!!!!!!!!!??????????????
             OnPropertyChanged(nameof(IsShortAvailable));
         }
     }
@@ -179,7 +178,7 @@ public class SportEventObservable : ObservableValidator, IEquatable<SportEventOb
     /// <summary>
     /// Флаг доступности признака короткой дистанции.
     /// </summary>
-    public bool? IsShortAvailable => _sportEventService.IsShortAvailable(Discipline);
+    public bool? IsShortAvailable => _sportEventService.GetIsShortAvailable(Discipline);
 
     /// <summary>
     /// Обновляем коллекцию доступных трудностей.
@@ -197,7 +196,7 @@ public class SportEventObservable : ObservableValidator, IEquatable<SportEventOb
     public void UpdateAvailableAgeGroups()
     {
         AvailableAgeGroups.ClearAndAddRange(
-            _sportEventService.GetAvailableAgeGroups(_ageGroups, Discipline, SportEvent.CompetitionData.IsStudentCompetition));
+            _sportEventService.GetAvailableAgeGroups(_ageGroups, Discipline, SportEvent.Competition.IsStudentCompetition));
     }
 
     /// <summary>
@@ -233,6 +232,7 @@ public class SportEventObservable : ObservableValidator, IEquatable<SportEventOb
         ValidateAllProperties();
     }
 
+    /// <inheritdoc />
     public bool Equals(SportEventObservable? other)
     {
         if (other is null || GetType() != other.GetType()) return false;
@@ -249,5 +249,4 @@ public class SportEventObservable : ObservableValidator, IEquatable<SportEventOb
     {
         return HashCode.Combine(SportEvent.Id);
     }
-
 }

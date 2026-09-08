@@ -89,63 +89,63 @@ namespace AppDomain.AppAssets.Strings {
         /// <summary>
         ///   Looks up a localized string similar to Failed to create the new competition in the repository..
         /// </summary>
-        public static string CompetitionDataCreateError {
+        public static string CompetitionCreateError {
             get {
-                return ResourceManager.GetString("CompetitionDataCreateError", resourceCulture);
+                return ResourceManager.GetString("CompetitionCreateError", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The competition is missing..
         /// </summary>
-        public static string CompetitionDataIsNull {
+        public static string CompetitionIsNull {
             get {
-                return ResourceManager.GetString("CompetitionDataIsNull", resourceCulture);
+                return ResourceManager.GetString("CompetitionIsNull", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Failed to retrieve the list of competition from the repository..
         /// </summary>
-        public static string CompetitionDataListLoadError {
+        public static string CompetitionListLoadError {
             get {
-                return ResourceManager.GetString("CompetitionDataListLoadError", resourceCulture);
+                return ResourceManager.GetString("CompetitionListLoadError", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Failed to retrieve the competition from the repository..
         /// </summary>
-        public static string CompetitionDataLoadError {
+        public static string CompetitionLoadError {
             get {
-                return ResourceManager.GetString("CompetitionDataLoadError", resourceCulture);
+                return ResourceManager.GetString("CompetitionLoadError", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The competition was not found  in the repository..
         /// </summary>
-        public static string CompetitionDataNotFound {
+        public static string CompetitionNotFound {
             get {
-                return ResourceManager.GetString("CompetitionDataNotFound", resourceCulture);
+                return ResourceManager.GetString("CompetitionNotFound", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Failed to remove the competition from the repository..
         /// </summary>
-        public static string CompetitionDataRemoveError {
+        public static string CompetitionRemoveError {
             get {
-                return ResourceManager.GetString("CompetitionDataRemoveError", resourceCulture);
+                return ResourceManager.GetString("CompetitionRemoveError", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Failed to save the competition to the repository..
         /// </summary>
-        public static string CompetitionDataSaveError {
+        public static string CompetitionSaveError {
             get {
-                return ResourceManager.GetString("CompetitionDataSaveError", resourceCulture);
+                return ResourceManager.GetString("CompetitionSaveError", resourceCulture);
             }
         }
         
@@ -312,6 +312,33 @@ namespace AppDomain.AppAssets.Strings {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to calculate referee roles..
+        /// </summary>
+        public static string RefereeAvailableRolesCalculateError {
+            get {
+                return ResourceManager.GetString("RefereeAvailableRolesCalculateError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve the list of referee categories from the repository..
+        /// </summary>
+        public static string RefereeCategoriesLoadError {
+            get {
+                return ResourceManager.GetString("RefereeCategoriesLoadError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to find the referee category in the repository..
+        /// </summary>
+        public static string RefereeCategoryFindError {
+            get {
+                return ResourceManager.GetString("RefereeCategoryFindError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to create the new referee in the repository..
         /// </summary>
         public static string RefereeCreateError {
@@ -321,47 +348,29 @@ namespace AppDomain.AppAssets.Strings {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to find the referee job titles in the repository..
-        /// </summary>
-        public static string RefereeJobTitleFindError {
-            get {
-                return ResourceManager.GetString("RefereeJobTitleFindError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to get a list of referee job titles from the repository..
-        /// </summary>
-        public static string RefereeJobTitlesLoadError {
-            get {
-                return ResourceManager.GetString("RefereeJobTitlesLoadError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to find the referee level in the repository..
-        /// </summary>
-        public static string RefereeLevelFindError {
-            get {
-                return ResourceManager.GetString("RefereeLevelFindError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to retrieve the list of referee levels from the repository..
-        /// </summary>
-        public static string RefereeLevelsLoadError {
-            get {
-                return ResourceManager.GetString("RefereeLevelsLoadError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Failed to remove the referee from the repository..
         /// </summary>
         public static string RefereeRemoveError {
             get {
                 return ResourceManager.GetString("RefereeRemoveError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to find the referee roles in the repository..
+        /// </summary>
+        public static string RefereeRoleFindError {
+            get {
+                return ResourceManager.GetString("RefereeRoleFindError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to get a list of referee roles from the repository..
+        /// </summary>
+        public static string RefereeRolesLoadError {
+            get {
+                return ResourceManager.GetString("RefereeRolesLoadError", resourceCulture);
             }
         }
         
