@@ -15,7 +15,7 @@ jobs:
           github-token: ${{ secrets.PROJECT_SYNC_TOKEN }}
           script: |
             // === НАСТРОЙКИ ===
-            const PROJECT_NUMBER = 1; // ⚠️ ПОДСТАВЬТЕ НОМЕР ПРОЕКТА ИЗ URL
+            const PROJECT_NUMBER = 2; // ⚠️ ПОДСТАВЬТЕ НОМЕР ПРОЕКТА ИЗ URL
             const TARGET_FIELD_NAME = "Issue Number"; // ⚠️ Имя поля в проекте
             const REPO_FILTER = null; // null = все репозитории; "owner/repo" = только один
 
