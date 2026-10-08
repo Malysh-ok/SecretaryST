@@ -1,7 +1,8 @@
-name: One-Time Project Date Sync
+name: Auto Sync Created Date to Project
 
 on:
-  workflow_dispatch:
+  issues:
+    types: [opened, reopened] # Срабатывает автоматически, когда создается новая задача
 
 jobs:
   sync:
