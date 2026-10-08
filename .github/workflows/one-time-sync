@@ -16,7 +16,7 @@ jobs:
           script: |
             // === НАСТРОЙКИ ===
             const OWNER = context.repo.owner;
-            const PROJECT_NUMBER = 1; // ⚠️ ПОДСТАВЬТЕ СЮДА НОМЕР ВАШЕГО ПРОЕКТА ИЗ URL
+            const PROJECT_NUMBER = 2; // ⚠️ ПОДСТАВЬТЕ СЮДА НОМЕР ВАШЕГО ПРОЕКТА ИЗ URL
             const TARGET_FIELD_NAME = "Original Date"; // Имя вашей колонки
 
             console.log(`Запуск сканирования проекта №${PROJECT_NUMBER}...`);
