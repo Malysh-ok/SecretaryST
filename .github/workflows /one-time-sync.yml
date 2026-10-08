@@ -1,0 +1,128 @@
+name: One-Time Project Date Sync
+
+on:
+  workflow_dispatch: # Позволяет запустить скрипт вручную одной кнопкой
+
+jobs:
+  sync-all-dates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch and Sync Dates
+        uses: actions/github-script@v7
+        with:
+          # PAT (classic) со scope `project` или fine-grained token с `Projects: Read and write`.
+          # Дефолтный GITHUB_TOKEN с ProjectV2 не работает.
+          github-token: ${{ secrets.PROJECT_SYNC_TOKEN }}
+          script: |
+            // === НАСТРОЙКИ ===
+            const OWNER = context.repo.owner;
+            const PROJECT_NUMBER = 1; // ⚠️ ПОДСТАВЬТЕ СЮДА НОМЕР ВАШЕГО ПРОЕКТА ИЗ URL
+            const TARGET_FIELD_NAME = "Original Date"; // Имя вашей колонки
+
+            console.log(`Запуск сканирования проекта №${PROJECT_NUMBER}...`);
+
+            // 1. Получаем ID проекта и ID поля даты через GraphQL.
+            // Используем repositoryOwner вместо user/organization — работает и для личных проектов,
+            // и для проектов организаций (user(login:) падает с ошибкой, если OWNER — организация).
+            const metaQuery = `
+              query($owner: String!, $number: Int!) {
+                repositoryOwner(login: $owner) {
+                  ... on ProjectV2Owner {
+                    projectV2(number: $number) {
+                      id
+                      fields(first: 50) {
+                        nodes { ... on ProjectV2FieldCommon { id name } }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const metaRes = await github.graphql(metaQuery, { owner: OWNER, number: PROJECT_NUMBER });
+            const projectNode = metaRes.repositoryOwner?.projectV2;
+
+            if (!projectNode) throw new Error("Проект не найден! Проверьте номер проекта.");
+
+            const projectId = projectNode.id;
+            const dateField = projectNode.fields.nodes.find(f => f.name === TARGET_FIELD_NAME);
+            if (!dateField) throw new Error(`Поле '${TARGET_FIELD_NAME}' не найдено в проекте!`);
+
+            // Мутация для обновления поля (Date! принимает строку YYYY-MM-DD)
+            const updateMutation = `
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $dateValue: Date!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $projectId,
+                  itemId: $itemId,
+                  fieldId: $fieldId,
+                  value: { date: $dateValue }
+                }) {
+                  projectV2Item { id }
+                }
+              }
+            `;
+
+            // Регулярное выражение для поиска даты DD.MM.YYYY в описании.
+            // \*{0,2} — допускаем markdown-обёртку *...* или **...** вокруг фразы.
+            // Флаг `i` — регистронезависимо.
+            const dateRegex = /\*{0,2}Оригинальная дата задачи:\*{0,2}\s*([0-9]{2}\.[0-9]{2}\.[0-9]{4})/i;
+
+            let cursor = null;
+            let processed = 0;
+
+            // 2. Постранично получаем все элементы (только Issue) из проекта.
+            // Лимит GraphQL — 100 элементов на страницу, поэтому используем пагинацию.
+            do {
+              const itemsQuery = `
+                query($projectId: ID!, $cursor: String) {
+                  node(id: $projectId) {
+                    ... on ProjectV2 {
+                      items(first: 100, after: $cursor) {
+                        pageInfo { hasNextPage endCursor }
+                        nodes {
+                          id
+                          content {
+                            __typename
+                            ... on Issue { title number body }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              `;
+
+              const itemsRes = await github.graphql(itemsQuery, { projectId, cursor });
+              const page = itemsRes.node.items;
+              cursor = page.pageInfo.hasNextPage ? page.pageInfo.endCursor : null;
+
+              // 3. Перебираем задачи и обновляем даты
+              for (const item of page.nodes) {
+                const c = item.content;
+
+                // Пропускаем всё, что не Issue (PR, DraftIssue и прочее)
+                if (!c || c.__typename !== "Issue" || !c.body) continue;
+
+                const match = c.body.match(dateRegex);
+                if (!match) continue;
+
+                const rawDate = match[1]; // "12.04.2024"
+                const [day, month, year] = rawDate.split('.');
+                const isoDate = `${year}-${month}-${day}`; // формат YYYY-MM-DD для GitHub Projects
+
+                await github.graphql(updateMutation, {
+                  projectId,
+                  itemId: item.id,
+                  fieldId: dateField.id,
+                  dateValue: isoDate
+                });
+
+                console.log(`✅ Обновлено: #${c.number} "${c.title}" -> ${isoDate}`);
+                processed++;
+
+                // Небольшая задержка, чтобы уложиться в лимиты API
+                await new Promise(r => setTimeout(r, 300));
+              }
+            } while (cursor);
+
+            console.log(`🎉 Синхронизация успешно завершена! Обработано: ${processed}`);
